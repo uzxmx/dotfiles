@@ -1,0 +1,38 @@
+*development-installer.html*
+
+Building the eclim installer
+****************************
+
+Unless you are working on improvements to the eclim installer, you
+shouldn’t ever need to build it, but should the need arise here are
+the instructions for doing so.
+
+To build the installer you first need a couple external tools
+installed:
+
+- sphinx (http://sphinx-doc.org): Sphinx is used to build the eclim
+  documentation which is included in the installer.
+  Eclim also uses a custom sphinx theme which is included in eclim as
+  a git submodule. So before you can build the installer you will need
+  to initialize the submodule:
+
+  >
+     $ git submodule init
+     $ git submodule update
+
+  <
+
+- graphviz (http://www.graphviz.org/):  The docs include a few uml
+  diagrams which are generated using plantuml
+  (http://plantuml.sourceforge.net/) (included in the eclim source
+  tree) which in turn requires graphviz (http://www.graphviz.org/).
+Once you have installed the above dependencies, you can then build the
+eclim installer with the following command.
+
+>
+
+   $ ant dist
+
+<
+
+vim:ft=eclimhelp
