@@ -2,7 +2,7 @@
 export PATH=$HOME/.local/bin:$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-  export ZSH=/home/uzxmx/.oh-my-zsh
+export ZSH=$HOME/.oh-my-zsh
 
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
@@ -103,8 +103,11 @@ setopt AUTO_CD
 # Bash like completion
 setopt noautomenu
 
-. /usr/share/autojump/autojump.sh
+file="/usr/share/autojump/autojump.sh"
+if [ -e $file ]; then
+  source $file
+fi
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/uzxmx/.sdkman"
-[[ -s "/home/uzxmx/.sdkman/bin/sdkman-init.sh" ]] && source "/home/uzxmx/.sdkman/bin/sdkman-init.sh"
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
