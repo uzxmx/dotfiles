@@ -16,7 +16,7 @@ set splitbelow
 set splitright
 set number
 set relativenumber
-set textwidth=80
+" set textwidth=80
 set clipboard^=unnamed
 set clipboard^=unnamedplus
 set backspace=indent,eol,start
