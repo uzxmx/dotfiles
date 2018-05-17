@@ -1,5 +1,10 @@
+# load custom executable functions
+for function in ~/.zsh/functions/*; do
+  source $function
+done
+
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/.local/bin:$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/.local/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
@@ -109,6 +114,9 @@ if [ -e $file ]; then
 fi
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+# aliases
+[[ -f ~/.aliases ]] && source ~/.aliases
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"

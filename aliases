@@ -1,0 +1,14 @@
+# Unix
+alias mkdir="mkdir -p"
+alias e="$EDITOR"
+alias v="$VISUAL"
+
+# Bundler
+alias b="bundle"
+
+# Rails
+alias migrate="bundle exec rake db:migrate"
+alias s="bundle exec rspec"
+
+# Include custom aliases
+[[ -f ~/.aliases.local ]] && source ~/.aliases.local
