@@ -248,7 +248,7 @@ inoremap <C-d> <Del>
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
 
-let g:deoplete#enable_at_startup = 1
+let g:deoplete#enable_at_startup = 0
 
 " switch the line between the current line and the below line
 nnoremap - ddp
@@ -266,4 +266,9 @@ command! WQ wq
 command! Wq wq
 command! W w
 command! Q q
+" }}}
+
+" YouCompleteMe {{{
+" TODO check YouCompleteme, warn if not installed
+nnoremap <leader>gf :YcmCompleter GoToDefinitionElseDeclaration<CR>
 " }}}
