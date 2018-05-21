@@ -79,7 +79,9 @@ set hlsearch " Use :nohlsearch to clear highlight after searching
 set gdefault
 
 " remap # to only highlight cursor word
-nnoremap # :<C-u> set hlsearch<cr>:let @/ = expand('<cword>')<cr>
+nnoremap <silent> # :<C-u> set hlsearch<cr>:let @/ = expand('<cword>')<cr>
+
+nnoremap <leader><space> :nohlsearch<cr>
 
 " Keep search matches in the middle of the window.
 nnoremap n nzzzv
@@ -247,6 +249,8 @@ inoremap <C-d> <Del>
 
 " If you want :UltiSnipsEdit to split your window.
 let g:UltiSnipsEditSplit="vertical"
+" When using UltiSnips with YCM, we should bind the following.
+let g:UltiSnipsExpandTrigger="<c-j>"
 
 let g:deoplete#enable_at_startup = 0
 
@@ -261,14 +265,24 @@ nnoremap <leader>\| viw<esc>a\|<esc>bi\|<esc>lel
 nnoremap <leader>` viw<esc>a`<esc>bi`<esc>lel
 " }}}
 
-" Avoid mistake {{{
+" Avoid mistakes {{{
 command! WQ wq
 command! Wq wq
 command! W w
 command! Q q
+command! Qa qa
 " }}}
 
 " YouCompleteMe {{{
+" use the following command to install:
+" ./install.py --clang-completer --js-completer --java-completer
+"
 " TODO check YouCompleteme, warn if not installed
-nnoremap <leader>gf :YcmCompleter GoToDefinitionElseDeclaration<CR>
+nnoremap <leader>g :YcmCompleter GoToDefinitionElseDeclaration<cr>
+nnoremap <leader>f :YcmCompleter FixIt<cr>
+nnoremap <leader>o :YcmCompleter OrganizeImports<cr>
+" }}}
+
+" vim-pbcopy: copy to the local machine's clipboard from the sshed remote machine {{{
+let g:vim_pbcopy_remote_cmd = "pbcopy"
 " }}}
