@@ -1,2 +1,2 @@
-EXCLUDES="README*.md LICENSE"
+EXCLUDES="README*.md LICENSE Flavorfile Flavorfile.lock"
 DOTFILES_DIRS="$HOME/.dotfiles-local $HOME/.dotfiles"
