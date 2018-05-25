@@ -10,5 +10,8 @@ alias b="bundle"
 alias migrate="bundle exec rake db:migrate"
 alias s="bundle exec rspec"
 
+# Docker
+alias dc="docker-compose"
+
 # Include custom aliases
 [[ -f ~/.aliases.local ]] && source ~/.aliases.local

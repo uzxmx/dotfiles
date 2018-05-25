@@ -16,9 +16,6 @@
 [submodule "vim/pack/main/start/indentLine"]
 	path = vim/pack/main/start/indentLine
 	url = https://github.com/Yggdroot/indentLine.git
-[submodule "vim/pack/main/start/nerdcommenter"]
-	path = vim/pack/main/start/nerdcommenter
-	url = https://github.com/scrooloose/nerdcommenter.git
 [submodule "vim/pack/main/start/nerdtree"]
 	path = vim/pack/main/start/nerdtree
 	url = https://github.com/scrooloose/nerdtree.git

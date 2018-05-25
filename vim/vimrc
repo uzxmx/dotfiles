@@ -181,12 +181,6 @@ nnoremap <silent> <C-n>r :NERDTreeCWD<CR>
 nnoremap <silent> <C-n><C-r> :NERDTreeCWD<CR>
 " }}}
 
-" NERDCommenter specific stuff {{{
-let NERDSpaceDelims = 1
-" Python will add two spaces, use this to fix.
-let NERDCustomDelimiters = {'python': {'left': '#'}}
-" }}}
-
 " Text objects ---------------------------------------------------------------- {{{
 " Next and Last {{{
 " Motion for "next/last object". For example, "din(" would go to the next "()" pair
@@ -269,8 +263,8 @@ nnoremap <leader>` viw<esc>a`<esc>bi`<esc>lel
 command! WQ wq
 command! Wq wq
 command! W w
-command! Q q
-command! Qa qa
+command! -bang Q q<bang>
+command! -bang Qa qa<bang>
 " }}}
 
 " YouCompleteMe {{{
