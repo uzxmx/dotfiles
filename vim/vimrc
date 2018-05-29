@@ -1,6 +1,6 @@
 " .vimrc
 " Author: Mingxiang Xue <327110424@163.com>
-" Source: http://...
+" Source: https://github.com/UzxMx/dotfiles
 
 " Preamble -------------------------------------------------------------------- {{{
 filetype plugin indent on
@@ -86,10 +86,6 @@ nnoremap <leader><space> :nohlsearch<cr>
 " Keep search matches in the middle of the window.
 nnoremap n nzzzv
 nnoremap N Nzzzv
-
-" Easier to type, and I never use the default behavior.
-noremap H ^
-noremap L $
 " }}}
 
 " Directional Keys {{{
@@ -159,6 +155,23 @@ augroup ft_vim
     au FileType vim setlocal foldmethod=marker
 augroup END
 " }}}
+
+" Java {{{
+augroup ft_java
+  au!
+  
+  au FileType java setlocal tabstop=4 shiftwidth=4 softtabstop=4
+augroup END
+" }}}
+
+" Groovy {{{
+augroup ft_groovy
+  au!
+  
+  au FileType groovy setlocal tabstop=4 shiftwidth=4 softtabstop=4
+augroup END
+" }}}
+
 " }}}
 
 " Quick editing --------------------------------------------------------------- {{{
@@ -282,11 +295,16 @@ let g:vim_pbcopy_remote_cmd = "pbcopy"
 " }}}
 
 " vim-closetag {{{
-let g:closetag_filenames = "*.html,*.xhtml,*.vue,*.erb,*.jsx"
+let g:closetag_filenames = "*.html,*.xml,*.xhtml,*.vue,*.erb,*.jsx"
 " }}}
 
 " Workaround {{{
 " Workaround for caw.vim. If we don't call the below function, caw.vim can not
 " detect the context_filetype.vim
 au BufNewFile,BufRead * call context_filetype#get_filetype()
+" }}}
+
+" ctrlp.vim {{{
+" Ignore files in .gitignore
+let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
 " }}}

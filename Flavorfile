@@ -3,3 +3,6 @@ flavor 'kana/vim-operator-user'
 
 flavor 'Shougo/context_filetype.vim', branch: 'master'
 flavor 'tyru/caw.vim'
+
+flavor 'vim-scripts/groovyindent-unix'
+flavor 'tpope/vim-eunuch'

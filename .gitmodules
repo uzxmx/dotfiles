@@ -22,9 +22,6 @@
 [submodule "vim/pack/main/start/nvim-yarp"]
 	path = vim/pack/main/start/nvim-yarp
 	url = https://github.com/roxma/nvim-yarp.git
-[submodule "vim/pack/main/start/rename"]
-	path = vim/pack/main/start/rename
-	url = https://github.com/danro/rename.vim.git
 [submodule "vim/pack/main/start/supertab"]
 	path = vim/pack/main/start/supertab
 	url = https://github.com/ervandew/supertab.git
