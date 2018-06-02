@@ -1,3 +1,10 @@
+# CTRL-W will delete to the space
+autoload -U select-word-style
+select-word-style shell
+
+bindkey '^F' forward-char
+bindkey '^B' backward-char
+
 # load custom executable functions
 for function in ~/.zsh/functions/*; do
   source $function
