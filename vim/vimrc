@@ -20,6 +20,7 @@ set relativenumber
 set clipboard^=unnamed
 set clipboard^=unnamedplus
 set backspace=indent,eol,start
+set list lcs=tab:\|\ 
 
 set tags=./.tags;/,./tags;/ " This will look in the current directory for tags, and walk up the tree towards root until one is found
 " vim-autotag related settings
@@ -172,6 +173,14 @@ augroup ft_groovy
 augroup END
 " }}}
 
+" Go {{{
+augroup ft_go
+  au!
+
+  au Filetype go setlocal noexpandtab tabstop=4 shiftwidth=4 
+augroup END
+" }}}
+
 " }}}
 
 " Quick editing --------------------------------------------------------------- {{{
@@ -272,6 +281,11 @@ nnoremap <leader>\| viw<esc>a\|<esc>bi\|<esc>lel
 nnoremap <leader>` viw<esc>a`<esc>bi`<esc>lel
 " }}}
 
+" Quickfix window {{{
+nnoremap <leader>co :copen<cr>
+nnoremap <leader>cc :cclose<cr>
+" }}}
+
 " Avoid mistakes {{{
 command! WQ wq
 command! Wq wq
@@ -307,4 +321,8 @@ au BufNewFile,BufRead * call context_filetype#get_filetype()
 " ctrlp.vim {{{
 " Ignore files in .gitignore
 let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+" }}}
+
+" Format {{{
+command! Reindent norm! gg=G
 " }}}
