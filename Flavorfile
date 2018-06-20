@@ -7,4 +7,6 @@ flavor 'tyru/caw.vim'
 flavor 'vim-scripts/groovyindent-unix'
 flavor 'tpope/vim-eunuch'
 flavor 'tpope/vim-unimpaired'
-flavor "fatih/vim-go"
+flavor 'fatih/vim-go'
+
+flavor 'chrisbra/csv.vim', branch: 'master'
