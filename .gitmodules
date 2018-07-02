@@ -118,9 +118,6 @@
 [submodule "vim/pack/main/start/ctrlsf.vim"]
 	path = vim/pack/main/start/ctrlsf.vim
 	url = https://github.com/dyng/ctrlsf.vim.git
-[submodule "vim/pack/main/start/vim-fugitive"]
-	path = vim/pack/main/start/vim-fugitive
-	url = https://github.com/tpope/vim-fugitive.git
 [submodule "vim/pack/main/start/vim-pbcopy"]
 	path = vim/pack/main/start/vim-pbcopy
 	url = https://github.com/ahw/vim-pbcopy.git
