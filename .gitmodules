@@ -25,9 +25,6 @@
 [submodule "vim/pack/main/start/supertab"]
 	path = vim/pack/main/start/supertab
 	url = https://github.com/ervandew/supertab.git
-[submodule "vim/pack/main/start/tabular"]
-	path = vim/pack/main/start/tabular
-	url = https://github.com/godlygeek/tabular.git
 [submodule "vim/pack/main/start/tagbar"]
 	path = vim/pack/main/start/tagbar
 	url = https://github.com/majutsushi/tagbar.git

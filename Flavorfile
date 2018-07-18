@@ -11,3 +11,6 @@ flavor 'tpope/vim-fugitive'
 flavor 'fatih/vim-go'
 
 flavor 'chrisbra/csv.vim', branch: 'master'
+
+# Align text
+flavor 'godlygeek/tabular'
