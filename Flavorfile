@@ -1,6 +1,5 @@
 flavor 'kana/vim-operator-user'
 # flavor 'haya14busa/vim-operator-flashy'
-
 flavor 'Shougo/context_filetype.vim', branch: 'master'
 flavor 'tyru/caw.vim'
 
@@ -16,3 +15,7 @@ flavor 'chrisbra/csv.vim', branch: 'master'
 flavor 'godlygeek/tabular'
 
 flavor 'kshenoy/vim-signature', branch: 'master'
+
+# Easy to zoom into and out of a window.
+# After test, this plugin is slow to zoom out. Improvement is needed.
+# flavor 'vim-scripts/ZoomWin'

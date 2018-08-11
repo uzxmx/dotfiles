@@ -1,2 +1,2 @@
-EXCLUDES="README*.md LICENSE Flavorfile Flavorfile.lock"
+EXCLUDES="README*.md LICENSE Flavorfile Flavorfile.lock .ruby-version"
 DOTFILES_DIRS="$HOME/.dotfiles-local $HOME/.dotfiles"
