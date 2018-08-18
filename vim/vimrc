@@ -245,7 +245,7 @@ let g:ackprg = 'ag --nogroup --nocolor --column'
 " }}}
 
 " vim-rspec and tslime.vim {{{
-let g:rspec_command = 'call Send_to_Tmux("rspec {spec}\n")'
+let g:rspec_command = 'call Send_to_Tmux("bundle exec rspec {spec}\n")'
 map <Leader>t :call RunCurrentSpecFile()<CR>
 map <Leader>s :call RunNearestSpec()<CR>
 map <Leader>l :call RunLastSpec()<CR>
@@ -319,8 +319,13 @@ au BufNewFile,BufRead * call context_filetype#get_filetype()
 " }}}
 
 " ctrlp.vim {{{
-" Ignore files in .gitignore
-let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+" Exclude ~/.rbenv subdirectories, for .rbenv contains .git directory
+if getcwd() !~ '^'.$HOME.'/.rbenv/'
+  " Ignore files in .gitignore
+  let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+else
+  let g:ctrlp_working_path_mode = ''
+endif
 " }}}
 
 " Format {{{
