@@ -1,3 +1,6 @@
+[user]
+  name = Mingxiang Xue
+  email = 327110424@163.com
 [init]
   templatedir = ~/.git_template
 [push]
