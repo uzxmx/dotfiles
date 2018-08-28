@@ -79,9 +79,6 @@ set incsearch
 set hlsearch " Use :nohlsearch to clear highlight after searching
 set gdefault
 
-" remap # to only highlight cursor word
-nnoremap <silent> # :<C-u> set hlsearch<cr>:let @/ = expand('<cword>')<cr>
-
 nnoremap <leader><space> :nohlsearch<cr>
 
 " Keep search matches in the middle of the window.

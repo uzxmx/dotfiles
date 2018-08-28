@@ -19,3 +19,7 @@ flavor 'kshenoy/vim-signature', branch: 'master'
 # Easy to zoom into and out of a window.
 # After test, this plugin is slow to zoom out. Improvement is needed.
 # flavor 'vim-scripts/ZoomWin'
+
+# Show status when searching.
+# google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
+flavor 'henrik/vim-indexed-search', branch: 'master'
