@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Example:
+#   openssl_verify baidu.com
+
+if [ $# != 1 ]; then
+  echo 'Usage: openssl_verify <hostname>'
+  echo 'e.g. openssl_verify baidu.com'
+  exit 1
+fi
+openssl s_client -connect $1:443 < /dev/null
