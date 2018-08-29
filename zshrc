@@ -74,6 +74,7 @@ plugins=(
   git
   vi-mode
   ssh-agent
+  bundler
 )
 
 source $ZSH/oh-my-zsh.sh
