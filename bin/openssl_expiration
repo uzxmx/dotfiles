@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Example:
+#   openssl_expiration cert.pem
+
+if [ $# != 1 ]; then
+  echo 'Usage: openssl_expiration <public_key.pem>'
+  echo 'e.g. openssl_expiration cert.pem'
+  exit 1
+fi
+openssl x509 -enddate -noout -in $1
