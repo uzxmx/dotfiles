@@ -3,6 +3,10 @@
 " Source: https://github.com/UzxMx/dotfiles
 
 " Preamble -------------------------------------------------------------------- {{{
+if has('python3') " This will force python3 to be used
+  silent echomsg 'Use python3'
+endif
+
 filetype plugin indent on
 set nocompatible
 " }}}
@@ -21,6 +25,8 @@ set clipboard^=unnamed
 set clipboard^=unnamedplus
 set backspace=indent,eol,start
 set list lcs=tab:\|\ 
+
+set confirm
 
 set tags=./.tags;/,./tags;/ " This will look in the current directory for tags, and walk up the tree towards root until one is found
 " vim-autotag related settings
@@ -80,6 +86,8 @@ set hlsearch " Use :nohlsearch to clear highlight after searching
 set gdefault
 
 nnoremap <leader><space> :nohlsearch<cr>
+
+vnoremap // y/<c-r>"<cr>"
 
 " Keep search matches in the middle of the window.
 nnoremap n nzzzv
@@ -330,6 +338,8 @@ command! Reindent norm! gg=G
 " }}}
 
 " CtrlSF {{{
+let g:ctrlsf_ignore_dir = ["node_modules", "tmp", "log"]
+
 nmap     <C-F>f <Plug>CtrlSFPrompt
 vmap     <C-F>f <Plug>CtrlSFVwordPath
 vmap     <C-F>F <Plug>CtrlSFVwordExec
@@ -338,4 +348,41 @@ nmap     <C-F>p <Plug>CtrlSFPwordPath
 nnoremap <C-F>o :CtrlSFOpen<CR>
 nnoremap <C-F>t :CtrlSFToggle<CR>
 inoremap <C-F>t <Esc>:CtrlSFToggle<CR>
+" }}}
+
+" projectionist.vim {{{
+let g:projectionist_heuristics = json_decode(join(readfile(expand('~/.projections.global.json'))))
+" }}}
+
+" vim-json {{{
+" Disable concelling
+let g:vim_json_syntax_conceal = 0
+" }}}
+
+" vim-rails {{{
+let g:rails_projections = {
+      \ "app/*.rb": {
+      \   "alternate": "spec/{}_spec.rb"
+      \ },
+      \ "app/views/*.json.jbuilder": {
+      \   "template": [
+      \     "# frozen_string_literal: true"
+      \   ]
+      \ },
+      \ "spec/controllers/*_spec.rb": {
+      \   "template": [
+      \     "# frozen_string_literal: true",
+      \     "",
+      \     "RSpec.describe {camelcase|capitalize|colons} do",
+      \     "end"
+      \   ]
+      \ },
+      \ "spec/models/*_spec.rb": {
+      \   "template": [
+      \     "# frozen_string_literal: true",
+      \     "",
+      \     "RSpec.describe {camelcase|capitalize|colons} do",
+      \     "end"
+      \   ]
+      \ }}
 " }}}

@@ -13,3 +13,4 @@ tags
 tmp/**/*
 !tmp/cache/.keep
 *.pyc
+.projections.json

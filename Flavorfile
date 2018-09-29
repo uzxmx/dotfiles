@@ -4,9 +4,14 @@ flavor 'Shougo/context_filetype.vim', branch: 'master'
 flavor 'tyru/caw.vim'
 
 flavor 'vim-scripts/groovyindent-unix'
+
+flavor 'tpope/vim-sensible'
 flavor 'tpope/vim-eunuch'
 flavor 'tpope/vim-unimpaired'
 flavor 'tpope/vim-fugitive'
+flavor 'tpope/vim-scriptease', branch: 'master'
+flavor 'uzxmx/vim-rails', branch: 'master'
+
 flavor 'fatih/vim-go'
 
 flavor 'chrisbra/csv.vim', branch: 'master'
@@ -23,3 +28,7 @@ flavor 'kshenoy/vim-signature', branch: 'master'
 # Show status when searching.
 # google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
 flavor 'henrik/vim-indexed-search', branch: 'master'
+
+flavor 'robbles/logstash.vim', branch: 'master'
+
+flavor 'elzr/vim-json', branch: 'master'

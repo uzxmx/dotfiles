@@ -70,9 +70,6 @@
 [submodule "vim/pack/main/start/vim-projectionist"]
 	path = vim/pack/main/start/vim-projectionist
 	url = git://github.com/tpope/vim-projectionist.git
-[submodule "vim/pack/main/start/vim-rails"]
-	path = vim/pack/main/start/vim-rails
-	url = https://github.com/tpope/vim-rails.git
 [submodule "vim/pack/main/start/vim-rake"]
 	path = vim/pack/main/start/vim-rake
 	url = git://github.com/tpope/vim-rake.git
