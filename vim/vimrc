@@ -189,7 +189,7 @@ augroup END
 " }}}
 
 " Quick editing --------------------------------------------------------------- {{{
-nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap <leader>ev :split $MYVIMRC<cr>
 nnoremap <leader>sv :source $MYVIMRC<cr>
 " }}}
 
@@ -249,7 +249,11 @@ vnoremap <Leader>a: :Tabularize /:\zs<CR>
 let g:ackprg = 'ag --nogroup --nocolor --column'
 " }}}
 
-" vim-rspec and tslime.vim {{{
+" tslime.vim {{{
+command! TmuxResetVars execute "normal \<Plug>SetTmuxVars"
+" }}}
+
+" vim-rspec {{{
 let g:rspec_command = 'call Send_to_Tmux("bundle exec rspec {spec}\n")'
 map <Leader>t :call RunCurrentSpecFile()<CR>
 map <Leader>s :call RunNearestSpec()<CR>
@@ -369,11 +373,30 @@ let g:rails_projections = {
       \     "# frozen_string_literal: true"
       \   ]
       \ },
+      \ "config/routes.rb": {
+      \   "command": "routes"
+      \ },
+      \ "config/routes/*.rb": {
+      \   "command": "routes"
+      \ },
+      \ "spec/spec_helper.rb": {
+      \   "alternate": "spec/rails_helper.rb",
+      \   "related": "spec/rails_helper.rb"
+      \ },
+      \ "spec/rails_helper.rb": {
+      \   "command": "railshelper",
+      \   "alternate": "spec/rails_helper.rb",
+      \   "related": "spec/spec_helper.rb"
+      \ },
+      \ "spec/factories/*.rb": {
+      \   "command": "factory",
+      \   "alternate": "app/models/{singular}.rb"
+      \ },
       \ "spec/controllers/*_spec.rb": {
       \   "template": [
       \     "# frozen_string_literal: true",
       \     "",
-      \     "RSpec.describe {camelcase|capitalize|colons} do",
+      \     "RSpec.describe {camelcase|capitalize|colons}, type: :controller do",
       \     "end"
       \   ]
       \ },
@@ -381,7 +404,7 @@ let g:rails_projections = {
       \   "template": [
       \     "# frozen_string_literal: true",
       \     "",
-      \     "RSpec.describe {camelcase|capitalize|colons} do",
+      \     "RSpec.describe {camelcase|capitalize|colons}, type: :model do",
       \     "end"
       \   ]
       \ }}
