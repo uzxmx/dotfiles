@@ -173,3 +173,5 @@ if type rbenv >/dev/null; then
 fi
 
 [ -s ~/.luaver/luaver ] && . ~/.luaver/luaver
+
+[ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
