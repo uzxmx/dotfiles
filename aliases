@@ -1,4 +1,5 @@
 # Unix
+alias vi="vim"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias v="$VISUAL"
