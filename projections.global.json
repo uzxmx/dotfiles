@@ -6,5 +6,11 @@
     "*.h": {
       "alternate": "./{}.c"
     }
+  },
+  "locals/playgrounds/": {
+    "locals/playgrounds/*.rb": {
+      "type": "playground",
+      "timeline": true
+    }
   }
 }

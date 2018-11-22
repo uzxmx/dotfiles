@@ -14,3 +14,5 @@ tmp/**/*
 !tmp/cache/.keep
 *.pyc
 .projections.json
+/config/projections.json
+/locals/

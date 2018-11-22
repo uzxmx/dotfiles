@@ -16,6 +16,9 @@ export PATH=$HOME/.local/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
+# Disable pry in rails console by default.
+export DISABLE_PRY_RAILS=1
+
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
@@ -173,3 +176,8 @@ if type rbenv >/dev/null; then
 fi
 
 [ -s ~/.luaver/luaver ] && . ~/.luaver/luaver
+
+[ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
+
+# So as not to be disturbed by Ctrl-S ctrl-Q in terminals
+stty -ixon
