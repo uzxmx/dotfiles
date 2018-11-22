@@ -87,7 +87,8 @@ set gdefault
 
 nnoremap <leader><space> :nohlsearch<cr>
 
-vnoremap // y/<c-r>"<cr>"
+" Search visual selected text
+vnoremap // y/<c-r>"<cr>
 
 " Keep search matches in the middle of the window.
 nnoremap n nzzzv
@@ -339,6 +340,15 @@ endif
 
 " Format {{{
 command! Reindent norm! gg=G
+
+" vim-easy-align {{{
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap <leader>ga <Plug>(EasyAlign)
+
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap <leader>ga <Plug>(EasyAlign)
+" }}}
+
 " }}}
 
 " CtrlSF {{{
@@ -408,4 +418,49 @@ let g:rails_projections = {
       \     "end"
       \   ]
       \ }}
+" }}}
+
+" Utils {{{
+" Run shell command from range and save the output to a scratch buffer.
+" http://vim.wikia.com/wiki/Display_output_of_shell_commands_in_new_window
+command! -range -complete=shellcmd -nargs=* ShellJSON <line1>,<line2>call s:RunShellCommand(<q-args>, 'json', 0)
+command! -range -complete=shellcmd -nargs=* QShellJSON <line1>,<line2>call s:RunShellCommand(<q-args>, 'json', 1)
+command! -range -complete=shellcmd -nargs=* Shell <line1>,<line2>call s:RunShellCommand(<q-args>, '', 0)
+command! -range -complete=shellcmd -nargs=* QShell <line1>,<line2>call s:RunShellCommand(<q-args>, '', 1)
+function! s:RunShellCommand(str, filetype, quiet) range
+  if empty(a:str)
+    let cmdline = join(map(range(a:firstline, a:lastline), "substitute(getline(v:val), '\\\\$', '', '')"), '')
+  else
+    let cmdline = a:str
+  endif
+
+  let expanded_cmdline = cmdline
+  for part in split(cmdline, ' ')
+     if part[0] =~ '\v[%#<]'
+        let expanded_part = fnameescape(expand(part))
+        let expanded_cmdline = substitute(expanded_cmdline, part, expanded_part, '')
+     endif
+  endfor
+
+  if a:quiet == 1
+    let expanded_cmdline = expanded_cmdline . ' 2>/dev/null'
+  endif
+
+  botright new
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+  execute '$read !'. expanded_cmdline
+  if a:filetype == 'json'
+    setlocal ft=json
+    execute ':Autoformat'
+  endif
+  1
+endfunction
+" }}}
+
+" EditorConfig {{{
+let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
+" }}}
+
+" emmet-vim {{{
+let g:user_emmet_leader_key='<C-Q><C-Y>'
 " }}}

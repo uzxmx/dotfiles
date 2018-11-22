@@ -34,7 +34,7 @@ flavor 'vim-ruby/vim-ruby', branch: 'master'
 flavor 'tpope/vim-bundler', branch: 'master'
 
 # Ruby on Rails power tools
-flavor 'uzxmx/vim-rails', branch: 'master'
+flavor 'UzxMx/vim-rails', branch: 'master'
 
 # it's like rails.vim without the rails
 flavor 'tpope/vim-rake', branch: 'master'
@@ -82,6 +82,9 @@ flavor 'chiel92/vim-autoformat', branch: 'master'
 
 # Align text
 flavor 'godlygeek/tabular'
+
+# A simple, easy-to-use Vim alignment plugin.
+flavor 'junegunn/vim-easy-align'
 
 # A vim plugin to display the indention levels with thin vertical lines
 flavor 'Yggdroot/indentLine', branch: 'master'
@@ -161,10 +164,10 @@ flavor 'mkitt/tabline.vim', branch: 'master'
 flavor 'tpope/vim-repeat', branch: 'master'
 
 # Granular project configuration
-flavor 'tpope/vim-projectionist', branch: 'master'
+flavor 'UzxMx/vim-projectionist', branch: 'master'
 
 # quoting/parenthesizing made simple
-flavor 'tpope/vim-surround', branch: 'master'
+flavor 'UzxMx/vim-surround', branch: 'master'
 
 # Vim motions on speed!
 flavor 'easymotion/vim-easymotion', branch: 'master'
@@ -188,10 +191,18 @@ flavor 'tpope/vim-eunuch'
 flavor 'tpope/vim-sensible'
 
 # Pairs of handy bracket mappings
-flavor 'tpope/vim-unimpaired'
+flavor 'tpope/vim-unimpaired', branch: 'master'
 
 # Readline style insertion
 flavor 'tpope/vim-rsi', branch: 'master'
+
+# Substitution made easy
+flavor 'tpope/vim-abolish', branch: 'master'
+
+# emmet-vim is a vim plug-in which provides support for expanding abbreviations similar to emmet.
+flavor 'mattn/emmet-vim', branch: 'master'
+
+flavor 'editorconfig/editorconfig-vim', branch: 'master'
 
 # == Navigation
 
@@ -206,3 +217,7 @@ flavor 'tpope/vim-scriptease', branch: 'master'
 # Vim plugin: Define your own operator easily
 flavor 'kana/vim-operator-user'
 # flavor 'haya14busa/vim-operator-flashy'
+
+# Hex editing in Vim
+# Also see http://vim.wikia.com/wiki/Hex_dump
+flavor 'fidian/hexmode', branch: 'master'
