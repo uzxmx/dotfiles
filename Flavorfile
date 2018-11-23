@@ -1,5 +1,3 @@
-# TODO Add YouCompleteMe
-
 # == Languages
 
 # Go development plugin for Vim
@@ -16,6 +14,9 @@ flavor 'robbles/logstash.vim', branch: 'master'
 
 # distinct highlighting of keywords vs values, JSON-specific (non-JS) warnings, quote concealing. Pathogen-friendly.
 flavor 'elzr/vim-json', branch: 'master'
+
+# Swift
+flavor 'keith/swift.vim', branch: 'master'
 
 # == Git
 
