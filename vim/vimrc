@@ -21,16 +21,24 @@ set splitright
 set number
 " set relativenumber
 " set textwidth=80
-set clipboard^=unnamed
-set clipboard^=unnamedplus
+" set clipboard^=unnamed
+" set clipboard^=unnamedplus
 set backspace=indent,eol,start
 set list lcs=tab:\|\ 
 
 set confirm
 
 set tags=./.tags;/,./tags;/ " This will look in the current directory for tags, and walk up the tree towards root until one is found
-" vim-autotag related settings
-let g:autotagTagsFile=".tags"
+
+" vim-tags related settings
+" TODO on mac osx, tags file content will be changed, results in tag not
+" found.
+let g:vim_tags_main_file = '.tags'
+" For mac osx, we use ctags of HEAD version to support generating tags for
+" objc project, because stable version don't support it.
+if has('macunix')
+  let g:vim_tags_ctags_binary = 'ctags --languages=objectivec --langmap=objectivec:.h.m'
+endif
 
 " Save when losing focus
 au FocusLost * :wa
@@ -267,7 +275,8 @@ map <Leader>a :call RunAllSpecs()<CR>
 " $VIMRUNTIME/ftpplugin/python.vim
 let g:python_recommended_style = 0
 
-inoremap <C-d> <Del>
+inoremap <C-C> <Esc>
+inoremap <C-D> <Del>
 
 " Open a new tab using the current buffer
 " map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>

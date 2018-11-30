@@ -1,0 +1,9 @@
+-f .tags
+--recurse=yes
+--exclude=.git
+--exclude=.sass-cache
+--exclude=vendor/*
+--exclude=node_modules/*
+--exclude=db/*
+--exclude=log/*
+--exclude=tmp/*

@@ -1,7 +1,9 @@
 # Unix
+alias vi="vim"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias v="$VISUAL"
+alias vim_tiny="vim -u NONE"
 
 # Bundler
 alias b="bundle"
@@ -15,3 +17,10 @@ alias dc="docker-compose"
 
 # Include custom aliases
 [[ -f ~/.aliases.local ]] && source ~/.aliases.local
+
+case $OSTYPE in
+  darwin*)
+    # alias ctags-objc="ctags --languages=objectivec --langmap=objectivec:.h.m"
+    alias ctags="ctags --languages=objectivec --langmap=objectivec:.h.m"
+    ;;
+esac

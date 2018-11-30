@@ -12,5 +12,13 @@
       "type": "playground",
       "timeline": true
     }
+  },
+  "Podfile": {
+    "*.m": {
+      "alternate": "./{}.h"
+    },
+    "*.h": {
+      "alternate": "./{}.m"
+    }
   }
 }
