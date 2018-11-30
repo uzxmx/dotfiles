@@ -31,6 +31,8 @@ set confirm
 set tags=./.tags;/,./tags;/ " This will look in the current directory for tags, and walk up the tree towards root until one is found
 
 " vim-tags related settings
+" TODO on mac osx, tags file content will be changed, results in tag not
+" found.
 let g:vim_tags_main_file = '.tags'
 " For mac osx, we use ctags of HEAD version to support generating tags for
 " objc project, because stable version don't support it.
@@ -273,7 +275,8 @@ map <Leader>a :call RunAllSpecs()<CR>
 " $VIMRUNTIME/ftpplugin/python.vim
 let g:python_recommended_style = 0
 
-inoremap <C-d> <Del>
+inoremap <C-C> <Esc>
+inoremap <C-D> <Del>
 
 " Open a new tab using the current buffer
 " map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
