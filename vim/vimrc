@@ -195,6 +195,13 @@ augroup ft_go
 augroup END
 " }}}
 
+" Objective-C {{{
+augroup ft_objc
+  au!
+
+augroup END
+" }}}
+
 " }}}
 
 " Quick editing --------------------------------------------------------------- {{{
@@ -463,6 +470,16 @@ function! s:RunShellCommand(str, filetype, quiet) range
     execute ':Autoformat'
   endif
   1
+endfunction
+
+" Save previously closed window
+augroup bufclosetrack
+  au!
+  autocmd WinLeave * let g:lastWinName = @%
+augroup END
+command -nargs=0 LastWindow call s:LastWindow()
+function! s:LastWindow()
+  exe "split " . g:lastWinName
 endfunction
 " }}}
 
