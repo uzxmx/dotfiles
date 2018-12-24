@@ -205,6 +205,13 @@ flavor 'mattn/emmet-vim', branch: 'master'
 
 flavor 'editorconfig/editorconfig-vim', branch: 'master'
 
+# Hex editing in Vim
+# Also see http://vim.wikia.com/wiki/Hex_dump
+flavor 'fidian/hexmode', branch: 'master'
+
+# TextMate's "Insert Matching Start Bracket" feature implemented in vim script. Makes it a lot more pleasant to write Objective-C.
+flavor 'UzxMx/Match-Bracket-for-Objective-C', branch: 'master'
+
 # == Navigation
 
 # Plugin to toggle, display and navigate marks
@@ -218,7 +225,3 @@ flavor 'tpope/vim-scriptease', branch: 'master'
 # Vim plugin: Define your own operator easily
 flavor 'kana/vim-operator-user'
 # flavor 'haya14busa/vim-operator-flashy'
-
-# Hex editing in Vim
-# Also see http://vim.wikia.com/wiki/Hex_dump
-flavor 'fidian/hexmode', branch: 'master'

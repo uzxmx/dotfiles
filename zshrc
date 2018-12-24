@@ -181,3 +181,7 @@ fi
 
 # So as not to be disturbed by Ctrl-S ctrl-Q in terminals
 stty -ixon
+
+if [ $commands[kubectl] ]; then
+  source <(kubectl completion zsh)
+fi
