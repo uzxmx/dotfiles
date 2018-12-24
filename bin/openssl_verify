@@ -8,4 +8,7 @@ if [ $# != 1 ]; then
   echo 'e.g. openssl_verify baidu.com'
   exit 1
 fi
-openssl s_client -connect $1:443 < /dev/null
+openssl s_client -connect $1:443 -servername $1 < /dev/null
+
+dir=`dirname "$0"`
+$dir/openssl_expiration "$1"
