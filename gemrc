@@ -1,8 +1,6 @@
 ---
-gem: --no-document
-backtrace: true
-bulk_threshold: 1000
-sources:
-- https://gems.ruby-china.com/
-verbose: true
-ssl_verify_mode: 0
+:update_sources: true
+:sources:
+- https://gems.ruby-china.com
+:ssl_verify_mode: 0
+:gem: "--no-document"
