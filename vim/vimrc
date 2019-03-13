@@ -503,6 +503,13 @@ function! s:OpenInTab(tab, close)
     tabnext
   endif
 endfunction
+
+" Reference http://vimdoc.sourceforge.net/htmldoc/cmdline.html#filename-modifiers
+command! PutFileName put =expand('%:t')
+command! PutRelativePath put =expand('%')
+command! PutRelativeParentPath put =expand('%:h')
+command! PutAbsolutePath put =expand('%:p')
+command! PutAbsoluteParentPath put =expand('%:p:h')
 " }}}
 
 " EditorConfig {{{
@@ -511,4 +518,11 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*', 'scp://.*']
 
 " emmet-vim {{{
 let g:user_emmet_leader_key='<C-Q><C-Y>'
+" }}}
+
+" vim-autoformat {{{
+" Output errors on formatters that failed.
+let g:autoformat_verbosemode=1
+
+let g:formatdef_tidy_xml = '"tidy -q -xml --show-errors 0 --show-warnings 0 --force-output --indent auto --indent-spaces ".shiftwidth()." --vertical-space yes --tidy-mark no -wrap ".&textwidth." -utf8"'
 " }}}
