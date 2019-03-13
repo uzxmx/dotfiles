@@ -33,6 +33,9 @@ $if mode=vi
     # auto-complete from the history
     "\C-p": history-search-backward
     "\C-n": history-search-forward
+
+    "\C-a": beginning-of-line
+    "\C-e": end-of-line
 $endif
 
 # file for clear-screen to work
