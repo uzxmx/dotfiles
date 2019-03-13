@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # The purpose of this script is to keep the intermediate path when copying files.
 # The -r/-R option of `cp` is not supported, so only file is supported.
@@ -18,7 +18,7 @@
 #
 # * Copy files whose paths are specified by using pipe:
 #
-#     git status | grep 'modified' | awk '{ print $2  }' | xargs -J % cp_with_intermediate_dir.sh % /tmp
+#     git status | grep 'modified' | awk '{ print $2  }' | xargs -J % ./cp_with_intermediate_dir.sh % /tmp
 
 dest_dir=${@: -1}
 for file in ${@:1:`expr $# - 1`}; do
