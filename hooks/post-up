@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# This script will be evaluated after `rcup` finishes.
+
+echo 'Checking js-beautify for vim-autoformat json...'
+if type js-beautify >/dev/null; then
+  echo 'Found'
+else
+  echo 'Not found, installing...'
+  npm install -g js-beautify
+  echo 'Done'
+fi
