@@ -59,3 +59,9 @@ iptables-restore <iptables.rules
 ```
 
 This command won't clear iptables before restoring, so be cautious to avoid duplicated rules.
+
+# Enable internet access for traffic from 172.17.0.0/16
+
+```
+iptables -t nat -A POSTROUTING -s 172.17.0.0/16 ! -d 10.0.0.0/8 -m addrtype ! --dst-type LOCAL -j MASQUERADE
+```
