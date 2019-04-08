@@ -212,6 +212,9 @@ flavor 'fidian/hexmode', branch: 'master'
 # TextMate's "Insert Matching Start Bracket" feature implemented in vim script. Makes it a lot more pleasant to write Objective-C.
 flavor 'UzxMx/Match-Bracket-for-Objective-C', branch: 'master'
 
+# Making a column of increasing or decreasing numbers, dates, or daynames.
+flavor 'vim-scripts/VisIncr'
+
 # == Navigation
 
 # Plugin to toggle, display and navigate marks
