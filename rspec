@@ -1,2 +1,4 @@
+--format documentation
+--fail-fast
 --colour
 --order random
