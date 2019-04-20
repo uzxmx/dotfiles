@@ -32,3 +32,12 @@ After:
 1
 2
 ```
+
+## Edit or save a file with some encoding
+
+```
+:e ++enc=gb18030 somefile
+:w ++enc=gb18030 somefile
+```
+
+For more help, use `:help :e` or `:help :w`

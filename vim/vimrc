@@ -13,6 +13,8 @@ set nocompatible
 
 " Basic options --------------------------------------------------------------- {{{
 set encoding=utf-8
+set fileencodings-=latin1
+set fileencodings+=gb18030,latin1
 set autoindent
 set cursorline
 set mouse=a
