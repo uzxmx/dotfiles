@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+
+require 'thor'
+
+class Main < Thor
+  default_task :edit
+
+  desc 'info', 'Show information about required ruby file'
+  def info(path)
+    target = search(path)
+    puts "Path: #{target}"
+  end
+
+  desc 'edit', 'Edit required ruby file'
+  def edit(path)
+    target = search(path)
+    if (extname = File.extname(target)) && !extname.empty? && extname != '.rb'
+      puts "File `#{target}` cannot be edited"
+      exit 0
+    end
+
+    fatal 'EDITOR environment is empty' unless (editor = ENV['EDITOR']) && !editor.empty?
+    # TODO open editor with gem root directory as PWD when it's a gem.
+    system("#{editor} #{target}")
+  end
+
+  map %w[--version -v] => :version
+  desc '--version, -v', 'Print the version'
+  def version
+    puts '0.0.1'
+  end
+
+  private
+
+  def search(path)
+    begin
+      require path
+
+      suffix = remove_extname(path)
+      target = $LOADED_FEATURES.reverse.find { |fullpath| remove_extname(fullpath).end_with?(suffix) }
+      fatal "Cannot find `#{path}` after file required" if target.nil?
+      target
+    rescue LoadError
+      fatal "Cannot find `#{path}`"
+    end
+  end
+
+  def fatal(message)
+    STDERR.puts "Fatal: #{message}"
+    exit 1
+  end
+
+  def remove_extname(path)
+    extname = File.extname(path)
+    if !extname.empty?
+      path.slice(0...-extname.length)
+    else
+      path
+    end
+  end
+end
+
+ARGV.unshift(Main.default_task) unless Main.all_tasks.has_key?(ARGV[0]) || Main.instance_variable_get(:@map).has_key?(ARGV[0])
+Main.start(ARGV)
