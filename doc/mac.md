@@ -16,3 +16,12 @@ qemu-system-x86_64 -kernel ~/shared/bzImage -initrd ~/shared/initramfs.cpio.gz -
 
 xcodebuild -scheme Development -workspace CareVoice.xcworkspace/ -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 8,OS=12.1' -only-testing:CareVoiceTests/KYClaimCellSpec test | xcpretty --test --color
 xcodebuild -scheme Development -workspace CareVoice.xcworkspace/ -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 8,OS=12.1' -only-testing:CareVoiceTests/KYStepManagerSpec test | xcpretty -tc
+
+## Mount NTFS with RW permissions
+
+```
+# Find device through spotlight profile
+sudo ntfs-3g /dev/disk2s3 /mount_point
+```
+
+Refs: https://github.com/osxfuse/osxfuse/wiki/NTFS-3G
