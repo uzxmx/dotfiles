@@ -21,3 +21,11 @@ ps -eT
 ```
 logrotate --force /etc/logrotate.d/some-file
 ```
+
+## Create a new partition and format with ext4
+
+```
+# Suppose a new device is /dev/sdb
+sudo fdisk /dev/sdb
+sudo mkfs.ext4 /dev/sdb1
+```
