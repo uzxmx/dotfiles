@@ -18,6 +18,9 @@ flavor 'elzr/vim-json', branch: 'master'
 # Swift
 flavor 'keith/swift.vim', branch: 'master'
 
+# Vim syntax highlighting for Pug (formerly Jade) templates.
+flavor 'digitaltoad/vim-pug', branch: 'master'
+
 # == Git
 
 # A Git wrapper so awesome, it should be illegal 

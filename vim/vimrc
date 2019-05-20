@@ -130,7 +130,6 @@ augroup ft_javascript
 
     au FileType javascript setlocal foldmethod=marker
     au FileType javascript setlocal foldmarker={,}
-    " au FileType javascript setl foldmethod=indent
 augroup END
 " }}}
 
@@ -158,7 +157,7 @@ augroup END
 augroup ft_ruby
     au!
     " This will slow the vim
-    " au Filetype ruby setlocal foldmethod=syntax
+    au Filetype ruby setlocal foldmethod=syntax
 
     " For ruby file, if not set re to 1, the ruby syntax will be slow
     au FileType ruby setlocal re=1 
