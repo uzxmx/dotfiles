@@ -26,3 +26,9 @@ bar
 baz
 EOF
 ```
+
+## Find and grep
+
+```
+find . -name '*.h' -print0 | xargs -0 grep qemu_find_opts
+```
