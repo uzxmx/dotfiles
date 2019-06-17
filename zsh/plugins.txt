@@ -1,4 +1,6 @@
 # vi:ft=conf
+#
+# Avoid loading too many plugins to make zsh startup fast.
 
 mafredri/zsh-async
 sindresorhus/pure
@@ -6,8 +8,8 @@ djui/alias-tips
 Tarrasch/zsh-bd
 
 zsh-users/zsh-completions
-zsh-users/zsh-syntax-highlighting
-zsh-users/zsh-history-substring-search
+# zsh-users/zsh-syntax-highlighting
+# zsh-users/zsh-history-substring-search
 
 robbyrussell/oh-my-zsh path:lib/history.zsh
 robbyrussell/oh-my-zsh path:lib/key-bindings.zsh

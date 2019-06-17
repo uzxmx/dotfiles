@@ -73,23 +73,28 @@ fi
 [[ -f ~/.aliases ]] && source ~/.aliases
 
 export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+load_sdkman() {
+  [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+}
 
 export PATH="$HOME/.rbenv/bin:$PATH"
 if type rbenv >/dev/null; then
   rbenv() {
     eval "$(command rbenv init -)"
+    [ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
     rbenv "$@"
   }
 fi
 
-[ -s ~/.luaver/luaver ] && . ~/.luaver/luaver
-
-[ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
+load_lua() {
+  [ -s ~/.luaver/luaver ] && . ~/.luaver/luaver
+}
 
 # So as not to be disturbed by Ctrl-S ctrl-Q in terminals
 stty -ixon
 
-if [ $commands[kubectl] ]; then
-  source <(kubectl completion zsh)
-fi
+load_kubectl() {
+  if [ $commands[kubectl] ]; then
+    source <(kubectl completion zsh)
+  fi
+}
