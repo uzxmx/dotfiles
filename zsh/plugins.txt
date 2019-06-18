@@ -1,0 +1,17 @@
+# vi:ft=conf
+
+mafredri/zsh-async
+sindresorhus/pure
+djui/alias-tips
+Tarrasch/zsh-bd
+
+zsh-users/zsh-completions
+zsh-users/zsh-syntax-highlighting
+zsh-users/zsh-history-substring-search
+
+robbyrussell/oh-my-zsh path:lib/history.zsh
+robbyrussell/oh-my-zsh path:lib/key-bindings.zsh
+robbyrussell/oh-my-zsh path:lib/theme-and-appearance.zsh
+
+# caarlos0/zsh-open-github-pr
+# junegunn/fzf

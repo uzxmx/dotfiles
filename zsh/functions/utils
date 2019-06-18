@@ -1,0 +1,10 @@
+# Update Zsh plugins
+uz() {
+  antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
+  antibody update
+}
+
+# Make directory and change into it
+mc() {
+  mkdir -p "$1" && cd "$1"
+}
