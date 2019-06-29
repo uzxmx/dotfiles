@@ -1,9 +1,24 @@
-# CTRL-W will delete to the space
-autoload -U select-word-style
-select-word-style shell
+source ~/.zsh_plugins.sh
 
+PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
+
+bindkey -v
+bindkey "^A" beginning-of-line
+bindkey "^E" end-of-line
+bindkey "^P" up-line-or-search
+bindkey "^N" down-line-or-search
 bindkey '^F' forward-char
 bindkey '^B' backward-char
+bindkey '^R' history-incremental-search-backward
+bindkey '^W' backward-kill-word
+bindkey "^V" edit-command-line
+
+# By default, there is a 0.4 second delay after you hit the <ESC> key and when
+# the mode change is registered. This results in a very jarring and frustrating
+# transition between modes. Let's reduce this delay to 0.1 seconds.
+# This can result in issues with other terminal commands that depended on this
+# delay. If you have issues try raising the delay.
+export KEYTIMEOUT=1
 
 # load custom executable functions
 for function in ~/.zsh/functions/*; do
@@ -15,8 +30,6 @@ export PATH=$HOME/.local/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH
 
 # Disable pry in rails console by default.
 export DISABLE_PRY_RAILS=1
-
-source ~/.zsh_plugins.sh
 
 _load_settings() {
   _dir="$1"
