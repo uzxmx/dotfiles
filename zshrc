@@ -1,3 +1,5 @@
+# Zsh 5.3.1 is required.
+
 source ~/.zsh_plugins.sh
 
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
@@ -110,4 +112,11 @@ load_kubectl() {
   if [ $commands[kubectl] ]; then
     source <(kubectl completion zsh)
   fi
+}
+
+nvm() {
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+  nvm $@
 }
