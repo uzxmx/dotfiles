@@ -1,4 +1,10 @@
-# Unix
+# Utils
+alias l="ls"
+alias la="ls -a"
+alias ll="ls -lh"
+
+alias html2pug="html2pug -d"
+
 alias vi="vim"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
@@ -14,9 +20,6 @@ alias s="bundle exec rspec"
 
 # Docker
 alias dc="docker-compose"
-
-# Utils
-alias html2pug="html2pug -d"
 
 # Include custom aliases
 [[ -f ~/.aliases.local ]] && source ~/.aliases.local

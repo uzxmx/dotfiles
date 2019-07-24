@@ -10,32 +10,38 @@ class Main < Thor
   end
 
   desc 'rm', 'Remove containers'
-  option :exit_before, required: true, desc: 'Filter container exited before a given time'
+  option :exit_before, desc: 'Filter container exited before a given time'
+  option :created, type: :boolean, desc: 'Filter container created'
   def rm
-    if /^(\d+)(.+)$/ =~ options[:exit_before]
-      method =
-        case $2.strip.downcase
-        when 'd', 'day', 'days'
-          'days'
-        when 'w', 'week', 'weeks'
-          'weeks'
-        when 'm', 'month', 'months'
-          'months'
-        when 'y', 'year', 'years'
-          'years'
-        else
-          fatal "Cannot parse #{options[:exit_before]}"
+    if options[:created]
+      output = `docker ps --filter="status=created" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}"`
+      lines = output.lines
+    elsif options[:exit_before]
+      if /^(\d+)(.+)$/ =~ options[:exit_before]
+        method =
+          case $2.strip.downcase
+          when 'd', 'day', 'days'
+            'days'
+          when 'w', 'week', 'weeks'
+            'weeks'
+          when 'm', 'month', 'months'
+            'months'
+          when 'y', 'year', 'years'
+            'years'
+          else
+            fatal "Cannot parse #{options[:exit_before]}"
+          end
+        now = Time.now
+        exit_before = now - $1.to_i.send(method)
+        output = `docker ps --filter="status=exited" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}"`
+        lines = output.each_line.select.with_index do |line, i|
+          i.zero? || ((/Exited \(\d+\) (\d+) (days?|weeks?|months?|years?) ago$/ =~ line) && exit_before >= (now - $1.to_i.send($2)))
         end
-      now = Time.now
-      exit_before = now - $1.to_i.send(method)
-    else
-      fatal 'You must specify a correct format for exit-before'
+      else
+        fatal 'You must specify a correct format for exit-before'
+      end
     end
 
-    output = `docker ps --filter="status=exited" --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}"`
-    lines = output.each_line.select.with_index do |line, i|
-      i.zero? || ((/Exited \(\d+\) (\d+) (days?|weeks?|months?|years?) ago$/ =~ line) && exit_before >= (now - $1.to_i.send($2)))
-    end
     if lines.count <= 1
       puts 'No containers found'
     else
@@ -62,7 +68,7 @@ class Main < Thor
       puts 'No images found'
     else
       puts lines
-      confirm_to_remove('Are you sure you want to remove above images?(Y/N)', lines, 'docker rmi')
+      confirm_to_remove('Are you sure you want to remove above images?(Y/N)', lines, 'docker rmi -f')
     end
   end
 

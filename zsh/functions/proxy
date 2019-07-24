@@ -1,0 +1,62 @@
+# vi: ft=sh
+
+# HTTP proxy
+dump_http_proxy() {
+  echo "http_proxy: $http_proxy"
+  echo "HTTP_PROXY: $HTTP_PROXY"
+  echo "https_proxy: $https_proxy"
+  echo "HTTPS_PROXY: $HTTPS_PROXY"
+}
+
+enable_http_proxy() {
+  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  host=${1:-$host}
+  local list=($(echo $host | tr ":" "\n"))
+  host=${list[1]}
+  port=${list[2]:-8123}
+  export http_proxy=http://$host:$port
+  export HTTP_PROXY=http://$host:$port
+  export https_proxy=http://$host:$port
+  export HTTPS_PROXY=http://$host:$port
+  dump_http_proxy
+}
+
+disable_http_proxy() {
+  unset http_proxy
+  unset HTTP_PROXY
+  unset https_proxy
+  unset HTTPS_PROXY
+  dump_http_proxy
+}
+
+# Docker HTTP proxy
+# See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
+dump_docker_proxy() {
+  systemctl show --property=Environment docker
+}
+
+enable_docker_proxy() {
+  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  host=${1:-$host}
+  local list=($(echo $host | tr ":" "\n"))
+  host=${list[1]}
+  port=${list[2]:-8123}
+
+  sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<-EOF
+[Service]
+Environment="HTTP_PROXY=http://$host:$port/"
+EOF
+  sudo tee /etc/systemd/system/docker.service.d/https-proxy.conf >/dev/null <<-EOF
+[Service]
+Environment="HTTPS_PROXY=http://$host:$port/"
+EOF
+
+  sudo systemctl daemon-reload
+  sudo systemctl restart docker
+}
+
+disable_docker_proxy() {
+  sudo rm /etc/systemd/system/docker.service.d/{http,https}-proxy.conf
+  sudo systemctl daemon-reload
+  sudo systemctl restart docker
+}

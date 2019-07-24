@@ -1,3 +1,5 @@
+# vi: ft=sh
+
 # Update Zsh plugins
 uz() {
   antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
@@ -7,4 +9,20 @@ uz() {
 # Make directory and change into it
 mc() {
   mkdir -p "$1" && cd "$1"
+}
+
+ci() {
+  compinit -C
+}
+
+todo() {
+  vi ~/.dotfiles/todo.md
+}
+
+enable_pry_rails() {
+  unset DISABLE_PRY_RAILS
+}
+
+disable_pry_rails() {
+  export DISABLE_PRY_RAILS=1
 }

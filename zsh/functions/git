@@ -7,3 +7,52 @@ g() {
     git status
   fi
 }
+
+_fbranch() {
+  local branches branch
+  branches=$(git branch --all | grep -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##"
+}
+
+# fbr - checkout git branch (including remote branches)
+fbr() {
+  git checkout $(_fbranch)
+}
+
+# fmerge - merge git branch
+fmerge() {
+  git merge $(_fbranch)
+}
+
+# fstash - easier way to deal with stashes
+# type fstash to get a list of your stashes
+# enter shows you the contents of the stash
+# ctrl-d shows a diff of the stash against your current HEAD
+# ctrl-b checks the stash out as a branch, for easier merging
+fstash() {
+  local out q k sha
+  while out=$(
+    git stash list --pretty="%C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs" |
+    fzf --ansi --no-sort --query="$q" --print-query \
+        --expect=ctrl-d,ctrl-b);
+  do
+    IFS=$'\n'; set -f
+    lines=($(<<< "$out"))
+    unset IFS; set +f
+    q="${lines[0]}"
+    k="${lines[1]}"
+    sha="${lines[-1]}"
+    sha="${sha%% *}"
+    [[ -z "$sha" ]] && continue
+    if [[ "$k" == 'ctrl-d' ]]; then
+      git diff $sha
+    # elif [[ "$k" == 'ctrl-b' ]]; then
+    #   git stash branch "stash-$sha" $sha
+    #   break;
+    else
+      git -c color.ui=always -c core.pager='less -+F' stash show -p $sha
+    fi
+  done
+}
