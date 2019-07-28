@@ -1,14 +1,23 @@
-" .vimrc
+" vim: foldmethod=marker foldlevel=0
+"
 " Author: Mingxiang Xue <327110424@163.com>
-" Source: https://github.com/UzxMx/dotfiles
+" Source: https://github.com/uzxmx/dotfiles
 
-" Preamble -------------------------------------------------------------------- {{{
+" Preamble {{{
 if has('python3') " This will force python3 to be used
   silent echomsg 'Use python3'
 endif
 
-filetype plugin indent on
 set nocompatible
+" }}}
+
+" Leader {{{
+let mapleader = ","
+let maplocalleader = "\\"
+" }}}
+
+" Plugin manager {{{
+execute 'source ' . expand('<sfile>:h') . '/plugins.vim'
 " }}}
 
 " Basic options --------------------------------------------------------------- {{{
@@ -21,7 +30,6 @@ set mouse=a
 set splitbelow
 set splitright
 set number
-" set relativenumber
 " set textwidth=80
 " set clipboard^=unnamed
 " set clipboard^=unnamedplus
@@ -65,19 +73,12 @@ set wildmode=longest,list
 " set backup                        " enable backups
 " }}}
 
-" Leader {{{
-let mapleader = ","
-let maplocalleader = "\\"
-" }}}
-
 " Color scheme {{{
-" syntax on
 " let g:airline_theme = 'tender'
 " colorscheme tender
 " hi Visual guifg=NONE ctermfg=NONE guibg=#666666 ctermbg=245 gui=NONE cterm=NONE
 " hi VisualNOS guifg=NONE ctermfg=NONE guibg=#666666 ctermbg=245 gui=NONE cterm=NONE
 
-syntax enable
 set background=dark
 colorscheme solarized
 " }}}
@@ -157,7 +158,7 @@ augroup END
 augroup ft_ruby
     au!
     " This will slow the vim
-    au Filetype ruby setlocal foldmethod=syntax
+    " au Filetype ruby setlocal foldmethod=syntax
 
     " For ruby file, if not set re to 1, the ruby syntax will be slow
     au FileType ruby setlocal re=1 
@@ -271,10 +272,10 @@ command! TmuxResetVars execute "normal \<Plug>SetTmuxVars"
 
 " vim-rspec {{{
 let g:rspec_command = 'call Send_to_Tmux("bundle exec rspec {spec}\n")'
-map <Leader>t :call RunCurrentSpecFile()<CR>
-map <Leader>s :call RunNearestSpec()<CR>
-map <Leader>l :call RunLastSpec()<CR>
-map <Leader>a :call RunAllSpecs()<CR>
+autocmd FileType ruby nnoremap <Leader>t :call RunCurrentSpecFile()<CR>
+autocmd FileType ruby nnoremap <Leader>s :call RunNearestSpec()<CR>
+autocmd FileType ruby nnoremap <Leader>l :call RunLastSpec()<CR>
+autocmd FileType ruby nnoremap <Leader>a :call RunAllSpecs()<CR>
 " }}}
 
 " Misc {{{
@@ -307,9 +308,15 @@ nnoremap <leader>\| viw<esc>a\|<esc>bi\|<esc>lel
 nnoremap <leader>` viw<esc>a`<esc>bi`<esc>lel
 " }}}
 
-" Quickfix window {{{
-nnoremap <leader>co :copen<cr>
-nnoremap <leader>cc :cclose<cr>
+" Quickfix/Location window {{{
+" nnoremap <leader>co :copen<cr>
+" nnoremap <leader>cc :cclose<cr>
+nnoremap <leader>c :cclose<bar>lclose<cr>
+
+" nnoremap ]q :cnext<cr>zz
+" nnoremap [q :cprev<cr>zz
+" nnoremap ]l :lnext<cr>zz
+" nnoremap [l :lprev<cr>zz
 " }}}
 
 " Avoid mistakes {{{
@@ -341,17 +348,18 @@ let g:closetag_filenames = "*.html,*.xml,*.xhtml,*.vue,*.erb,*.jsx"
 " Workaround {{{
 " Workaround for caw.vim. If we don't call the below function, caw.vim can not
 " detect the context_filetype.vim
+" TODO fixme
 au BufNewFile,BufRead * call context_filetype#get_filetype()
 " }}}
 
 " ctrlp.vim {{{
 " Exclude ~/.rbenv subdirectories, for .rbenv contains .git directory
-if getcwd() !~ '^'.$HOME.'/.rbenv/'
-  " Ignore files in .gitignore
-  let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
-else
-  let g:ctrlp_working_path_mode = ''
-endif
+" if getcwd() !~ '^'.$HOME.'/.rbenv/'
+"   " Ignore files in .gitignore
+"   let g:ctrlp_user_command = ['.git', 'cd %s && git ls-files -co --exclude-standard']
+" else
+"   let g:ctrlp_working_path_mode = ''
+" endif
 " }}}
 
 " Format {{{
@@ -541,4 +549,17 @@ let g:user_emmet_leader_key='<C-Q><C-Y>'
 let g:autoformat_verbosemode=1
 
 let g:formatdef_tidy_xml = '"tidy -q -xml --show-errors 0 --show-warnings 0 --force-output --indent auto --indent-spaces ".shiftwidth()." --vertical-space yes --tidy-mark no -wrap ".&textwidth." -utf8"'
+" }}}
+
+" go {{{
+" Run go in another tmux panel.
+function! GoRun()
+  execute 'call Send_to_Tmux("go run ' . expand("%:p") . '\n")'
+endfunction
+autocmd FileType go nnoremap <Leader>r :call GoRun()<CR>
+autocmd FileType go nnoremap <Leader>g :GoInfo<CR>
+" }}}
+
+" fzf.vim {{{
+nnoremap <C-p> :execute system('git rev-parse --is-inside-work-tree') =~ 'true' ? 'GFiles' : 'Files'<Cr>
 " }}}
