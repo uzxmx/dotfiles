@@ -38,6 +38,12 @@ sudo mkfs.ext4 /dev/sdb1
 cat file | cpio -idmv
 ```
 
+## Make cpio
+
+```
+find . | cpio -o -Hnewc | gzip -9 > ../image.cpio.gz
+```
+
 ## Loop devices
 
 ```
