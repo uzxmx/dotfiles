@@ -1,5 +1,7 @@
 # Systemd
 
+## systemctl
+
 ```
 # List all services
 systemctl -t service -a
@@ -23,4 +25,17 @@ systemctl disable <service>
 systemctl start <service>
 systemctl stop <service>
 systemctl restart <service>
+```
+
+## journalctl
+
+```
+# Show logs for a systemd service
+journalctl -u ssh
+
+# Show kernel message
+journalctl -k
+
+# Monitor new log messages
+journalctl -f
 ```

@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+def find_startuptime_file
+  idx = ARGV.index('--startuptime')
+  if (file = ARGV[idx + 1]).nil? || file.empty?
+    raise '--startuptime must have a parameter value'
+  end
+  File.expand_path(file)
+end
+
+startuptime_file = find_startuptime_file
+
+pid = spawn("vim #{ARGV.join(' ')}")
+
+loop do
+  if File.file?(startuptime_file) && /VIM STARTED/ =~ File.readlines(startuptime_file).last
+    # reset must be called to reset terminal settings so the terminal can display normally
+    system("kill -9 #{pid} && reset")
+    Process.wait
+    exit 0
+  end
+  sleep 1
+end

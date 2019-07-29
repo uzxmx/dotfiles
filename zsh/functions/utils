@@ -16,7 +16,7 @@ ci() {
 }
 
 todo() {
-  vi ~/.dotfiles/todo.md
+  vi ~/.dotfiles/doc/todo.md
 }
 
 enable_pry_rails() {
