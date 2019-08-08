@@ -34,7 +34,7 @@ set number
 " set clipboard^=unnamed
 " set clipboard^=unnamedplus
 set backspace=indent,eol,start
-set list lcs=tab:\|\ 
+" set list lcs=tab:\|\ 
 
 set confirm
 

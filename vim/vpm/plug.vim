@@ -245,8 +245,7 @@ Plug 'vim-scripts/VisIncr', { 'on': ['I'] }
 " == Navigation
 
 " Plugin to toggle, display and navigate marks
-" TODO Can be removed
-" Plug 'kshenoy/vim-signature', { 'on': [] }
+Plug 'kshenoy/vim-signature'
 
 " == Plugin development
 
