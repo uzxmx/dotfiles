@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Setup ctrlsf.vim plugin.
+# Setup ctags.
 
 set -e
 
