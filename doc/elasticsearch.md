@@ -10,3 +10,63 @@ http://docs.groovy-lang.org/latest/html/groovy-jdk/
 # Get license information
 curl http://$ES_URL/_xpack
 ```
+
+## How to resolve unassigned shards?
+
+### Solution 1
+
+For an index, if the number of replicas plus 1 is greater than the number of data nodes, then we can reduce the number of replicas to solve.
+
+```
+curl http://$ES_URL/_cat/indices
+
+# Get the number of replicas
+curl http://$ES_URL/index_name/_settings?pretty
+
+# Set number_of_replicas 0
+curl http://$ES_URL/index_name/_settings?pretty -XPUT -H 'Content-Type: application/json' -d'
+{
+  "index": {
+    "number_of_replicas": 0
+  }
+}
+'
+
+# Set number_of_replicas 0 for all indices
+curl http://$ES_URL/*/_settings?pretty -XPUT -H 'Content-Type: application/json' -d'
+{
+  "index": {
+    "number_of_replicas": 0
+  }
+}
+'
+```
+
+### Solution 2
+
+Assign unassigned shard to a node
+
+```
+curl http://$ES_URL/_cluster/reroute?pretty -XPOST -H 'Content-Type: application/json' -d'
+{
+  "commands" : [
+    {
+      "allocate_stale_primary" : {
+        "index": "index_name",
+        "shard": 0,
+        "node": "atlas-elasticsearch-data-0",
+        "accept_data_loss": true
+      }
+    }
+  ]
+}
+'
+```
+
+### Solution 3
+
+If the index is unimportant, then we can delete it so all shards will be deleted.
+
+```
+curl -XDELETE http://$ES_URL/index_name
+```
