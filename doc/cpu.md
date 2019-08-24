@@ -11,3 +11,9 @@ memory barriers are unnecessary in that piece of code.
 
 https://nieyong.github.io/wiki_cpu/CPU%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84-MMU.html
 https://en.wikipedia.org/wiki/Memory_management_unit
+
+## How to get endianness on linux system?
+
+```
+lscpu | grep Endian
+```

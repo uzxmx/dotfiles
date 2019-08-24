@@ -66,3 +66,20 @@ sudo mount -o loop,ro path-to-image-file mount-point
 # Mount as readwrite filesystem
 sudo mount -o loop,rw path-to-image-file mount-point
 ```
+
+## On ubuntu `date` is not correct
+
+```
+# Make sure that ntp service is running
+systemctl status ntp
+
+# Or do one time update
+sudo ntpdate ntp.ubuntu.com
+```
+
+## SFTP login with username and password
+
+```
+# This command will ask for password.
+sftp -P port -o HostKeyAlgorithms=+ssh-dss user@host
+```
