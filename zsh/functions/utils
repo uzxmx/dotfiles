@@ -26,3 +26,18 @@ enable_pry_rails() {
 disable_pry_rails() {
   export DISABLE_PRY_RAILS=1
 }
+
+# Open the selected file with the default editor
+# Bypass fuzzy finder if there's only one match (--select-1)
+# Exit if there's no match (--exit-0)
+fe() {
+  local files
+  IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
+  [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+}
+
+# Change to selected directory
+fcd() {
+  local dir
+  dir=$(fd ${1:-.} --type d 2> /dev/null | fzf +m) && cd "$dir"
+}

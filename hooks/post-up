@@ -22,3 +22,15 @@ else
     exit 1
   fi
 fi
+
+echo -n 'Checking fd...'
+if type fd &>/dev/null; then
+  echo 'Found'
+else
+  echo 'Not found, installing...'
+  if `$(dirname $0)/../scripts/install_fd.sh &>/dev/null`; then
+    echo 'Done'
+  else
+    exit 1
+  fi
+fi

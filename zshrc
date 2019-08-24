@@ -170,7 +170,7 @@ fi
 
 export SDKMAN_DIR="$HOME/.sdkman"
 if [ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
-  LOAD_SDKMAN_ALIASES=(sdkman)
+  LOAD_SDKMAN_ALIASES=(sdk java javac)
   load_sdkman_fn() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
   }
