@@ -2,6 +2,8 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+erb $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
+
 echo -n 'Checking js-beautify for vim-autoformat json...'
 if type js-beautify &>/dev/null; then
   echo 'Found'

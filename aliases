@@ -2,10 +2,12 @@
 alias l="ls"
 alias la="ls -a"
 alias ll="ls -lh"
+alias f="fe"
+alias c="fcd"
 
 alias html2pug="html2pug -d"
 
-alias vi="vim"
+alias vi="nvim"
 alias mkdir="mkdir -p"
 alias e="$EDITOR"
 alias v="$VISUAL"

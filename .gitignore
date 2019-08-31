@@ -11,3 +11,4 @@ tags
 tmp/**/*
 !tmp/cache/.keep
 *.pyc
+config/nvim/coc-settings.json

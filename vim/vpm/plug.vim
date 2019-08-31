@@ -9,6 +9,8 @@ call plug#begin('~/.vim/plugged')
 
 " == Languages
 
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+
 " Go development plugin for Vim
 Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries', 'for': 'go' }
 
@@ -203,7 +205,7 @@ Plug 'jgdavey/tslime.vim'
 Plug 'christoomey/vim-tmux-navigator'
 
 " Pipe a visual selection to Mac OS X's pbcopy utility
-Plug 'ahw/vim-pbcopy'
+Plug 'uzxmx/vim-pbcopy', { 'branch': 'feature/nvim-support' }
 
 " tmux basics
 Plug 'tpope/vim-tbone'
