@@ -49,9 +49,6 @@ let g:vim_tags_main_file = '.tags'
 if has('macunix')
   let g:vim_tags_ctags_binary = 'ctags --languages=objectivec --langmap=objectivec:.h.m'
 endif
-
-" Save when losing focus
-au FocusLost * :wa
 " }}}
 
 " Tabs, spaces, wrapping {{{
