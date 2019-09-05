@@ -142,7 +142,7 @@ EOF
 
 export PATH="$HOME/.rbenv/bin:$PATH"
 if [ $commands[rbenv] ]; then
-  LOAD_RBENV_ALIASES=(rbenv ruby gem rails rake cap rspec bundle)
+  LOAD_RBENV_ALIASES=(rbenv ruby gem irb rails rake cap rspec bundle)
   load_rbenv_fn() {
     eval "$(command rbenv init -)"
     [ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
