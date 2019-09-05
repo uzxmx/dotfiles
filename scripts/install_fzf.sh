@@ -11,6 +11,7 @@ case $OSTYPE in
       exit 1
     fi
     brew install fzf
+    /usr/local/opt/fzf/install --key-bindings --completion --no-bash --no-update-rc
     ;;
   linux-gnu)
     if ! type apt-get >/dev/null; then
