@@ -6,6 +6,14 @@ require 'thor'
 #   https://mirrors.tuna.tsinghua.edu.cn/help/homebrew/
 #   https://mirrors.tuna.tsinghua.edu.cn/help/homebrew-bottles/
 class Main < Thor
+  desc 'mirror_info', 'Show mirror info'
+  def mirror_info
+    puts "Repo: #{%x[git -C "$(brew --repo)" config --get remote.origin.url]}"
+    puts "Core repo: #{%x[git -C "$(brew --repo homebrew/core)" config --get remote.origin.url]}"
+    puts "Cask repo: #{%x[git -C "$(brew --repo homebrew/cask)" config --get remote.origin.url]}"
+    puts "HOMEBREW_BOTTLE_DOMAIN=#{%x[echo $HOMEBREW_BOTTLE_DOMAIN]}"
+  end
+
   desc 'use_mirror', 'Use mirror'
   option :formular, type: :boolean, default: true, desc: 'Use mirror for formular'
   option :bottle, type: :boolean, default: false, desc: 'Use mirror for bottle'
@@ -17,9 +25,11 @@ class Main < Thor
       if options[:reset]
         remote_url = 'https://github.com/Homebrew/brew.git'
         core_remote_url = 'https://github.com/Homebrew/homebrew-core.git'
+        cask_remote_url = 'https://github.com/Homebrew/homebrew-cask.git'
       else
         remote_url = 'https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git'
         core_remote_url = 'https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git'
+        cask_remote_url = 'https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-cask.git'
       end
 
       system <<-EOF
@@ -28,11 +38,9 @@ class Main < Thor
           if [ -z $repo ]; then
             exit 1
           fi
-          cd $repo
-          git remote set-url origin #{remote_url}
-
-          cd "$repo/Library/Taps/homebrew/homebrew-core"
-          git remote set-url origin #{core_remote_url}
+          git -C "$(brew --repo)" remote set-url origin #{remote_url}
+          git -C "$(brew --repo homebrew/core)" remote set-url origin #{core_remote_url}
+          git -C "$(brew --repo homebrew/cask)" remote set-url origin #{cask_remote_url}
         '
       EOF
     end

@@ -1,0 +1,13 @@
+GEM
+  remote: https://gems.ruby-china.com/
+  specs:
+    thor (0.20.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  thor (~> 0.20.3)
+
+BUNDLED WITH
+   1.17.2
