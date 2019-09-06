@@ -23,6 +23,12 @@ autoload -Uz compinit
 #   compinit -C
 # fi
 
+# Bash-like help support. To find help files, we may also need to set HELPDIR environment variable with
+# something like /path/to/zsh_help_directory.
+unalias run-help 2>/dev/null
+autoload run-help
+alias help=run-help
+
 source ~/.zsh_plugins.sh
 
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
@@ -171,7 +177,9 @@ fi
 
 export SDKMAN_DIR="$HOME/.sdkman"
 if [ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
-  LOAD_SDKMAN_ALIASES=(sdk java javac)
+  # Although javah is removed from java 10, some libraries may still depend on it. If we use a java version below 10
+  # from sdkman, we want to trigger loading sdkman when executing javah.
+  LOAD_SDKMAN_ALIASES=(sdk java javac javah)
   load_sdkman_fn() {
     source "$HOME/.sdkman/bin/sdkman-init.sh"
   }
