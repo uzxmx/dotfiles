@@ -101,6 +101,7 @@ if [ -e /usr/share/autojump/autojump.sh ]; then
   source /usr/share/autojump/autojump.sh
 fi
 
+[[ -f ~/.zshrc.platform ]] && source ~/.zshrc.platform
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 # aliases

@@ -1,0 +1,2 @@
+# Disable auto update when running `brew install`
+export HOMEBREW_NO_AUTO_UPDATE=1

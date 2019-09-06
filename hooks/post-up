@@ -2,6 +2,16 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+case $OSTYPE in
+  darwin*)
+    platform=osx
+    ;;
+esac
+
+if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
+  ln -s ~/.zshrc.$platform ~/.zshrc.platform
+fi
+
 erb $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
 echo -n 'Checking js-beautify for vim-autoformat json...'
