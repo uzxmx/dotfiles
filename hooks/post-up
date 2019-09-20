@@ -2,6 +2,15 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+warn() {
+  echo $@
+}
+
+abort() {
+  echo $@ >>/dev/stderr
+  exit 1
+}
+
 case $OSTYPE in
   darwin*)
     platform=osx
@@ -9,7 +18,13 @@ case $OSTYPE in
 esac
 
 if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
-  ln -s ~/.zshrc.$platform ~/.zshrc.platform
+  if [ -f ~/.zshrc.platform ]; then
+    if [ $? != 0 -o "$(readlink ~/.zshrc.platform)" != "$(ls -d ~)/.zshrc.$platform" ]; then
+      warn "Failed to link ~/.zshrc.platform to ~/.zshrc.$platform, please check ~/.zshrc.platform"
+    fi
+  else
+    ln -s ~/.zshrc.$platform ~/.zshrc.platform
+  fi
 fi
 
 erb $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
@@ -28,7 +43,7 @@ if type fzf &>/dev/null; then
   echo 'Found'
 else
   echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_fzf.sh &>/dev/null`; then
+  if `$(dirname $0)/../scripts/install_fzf.sh >/dev/null`; then
     echo 'Done'
   else
     exit 1
@@ -40,7 +55,7 @@ if type fd &>/dev/null; then
   echo 'Found'
 else
   echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_fd.sh &>/dev/null`; then
+  if `$(dirname $0)/../scripts/install_fd.sh >/dev/null`; then
     echo 'Done'
   else
     exit 1
