@@ -35,7 +35,7 @@ if type antibody &>/dev/null; then
   echo 'Found'
 else
   echo 'Not found, installing...'
-  curl -sfL git.io/antibody | sh -s - -b /usr/local/bin
+  curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
   antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
 fi
 
