@@ -21,8 +21,13 @@ case $OSTYPE in
     if type apt-get &>/dev/null; then
       sudo apt-get install fzf
     else
-      git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-      sudo ~/.fzf/install
+      if $(test -d ~/.fzf && cd ~/.fzf && git status &>/dev/null); then
+        git pull
+      else
+        rm -rf ~/.fzf
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+      fi
+      sudo ~/.fzf/install --key-bindings --completion --no-bash --no-update-rc
     fi
     ;;
 esac
