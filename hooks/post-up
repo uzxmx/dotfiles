@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 #
 # This script will be evaluated after `rcup` finishes.
 
@@ -26,7 +26,6 @@ if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
     ln -s ~/.zshrc.$platform ~/.zshrc.platform
   fi
 fi
-
 
 erb $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 

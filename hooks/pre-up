@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+#
+# This script will be evaluated before `rcup` starts.
+
+info() {
+  echo $@
+}
+
+if [ -f ~/.gitconfig -a "$(readlink ~/.gitconfig)" != "$(ls -d ~)/.dotfiles/gitconfig" ]; then
+  info '~/.gitconfig exists, append its content to ~/.dotfiles/gitconfig'
+  cat ~/.gitconfig >>~/.dotfiles/gitconfig
+fi
