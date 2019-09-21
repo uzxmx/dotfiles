@@ -2,6 +2,7 @@
 if empty(glob('~/.vim/autoload/plug.vim'))
   silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  " TODO prompt for confirmation to execute PlugInstall
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 

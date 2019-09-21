@@ -77,7 +77,9 @@ set wildmode=longest,list
 " hi VisualNOS guifg=NONE ctermfg=NONE guibg=#666666 ctermbg=245 gui=NONE cterm=NONE
 
 set background=dark
-colorscheme solarized
+" solarized scheme is loaded by vim-plug, but the post hook for loadig plugin
+" doesn't work, so here we just ignore the error.
+silent! colorscheme solarized
 " }}}
 
 " Status line ----------------------------------------------------------------- {{{
