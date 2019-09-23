@@ -27,6 +27,9 @@ if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
   fi
 fi
 
+if type load_rbenv &>/dev/null; then
+  load_rbenv
+fi
 erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
 erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
