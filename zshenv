@@ -47,14 +47,16 @@ if [ $commands[kubectl] ]; then
   define_lazy_loader kubectl load_kubectl_fn LOAD_KUBECTL_ALIASES
 fi
 
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  LOAD_NVM_ALIASES=(nvm npm)
-  load_nvm_fn() {
-    \. "$NVM_DIR/nvm.sh"
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-  }
-  define_lazy_loader nvm load_nvm_fn LOAD_NVM_ALIASES
+if [ -d "$HOME/.nvm" ]; then
+  export NVM_DIR="$HOME/.nvm"
+  if [ -s "$NVM_DIR/nvm.sh" ]; then
+    LOAD_NVM_ALIASES=(nvm npm)
+    load_nvm_fn() {
+      \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    }
+    define_lazy_loader nvm load_nvm_fn LOAD_NVM_ALIASES
+  fi
 fi
 
 export SDKMAN_DIR="$HOME/.sdkman"

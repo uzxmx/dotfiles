@@ -27,7 +27,8 @@ if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
   fi
 fi
 
-erb $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
+erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
+erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
 echo -n 'Checking antibody...'
 if type antibody &>/dev/null; then

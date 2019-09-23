@@ -585,3 +585,8 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 " }}}
+
+" Check and source other vimrc files {{{
+silent! execute 'source ' . expand('<sfile>:h') . '/vimrc.generated'
+silent! execute 'source ' . expand('<sfile>:h') . '/vimrc.local'
+" }}}

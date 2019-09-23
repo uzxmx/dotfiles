@@ -1,0 +1,4 @@
+<% result = %x[zsh -c "if type nvm &>/dev/null; then; nvm current; fi"]&.lines&.last&.chomp -%>
+<% if result && !result.empty? && result != 'system' -%>
+let g:coc_node_path = '<%= File.join(File.expand_path('~'), ".nvm/versions/node/#{result}/bin/node") %>'
+<% end -%>
