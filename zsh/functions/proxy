@@ -60,3 +60,40 @@ disable_docker_proxy() {
   sudo systemctl daemon-reload
   sudo systemctl restart docker
 }
+
+# Git proxy
+dump_git_proxy() {
+  echo "Git http/https proxy:"
+  echo "http.proxy=$(git config --get http.proxy)"
+  echo "https.proxy=$(git config --get https.proxy)"
+
+  echo
+  echo "Git ssh proxy:"
+  dump_http_proxy
+}
+
+enable_git_proxy() {
+  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  host=${1:-$host}
+  local list=($(echo $host | tr ":" "\n"))
+  host=${list[1]}
+  port=${list[2]:-8123}
+
+  git config --global http.proxy http://$host:$port
+  git config --global https.proxy https://$host:$port
+
+  # When http/https proxy environment variable exists, ssh-proxy will automatically use that
+  # proxy. See ~/.ssh/config for more info.
+  enable_http_proxy >/dev/null
+
+  dump_git_proxy
+}
+
+disable_git_proxy() {
+  git config --unset --global http.proxy
+  git config --unset --global https.proxy
+
+  disable_http_proxy >/dev/null
+
+  dump_git_proxy
+}

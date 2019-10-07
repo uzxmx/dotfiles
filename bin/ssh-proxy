@@ -1,0 +1,39 @@
+#!/usr/bin/env zsh
+
+abort() {
+  echo $@ >/dev/stderr
+  exit 1
+}
+
+proxy=${http_proxy-${HTTP_PROXY-${https_proxy-$HTTPS_PROXY}}}
+if echo $proxy | grep 'https://'; then
+  defaultproxyport=443
+elif echo $proxy | grep 'http://'; then
+  defaultproxyport=80
+fi
+proxy=$(echo $proxy | sed -E "s/^https?:\/\///")
+proxy=$(echo $proxy | sed -E "s/\/.*$//")
+proxyport=$(echo $proxy | sed -E "s/^.*://")
+if [ -z "$proxyport" ]; then
+  proxyport=$defaultproxyport
+fi
+proxy=$(echo $proxy | sed -E "s/:.*$//")
+
+if [ -n "$proxy" ]; then
+  if ! type -p socat &>/dev/null; then
+    abort '`socat` not found.'
+  fi
+  if [ -z "$proxyport" ]; then
+    abort 'Unknown proxy port.'
+  fi
+  exec socat STDIO PROXY:$proxy:$1:$2,proxyport=$proxyport
+else
+  netcat=nc
+  if ! type -p $netcat &>/dev/null; then
+    netcat=netcat
+    if ! type -p $netcat &>/dev/null; then
+      abort '`netcat` not found.'
+    fi
+  fi
+  exec $netcat $1 $2
+fi
