@@ -4,7 +4,7 @@
 #   openssl_expiration_by_file cert.pem
 
 if [ $# != 1 ]; then
-  echo 'Usage: openssl_expiration_by_file <public_key.pem>'
+  echo 'Usage: openssl_expiration_by_file <cert.pem>'
   echo 'e.g. openssl_expiration_by_file cert.pem'
   exit 1
 fi
