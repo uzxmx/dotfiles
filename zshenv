@@ -1,3 +1,5 @@
+[[ -f ~/.zshenv.local ]] && source ~/.zshenv.local
+
 define_lazy_loader() {
   name=$1
   fn=$2
@@ -11,7 +13,7 @@ define_lazy_loader() {
         unalias \$i
       done
 
-      echo "Lazy load $name..."
+      echo "Lazy load $name..." >/dev/stderr
       $fn
 
       unset -f load_$name
@@ -31,7 +33,7 @@ EOF
 
 export PATH="$HOME/.rbenv/bin:$PATH"
 if [ $commands[rbenv] ]; then
-  LOAD_RBENV_ALIASES=(rbenv ruby gem irb rails rake cap rspec bundle)
+  LOAD_RBENV_ALIASES=(rbenv ruby gem irb rails rake cap rspec bundle "${LOAD_RBENV_ALIASES_CUSTOM[@]}")
   load_rbenv_fn() {
     eval "$(command rbenv init -)"
     [ -s /etc/profile.d/rbenv.sh ] && . /etc/profile.d/rbenv.sh
@@ -42,6 +44,9 @@ fi
 if [ $commands[kubectl] ]; then
   LOAD_KUBECTL_ALIASES=(kubectl)
   load_kubectl_fn() {
+    if [ ! $commands[compdef] ]; then
+      compinit
+    fi
     source <(command kubectl completion zsh)
   }
   define_lazy_loader kubectl load_kubectl_fn LOAD_KUBECTL_ALIASES
