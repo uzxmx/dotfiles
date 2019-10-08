@@ -22,3 +22,12 @@ Install with `pip install netaddr` on machine that runs `ansible-playbook`.
 ### Solution
 
 This problem is related with ansible version, using ansible 2.7.8 will not have this problem.
+
+## For ansible 2.8.5, it throws 'delegate_to' is not a valid attribute for a TaskInclude
+
+### Solution
+
+```
+On local machine, run `export ANSIBLE_INVALID_TASK_ATTRIBUTE_FAILED=False`
+Reference https://github.com/kubernetes-sigs/kubespray/issues/3985
+```
