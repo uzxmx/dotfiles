@@ -77,9 +77,25 @@ systemctl status ntp
 sudo ntpdate ntp.ubuntu.com
 ```
 
-## SFTP login with username and password
+## Split a large file into smaller parts
+
+### Split
 
 ```
-# This command will ask for password.
-sftp -P port -o HostKeyAlgorithms=+ssh-dss user@host
+# Split log file into smaller files with 1000 lines per file.
+split -l 1000 test.log test.log.
+
+# Split image file into smaller files with 20k size per file.
+split -b 20k  test.jpg test.jpg.
+
+# Split image file into smaller files with 1024m size per file.
+split -b 1024m  test.ios test.iso.
+```
+
+Notice: You may pass `-d` option to use number as generated name suffix. But on Mac OSX, `-d` option is not supported.
+
+### Concatenate all smaller files together
+
+```
+cat [file-name-prefix]* >[new-file]
 ```
