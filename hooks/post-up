@@ -95,3 +95,15 @@ else
     exit 1
   fi
 fi
+
+echo -n 'Checking hstr...'
+if type hstr &>/dev/null; then
+  echo 'Found'
+else
+  echo 'Not found, installing...'
+  if `$(dirname $0)/../scripts/install_hstr.sh >/dev/null`; then
+    echo 'Done'
+  else
+    exit 1
+  fi
+fi

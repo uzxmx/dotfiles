@@ -30,14 +30,40 @@ disable_pry_rails() {
 # Open the selected file with the default editor
 # Bypass fuzzy finder if there's only one match (--select-1)
 # Exit if there's no match (--exit-0)
-fe() {
+_fe() {
   local files
-  IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
+  dir=$1
+  shift
+  IFS=$'\n' files=($(fd --type f . $dir | fzf --query="$1" --multi --select-1 --exit-0))
   [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
 }
+
+alias fe="_fe ."
+alias fed="_fe ~/.dotfiles"
+alias fedb="_fe ~/.dotfiles/bin"
+alias fedd="_fe ~/.dotfiles/doc"
+alias fedz="_fe ~/.dotfiles/zsh"
+alias fedh="_fe ~/.dotfiles/hooks"
+alias feds="_fe ~/.dotfiles/scripts"
 
 # Change to selected directory
 fcd() {
   local dir
   dir=$(fd ${1:-.} --type d 2> /dev/null | fzf +m) && cd "$dir"
+}
+
+ssh() {
+  if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
+    host=$(echo $ZSH_UTILS_SSH_HOSTS | tr " " "\n" | fzf)
+    if [ -n "$host" ]; then
+      command ssh $host
+    fi
+  else
+    command ssh $@
+  fi
+}
+
+# Copy with progress
+cp_p () {
+  rsync -WavP --human-readable --progress $1 $2
 }

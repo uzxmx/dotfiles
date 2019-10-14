@@ -33,7 +33,17 @@ source ~/.zsh_plugins.sh
 
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
 
+# KEYTIMEOUT is only used when a bound key is also used as a prefix key. If timeout happens,
+# action of that prefix key will be taken. The unit is 10ms.
+export KEYTIMEOUT=100
+
 bindkey -v
+
+# It may be for the sake of convenience, zsh uses CTRL-[ that is the same key as ESC. By default CTRL-[ is mapped to
+# enter into vi-cmd-mode in zle vi mode. But as CTRL-[ may be used as a prefix key and I specified a long KEYTIMEOUT above,
+# in order to enter into vi-cmd-mode quickly, here I just map CTRL-[,CTRL-[ to vi-cmd-mode.
+bindkey "\e\e" vi-cmd-mode
+
 bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
 bindkey "^P" up-line-or-search
@@ -44,12 +54,16 @@ bindkey '^R' history-incremental-search-backward
 bindkey '^W' backward-kill-word
 bindkey "^V" edit-command-line
 
-# By default, there is a 0.4 second delay after you hit the <ESC> key and when
-# the mode change is registered. This results in a very jarring and frustrating
-# transition between modes. Let's reduce this delay to 0.1 seconds.
-# This can result in issues with other terminal commands that depended on this
-# delay. If you have issues try raising the delay.
-export KEYTIMEOUT=1
+_run_compinit() {
+  if compinit; then
+    zle end-of-list
+    echo "Completion initialized\n"
+    zle reset-prompt
+    return 0
+  fi
+}
+zle -N _run_compinit
+bindkey "^Xc" _run_compinit
 
 # load custom executable functions
 for function in ~/.zsh/functions/*; do
@@ -96,6 +110,22 @@ _load_settings() {
 _load_settings "$HOME/.zsh/configs"
 
 unsetopt share_history
+
+# HISTFILE should be exported in order to be used by `hstr`.
+export HISTFILE=~/.zsh_history
+
+_search_global_history() {
+  selected=$(HSTR_CONFIG=raw-history-view hstr -n | FZF_DEFAULT_OPTS="--height 50% $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort --query=${(qqq)LBUFFER} +m" fzf)
+  local ret=$?
+  if [ -n "$selected" ]; then
+    BUFFER=$selected
+    zle end-of-line
+  fi
+  zle reset-prompt
+  return $ret
+}
+zle -N _search_global_history
+bindkey "^[r" _search_global_history
 
 # Change directory without prefix cd
 setopt AUTO_CD
