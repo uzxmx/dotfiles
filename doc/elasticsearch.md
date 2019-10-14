@@ -4,7 +4,68 @@ http://docs.groovy-lang.org/latest/html/groovy-jdk/
 
 ## In groovy script, we can use `assert` directive to debug
 
-## Commands
+## REST API
+
+### cat
+
+```
+GET http://$ES_URL/_cat
+
+/_cat/allocation
+/_cat/shards
+/_cat/shards/{index}
+/_cat/master
+/_cat/nodes
+/_cat/indices
+/_cat/indices/{index}
+/_cat/segments
+/_cat/segments/{index}
+/_cat/count
+/_cat/count/{index}
+/_cat/recovery
+/_cat/recovery/{index}
+/_cat/health
+/_cat/pending_tasks
+/_cat/aliases
+/_cat/aliases/{alias}
+/_cat/thread_pool
+/_cat/plugins
+/_cat/fielddata
+/_cat/fielddata/{fields}
+/_cat/nodeattrs
+/_cat/repositories
+/_cat/snapshots/{repository}
+```
+
+#### Common parameters
+
+* v(verbose): Show column headers
+
+GET http://$ES_URL/_cat/master?v
+
+* help: Show available columns
+
+GET http://$ES_URL/_cat/master?help
+
+* h(headers): Select columns to be displayed
+
+GET http://$ES_URL/_cat/master?v&h=id,node
+
+* format: Change the output format. The available formats are text, json, smile, yaml or cbor.
+
+GET http://$ES_URL/_cat/master?format=json
+
+* sort: Sort output by column
+
+GET http://$ES_URL/_cat/allocation?sort=shards,desc&h=shards,disk.indices
+
+#### cat nodes
+
+```
+curl 'http://$ES_URL/_cat/nodes?v&h=name,host,master,heap.percent,heap.current,heap.max,ram.percent,ram.current,ram.max'
+```
+
+### misc
 
 ```
 # Get license information
