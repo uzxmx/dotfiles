@@ -29,6 +29,11 @@ fmerge() {
   git merge $(_fbranch)
 }
 
+fmergeto() {
+  branch="$(git symbolic-ref --short HEAD)"
+  fbr && git pull && git merge $branch
+}
+
 # fstash - easier way to deal with stashes
 # type fstash to get a list of your stashes
 # enter shows you the contents of the stash

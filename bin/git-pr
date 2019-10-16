@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# Open pull request of merging current branch to a target branch. Currently support github and gitlab.
+#
+# Usage:
+#   git pr [target-branch]
+#   arguments:
+#     target-branch: by default it's master branch.
+#
+# Examples:
+#   git pr
+#   git pr release # Open pull request of merging current branch to release branch.
+
+abort() {
+  echo $1 >/dev/stderr
+  exit 1
+}
+
+get_host() {
+  echo "$1" | sed -e "s/^git@//" -e "s/:.*.git$//"
+}
+
+get_repo_path() {
+  echo "$1" | sed -e "s/^.*://" -e "s/.git$//"
+}
+
+open_url() {
+  if [ "$(uname -s)" = "Darwin" ]; then
+    open "$1" 2>/dev/null
+  else
+    xdg-open "$1" &>/dev/null
+  fi
+}
+
+origin_url="$(git config --get remote.origin.url)"
+if ! (echo $origin_url | grep "^git@" &>/dev/null); then
+  abort "Only remote url with git protocol is supported."
+fi
+host="$(get_host $origin_url)"
+repo_path="$(get_repo_path $origin_url)"
+branch="$(git symbolic-ref --short HEAD)"
+target="$1"
+test -z "$target" && target="master"
+
+if [ "$host" = "github.com" ]; then
+  upstream_url="$(git config --get remote.upstream.url)"
+  if [ -z "$upstream_url" ]; then
+    target_repo_path=$repo_path
+  else
+    target_repo_path="$(get_repo_path $upstream_url)"
+  fi
+  user="$(echo $repo_path | sed -e "s/\/.*$//")"
+  url="https://$host/$target_repo_path/compare/$target...$user:$branch?expand=1"
+elif echo $host | grep "gitlab" >/dev/null; then
+  url="https://$host/$repo_path/merge_requests/new?merge_request%5Bsource_branch%5D=$branch&merge_request%5Btarget_branch%5D=$target&merge_request%5Bforce_remove_source_branch%5D=true&merge_request%5Bsquash%5D=true"
+fi
+
+if [ -z "$url" ]; then
+  abort "Pull request url is empty."
+else
+  open_url $url
+fi
