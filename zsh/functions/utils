@@ -1,4 +1,4 @@
-# vi: ft=sh
+# vim: ft=zsh
 
 # Update Zsh plugins
 uz() {
@@ -31,11 +31,39 @@ disable_pry_rails() {
 # Bypass fuzzy finder if there's only one match (--select-1)
 # Exit if there's no match (--exit-0)
 _fe() {
-  local files
+  local IFS files dir editor args
+  dir="$1"
+  shift
+  IFS=$'\n'
+  files=($(fd --type f . "$dir" | fzf --query="$1" --multi --select-1 --exit-0 --expect="ctrl-n"))
+  if [ "${files[1]}" = "ctrl-n" ]; then
+    local newfile
+    if [ -n "${files[2]}" ]; then
+      newfile=$(dirname "${files[2]}")
+    else
+      newfile=$dir
+    fi
+    local name=$(rlwrap -S "New file name: /usr/test" -P "$newfile" -o cat)
+  elif [ -n "$files" ]; then
+    editor=${EDITOR:-vim}
+    if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
+      args="+lcd %:h"
+    fi
+    $editor $args ${files[@]}
+  fi
+}
+
+_fed() {
+  local IFS target dir editor
   dir=$1
   shift
-  IFS=$'\n' files=($(fd --type f . $dir | fzf --query="$1" --multi --select-1 --exit-0))
-  [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+  IFS=$'\n'
+  target=($(fd --type d --maxdepth 1 . $dir | fzf --query="$1" --select-1 --exit-0))
+  if [ -n "$target" ]; then
+    editor=${EDITOR:-vim}
+    # Use brace to restore working directory
+    (cd $target && $editor $target)
+  fi
 }
 
 alias fe="_fe ."
@@ -43,20 +71,41 @@ alias fed="_fe ~/.dotfiles"
 alias fedb="_fe ~/.dotfiles/bin"
 alias fedd="_fe ~/.dotfiles/doc"
 alias fedz="_fe ~/.dotfiles/zsh"
+alias fedv="_fe ~/.dotfiles/vim"
 alias fedh="_fe ~/.dotfiles/hooks"
 alias feds="_fe ~/.dotfiles/scripts"
 
-# Change to selected directory
+alias fev="_fe ~/.vim"
+alias fevp="_fed ~/.vim/plugged"
+
+# Select a directory from current directory and change to there.
 fcd() {
   local dir
   dir=$(fd ${1:-.} --type d 2> /dev/null | fzf +m) && cd "$dir"
 }
 
+# Select a directory from configured directory lists and change to there.
+c() {
+  local dir
+  local list=(
+    $(find ~/.dotfiles -type d -maxdepth 1 -not -path "$HOME/.dotfiles/.git")
+    $ZSH_UTILS_CD_PATH
+    $(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)
+  )
+  list=$(IFS=$'\n'; echo "${list[*]}")
+  dir=$(echo "$list" | fzf +m) && cd "$dir"
+}
+
 ssh() {
+  local list host port
   if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
     host=$(echo $ZSH_UTILS_SSH_HOSTS | tr " " "\n" | fzf)
     if [ -n "$host" ]; then
-      command ssh $host
+      list=($(echo $host | tr ":" "\n"))
+      host=${list[1]}
+      port=${list[2]:-22}
+
+      command ssh -p $port $host
     fi
   else
     command ssh $@
@@ -66,4 +115,41 @@ ssh() {
 # Copy with progress
 cp_p () {
   rsync -WavP --human-readable --progress $1 $2
+}
+
+# Extract archive
+function x() {
+  if [ -f "$1" ]; then
+    local filename=$(basename "$1")
+    local foldername="${filename%%.*}"
+    local fullpath=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"`
+    local didfolderexist=false
+    if [ -d "$foldername" ]; then
+      didfolderexist=true
+      # Work around for error `read: -p: no coprocess`
+      local reply=$(sh -c "read -p '$foldername already exists, do you want to overwrite it? (y/N)'; echo \$REPLY")
+      if [[ ! $reply =~ ^[Yy]$ ]]; then
+        return
+      fi
+    fi
+    mkdir -p "$foldername" && cd "$foldername"
+    case $1 in
+      *.tar.bz2) tar xjf "$fullpath" ;;
+      *.tar.gz) tar xzf "$fullpath" ;;
+      *.tar.xz) tar Jxvf "$fullpath" ;;
+      *.tar.Z) tar xzf "$fullpath" ;;
+      *.tar) tar xf "$fullpath" ;;
+      *.taz) tar xzf "$fullpath" ;;
+      *.tb2) tar xjf "$fullpath" ;;
+      *.tbz) tar xjf "$fullpath" ;;
+      *.tbz2) tar xjf "$fullpath" ;;
+      *.tgz) tar xzf "$fullpath" ;;
+      *.txz) tar Jxvf "$fullpath" ;;
+      *.zip) unzip "$fullpath" ;;
+      *.rar) unrar x "$fullpath" ;;
+      *) echo "'$1' cannot be extracted via extract()" && cd .. && ! $didfolderexist && rm -r "$foldername" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
 }

@@ -1,4 +1,4 @@
-# vi: ft=sh
+# vi: ft=zsh
 
 # HTTP proxy
 dump_http_proxy() {
@@ -9,9 +9,10 @@ dump_http_proxy() {
 }
 
 enable_http_proxy() {
-  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  local list host port
+  host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
   host=${1:-$host}
-  local list=($(echo $host | tr ":" "\n"))
+  list=($(echo $host | tr ":" "\n"))
   host=${list[1]}
   port=${list[2]:-8123}
   export http_proxy=http://$host:$port
@@ -36,9 +37,10 @@ dump_docker_proxy() {
 }
 
 enable_docker_proxy() {
-  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  local list host port
+  host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
   host=${1:-$host}
-  local list=($(echo $host | tr ":" "\n"))
+  list=($(echo $host | tr ":" "\n"))
   host=${list[1]}
   port=${list[2]:-8123}
 
@@ -73,9 +75,10 @@ dump_git_proxy() {
 }
 
 enable_git_proxy() {
-  local host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
+  local list host port
+  host=${DEFAULT_HTTP_PROXY_HOST:-localhost}
   host=${1:-$host}
-  local list=($(echo $host | tr ":" "\n"))
+  list=($(echo $host | tr ":" "\n"))
   host=${list[1]}
   port=${list[2]:-8123}
 
@@ -84,7 +87,7 @@ enable_git_proxy() {
 
   # When http/https proxy environment variable exists, ssh-proxy will automatically use that
   # proxy. See ~/.ssh/config for more info.
-  enable_http_proxy >/dev/null
+  enable_http_proxy $host:$port >/dev/null
 
   dump_git_proxy
 }

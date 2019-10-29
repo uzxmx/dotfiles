@@ -1,4 +1,4 @@
-[[ -f ~/.zshenv.local ]] && source ~/.zshenv.local
+[[ -f ~/.zshenv.pre.local ]] && source ~/.zshenv.pre.local
 
 define_lazy_loader() {
   name=$1
@@ -44,6 +44,7 @@ fi
 if [ $commands[kubectl] ]; then
   LOAD_KUBECTL_ALIASES=(kubectl)
   load_kubectl_fn() {
+  # TODO  load completion later
     if [ ! $commands[compdef] ]; then
       compinit
     fi
@@ -83,5 +84,4 @@ if [ -s "$HOME/.luaver/luaver" ]; then
   define_lazy_loader luaver load_luaver_fn LOAD_LUAVER_ALIASES
 fi
 
-# aliases
-[[ -f ~/.aliases ]] && source ~/.aliases
+[[ -f ~/.zsh/aliases ]] && source ~/.zsh/aliases

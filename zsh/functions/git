@@ -1,3 +1,5 @@
+# vim: ft=zsh
+
 # No arguments: `git status`
 # With one argument `.`: `git status .`
 # With arguments: acts like `git`
@@ -11,6 +13,10 @@ g() {
   fi
 }
 
+gi() {
+  curl -s "https://www.gitignore.io/api/$*"
+}
+
 _fbranch() {
   local branches branch
   branches=$(git branch --all | grep -v HEAD) &&
@@ -21,17 +27,43 @@ _fbranch() {
 
 # fbr - checkout git branch (including remote branches)
 fbr() {
-  git checkout $(_fbranch)
+  local branch=$(_fbranch)
+  if [ -n "$branch" ]; then
+    git checkout $branch
+  fi
+}
+
+# ftag - checkout git tag
+ftag() {
+  local tags tag
+  tags=$(git tag) &&
+  tag=$(echo "$tags" | fzf +m)
+  if [ -n "$tag" ]; then
+    git checkout -b $tag $tag
+  fi
 }
 
 # fmerge - merge git branch
 fmerge() {
-  git merge $(_fbranch)
+  local branch=$(_fbranch)
+  if [ -n "$branch" ]; then
+    local reply=`_yesno "Do you want to push after merging? (Y/n)" "yes"`
+    git merge $branch
+    if [ $? = 0 -a "$reply" = "yes" ]; then
+      git push
+    fi
+  fi
 }
 
 fmergeto() {
-  branch="$(git symbolic-ref --short HEAD)"
-  fbr && git pull && git merge $branch
+  local branch
+  if branch="$(git symbolic-ref --short HEAD)" && fbr; then
+    local reply=`_yesno "Do you want to push after merging? (Y/n)" "yes"`
+    git pull && git merge $branch
+    if [ $? = 0 -a "$reply" = "yes" ]; then
+      git push
+    fi
+  fi
 }
 
 # fstash - easier way to deal with stashes
@@ -41,26 +73,27 @@ fmergeto() {
 # ctrl-b checks the stash out as a branch, for easier merging
 fstash() {
   local out q k sha
+  local IFS=$'\n'
   while out=$(
     git stash list --pretty="%C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs" |
     fzf --ansi --no-sort --query="$q" --print-query \
         --expect=ctrl-d,ctrl-b);
   do
-    IFS=$'\n'; set -f
+    set -f
     lines=($(<<< "$out"))
-    unset IFS; set +f
+    set +f
     q="${lines[0]}"
     k="${lines[1]}"
     sha="${lines[-1]}"
     sha="${sha%% *}"
     [[ -z "$sha" ]] && continue
     if [[ "$k" == 'ctrl-d' ]]; then
-      git diff $sha
-    # elif [[ "$k" == 'ctrl-b' ]]; then
-    #   git stash branch "stash-$sha" $sha
-    #   break;
+      git diff --color=always $sha | less -r
+    elif [[ "$k" == 'ctrl-b' ]]; then
+      git stash branch "stash-$sha" $sha
+      break;
     else
-      git -c color.ui=always -c core.pager='less -+F' stash show -p $sha
+      git stash show --color=always -p $sha | less -r
     fi
   done
 }

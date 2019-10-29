@@ -65,12 +65,14 @@ _run_compinit() {
 zle -N _run_compinit
 bindkey "^Xc" _run_compinit
 
-# load custom executable functions
+# Load library scripts
+source ~/.dotfiles/scripts/lib/prompt.sh
+
+# Load custom functions
 for function in ~/.zsh/functions/*; do
   source $function
 done
 
-# If you come from bash you might have to change your $PATH.
 export PATH=$HOME/.local/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH
 
 _load_settings() {
@@ -127,8 +129,7 @@ _search_global_history() {
 zle -N _search_global_history
 bindkey "^[r" _search_global_history
 
-# Change directory without prefix cd
-setopt AUTO_CD
+ZSH_UTILS_CD_PATH=(~/tmp)
 
 # Bash like completion
 setopt noautomenu
@@ -136,9 +137,6 @@ setopt noautomenu
 if [ -e /usr/share/autojump/autojump.sh ]; then
   source /usr/share/autojump/autojump.sh
 fi
-
-[[ -f ~/.zshrc.platform ]] && source ~/.zshrc.platform
-[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 # So as not to be disturbed by Ctrl-S ctrl-Q in terminals
 stty -ixon
@@ -159,3 +157,6 @@ stty -ixon
 # }
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+[[ -f ~/.zshrc.platform ]] && source ~/.zshrc.platform
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
