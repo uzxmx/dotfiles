@@ -1,0 +1,24 @@
+# Vimium can only be configured manually, through the extension's options page.
+# For more information, please visit https://github.com/philc/vimium.
+
+# Custom key mappings
+mapkey <c-c> <c-[>
+map <c-]> passNextKey
+
+unmap x
+unmap X
+map q removeTab
+map Q restoreTab
+
+map o Vomnibar.activateInNewTab
+map O Vomnibar.activateInTab
+
+map f LinkHints.activateModeToOpenInNewForegroundTab
+map F LinkHints.activateModeToOpenInCurrentTab
+
+map R reload hard
+
+unmap d
+unmap u
+map <c-d> scrollPageDown
+map <c-u> scrollPageUp

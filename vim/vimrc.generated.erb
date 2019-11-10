@@ -1,4 +1,4 @@
-<% result = %x[zsh -c "if type nvm &>/dev/null; then; nvm current; fi"]&.lines&.last&.chomp -%>
-<% if result && !result.empty? && result != 'system' -%>
-let g:coc_node_path = '<%= File.join(File.expand_path('~'), ".nvm/versions/node/#{result}/bin/node") %>'
+<% node_path = File.expand_path('~/.asdf/installs/nodejs/12.13.0/bin/node') -%>
+<% if File.exist?(node_path) -%>
+let g:coc_node_path = '<%= node_path %>'
 <% end -%>

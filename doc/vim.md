@@ -41,3 +41,55 @@ After:
 ```
 
 For more help, use `:help :e` or `:help :w`
+
+## How to use vim help effectively
+
+### Command completion can be used when entering a help topic
+
+* Type :h patt then press Ctrl-D to list all topics that contain "patt".
+* Type :h patt then press Tab to scroll through the topics that start with "patt".
+
+### Links
+
+* Press Ctrl-] to follow the link.
+* After browsing the quickref topic, press Ctrl-T to go back to the previous topic.
+* You can also press Ctrl-O to jump to older locations, or Ctrl-I to jump to newer locations.
+
+
+### Searching
+
+* Search all the help files with the :helpgrep command
+
+### Context
+
+| Prefix | Example     | Context                                         |
+|--------|-------------|-------------------------------------------------|
+| :      | :h :r       | ex command (command starting with a colon)      |
+| none   | :h r        | normal mode                                     |
+| v_     | :h v_r      | visual mode                                     |
+| i_     | :h i_CTRL-W | insert mode                                     |
+| c_     | :h c_CTRL-R | ex command line                                 |
+| /      | :h /\r      | search pattern (in this case, :h \r also works) |
+| '      | :h 'ro'     | option                                          |
+| -      | :h -r       | Vim argument (starting Vim)                     |
+
+#### Special cases
+
+```
+:h v:var
+```
+
+### References
+
+```
+:help :help
+:help :helpgrep
+:help helphelp.txt
+:help quickref.txt
+```
+
+## Use vim-flavor to do automation test
+
+```
+bundle exec vim-flavor test
+```

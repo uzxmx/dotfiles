@@ -1,2 +1,2 @@
 Host *
-  ProxyCommand $HOME/.dotfiles/bin/ssh-proxy %h %p
+  ProxyCommand ~/.dotfiles/bin/ssh-proxy %h %p
