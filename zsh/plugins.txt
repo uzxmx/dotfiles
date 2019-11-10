@@ -4,17 +4,4 @@
 
 mafredri/zsh-async
 sindresorhus/pure
-# Tarrasch/zsh-bd
-
 zsh-users/zsh-completions
-# zsh-users/zsh-syntax-highlighting
-# zsh-users/zsh-history-substring-search
-
-robbyrussell/oh-my-zsh path:lib/history.zsh
-robbyrussell/oh-my-zsh path:lib/key-bindings.zsh
-robbyrussell/oh-my-zsh path:lib/theme-and-appearance.zsh
-# robbyrussell/oh-my-zsh path:lib/completion.zsh
-robbyrussell/oh-my-zsh path:plugins/ssh-agent
-
-# caarlos0/zsh-open-github-pr
-# junegunn/fzf
