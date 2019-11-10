@@ -45,3 +45,6 @@ _search_global_history() {
 }
 zle -N _search_global_history
 bindkey "^R" _search_global_history
+
+# HISTFILE should be exported in order to be used by `hstr`.
+export HISTFILE=~/.zsh_history
