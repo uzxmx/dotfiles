@@ -99,7 +99,7 @@ stty -ixon
 # Ref: https://superuser.com/questions/1092033/how-can-i-make-zsh-tab-completion-fix-capitalization-errors-for-directorys-and
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 
-export VISUAL=nvim
+export VISUAL=vi
 export EDITOR=$VISUAL
 
 PATH=$HOME/.local/bin:$HOME/.bin:$HOME/bin:/usr/local/bin:$PATH

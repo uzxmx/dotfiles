@@ -10,3 +10,5 @@ if [ -f ~/.gitconfig -a "$(readlink ~/.gitconfig)" != "$(ls -d ~)/.dotfiles/gitc
   info '~/.gitconfig exists, append its content to ~/.dotfiles/gitconfig'
   cat ~/.gitconfig >>~/.dotfiles/gitconfig
 fi
+
+../scripts/setup_asdf.sh
