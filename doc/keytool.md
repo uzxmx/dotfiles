@@ -24,3 +24,9 @@ openssl pkcs12 -in truststore.p12 -out truststore.pem
 ```
 keytool -storepasswd -keystore keystore.jks
 ```
+
+## Export public key
+
+```
+openssl pkcs12 -export -name servercert -in server.crt -inkey server.key -out myp12keystore.p12
+```

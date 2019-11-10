@@ -1,3 +1,16 @@
+## Docker commands
+
+### Run a container
+
+```
+# Start a container and publish container port 8080 to host port 3000.
+docker run -p "3000:8080" image-name
+
+# We can also start an interactive shell and execute command, so we can use `docker exec -it container-id bash` to update codes and restart process.
+# When building the start command, remember to check if there is an entrypoint file or cmd for that dockerfile.
+docker run -p "3000:8080" -it image-name bash
+```
+
 ## How to build a docker image with http proxy?
 
 ```

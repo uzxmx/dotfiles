@@ -62,7 +62,7 @@ GET http://$ES_URL/_cat/allocation?sort=shards,desc&h=shards,disk.indices
 #### cat nodes
 
 ```
-curl 'http://$ES_URL/_cat/nodes?v&h=name,host,master,heap.percent,heap.current,heap.max,ram.percent,ram.current,ram.max'
+curl "http://$ES_URL/_cat/nodes?v&h=name,host,master,heap.percent,heap.current,heap.max,ram.percent,ram.current,ram.max"
 ```
 
 ### misc

@@ -26,3 +26,14 @@ GIT_SSH_COMMAND='ssh -i /path/to/id_rsa -o IdentitiesOnly=yes -F /dev/null' git 
 ```
 git config --global url.https://github.com/.insteadOf git@github.com:
 ```
+
+## Generate and apply patch
+
+```
+# Generate patch
+git diff --binary >foo.patch
+git diff --cached --binary >foo.patch
+
+# Apply patch
+git apply foo.patch
+```

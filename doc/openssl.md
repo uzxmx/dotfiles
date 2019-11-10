@@ -24,7 +24,7 @@ Attention: this is the key used to sign the certificate requests, anyone holding
 ```
 # If you want to encrypt the key, you can add -des3 option or other encryption option.
 # By default the numbits is 2048, you can change it to other value, e.g. 4096.
-# For more info, plaese see `openssl genrsa -h`.
+# For more info, please see `openssl genrsa -h`.
 openssl genrsa -out rootCA.key
 ```
 
