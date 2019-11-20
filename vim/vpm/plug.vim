@@ -56,9 +56,10 @@ Plug 'honza/vim-snippets', { 'on': [] }
 Plug 'majutsushi/tagbar', { 'on': ['Tagbar', 'TagbarToggle'] }
 Plug 'szw/vim-tags', { 'on': [] } " TODO
 Plug 'vim-airline/vim-airline'
-Plug 'altercation/vim-colors-solarized'
-Plug 'mkitt/tabline.vim'
+Plug 'altercation/vim-colors-solarized', { 'on': [] }
+Plug 'uzxmx/vim-snazzy', { 'on': [] }
 
+Plug 'mkitt/tabline.vim'
 
 Plug 'tpope/vim-repeat'
 Plug 'uzxmx/vim-projectionist'

@@ -1,9 +1,14 @@
 let g:vim_home = get(g:, 'vim_home', expand('~/.vim/'))
 
+let g:current_colorscheme = 'solarized'
+
+silent! exe 'source' g:vim_home . 'vimrc.before.local'
+
 exe 'source' g:vim_home . 'plugins.vim'
 
 let config_list = [
      \ 'config.vim',
+     \ 'colorscheme.vim',
      \ 'mappings.vim',
      \ 'plugin_settings/*.vim'
      \]
@@ -14,4 +19,4 @@ for config in config_list
 endfor
 
 silent! exe 'source' g:vim_home . 'vimrc.generated'
-silent! exe 'source' g:vim_home . 'vimrc.local'
+silent! exe 'source' g:vim_home . 'vimrc.after.local'
