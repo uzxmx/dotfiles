@@ -1,2 +1,2 @@
-EXCLUDES="README*.md LICENSE .ruby-version scripts/* doc/* samples/* zsh/plugins.txt Gemfile* vimium"
+EXCLUDES="bin/* scripts/* doc/* samples/* iterm2/* zsh/plugins.txt README*.md LICENSE .ruby-version Gemfile* vimium"
 DOTFILES_DIRS="$HOME/.dotfiles-local $HOME/.dotfiles"
