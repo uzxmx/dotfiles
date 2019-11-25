@@ -2,24 +2,10 @@
 #
 # Install rlwrap
 
-set -e
+. $(dirname "$0")/utils.sh
 
-abort() {
-  echo $@ >>/dev/stderr
-  exit 1
-}
-
-case $OSTYPE in
-  darwin*)
-    if ! type brew &>/dev/null; then
-      abort 'You must install `brew` before you can continue'
-    fi
-    brew install rlwrap
-    ;;
-  linux-gnu)
-    abort "Unsupported system"
-    ;;
-  *)
-    abort "Unsupported system"
-    ;;
-esac
+if is_mac; then
+  brew_install rlwrap
+else
+  abort "Unsupported system"
+fi

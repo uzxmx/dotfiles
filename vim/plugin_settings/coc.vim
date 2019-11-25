@@ -14,7 +14,7 @@ inoremap <silent><expr> <TAB>
      \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+noremap <Leader>cd <Plug>(coc-definition)
+noremap <Leader>ct <Plug>(coc-type-definition)
+noremap <Leader>ci <Plug>(coc-implementation)
+noremap <Leader>cr <Plug>(coc-references)

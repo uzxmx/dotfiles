@@ -6,10 +6,10 @@ alias f="fe"
 alias mkdir="mkdir -p"
 alias get='wget --continue --progress=bar --timestamping'
 alias html2pug="html2pug -d"
-alias vi='nvim'
 alias vi_tiny="vi -u NONE"
 alias e="$EDITOR"
 alias v="$VISUAL"
+alias h="sudo vi /etc/hosts"
 
 # Git
 alias ga="git add"

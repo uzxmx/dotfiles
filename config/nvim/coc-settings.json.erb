@@ -1,4 +1,11 @@
 {
-  "solargraph.commandPath": "<%= File.join(Dir.home, '.rbenv/shims/solargraph') %>",
-  "solargraph.checkGemVersion": false
+  "solargraph.commandPath": "<%= File.join(Dir.home, '.asdf/shims/solargraph') %>",
+  "solargraph.checkGemVersion": false,
+  "languageserver": {
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod"],
+      "filetypes": ["go"]
+    }
+  }
 }

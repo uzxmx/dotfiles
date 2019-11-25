@@ -2,9 +2,16 @@
 #
 # This script will be evaluated before `rcup` starts.
 
-info() {
-  echo $@
-}
+. $(dirname "$0")/../scripts/lib/prompt.sh
+. $(dirname "$0")/../scripts/lib/utils.sh
+
+if [[ ! -d ~/bin ]]; then
+  mkdir ~/bin
+fi
+
+# Link vi to nvim.
+nvim_path="$(which nvim)"
+is_link ~/bin/vi "$nvim_path" || create_link ~/bin/vi "$nvim_path"
 
 if [ -f ~/.gitconfig -a "$(readlink ~/.gitconfig)" != "$(ls -d ~)/.dotfiles/gitconfig" ]; then
   info '~/.gitconfig exists, append its content to ~/.dotfiles/gitconfig'

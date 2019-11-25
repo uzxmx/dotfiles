@@ -99,3 +99,21 @@ Notice: You may pass `-d` option to use number as generated name suffix. But on 
 ```
 cat [file-name-prefix]* >[new-file]
 ```
+
+## Source code counter
+
+```
+go get -u github.com/boyter/scc/
+
+# Count all
+scc
+
+# Only for app, lib
+scc app lib
+
+# Ignore csv files
+scc -M '.csv' app lib
+
+# Ignore csv and css files
+scc -M '.csv|css' app lib
+```

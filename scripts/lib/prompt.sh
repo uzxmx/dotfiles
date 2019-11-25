@@ -10,8 +10,11 @@
 #   Will output yes/no.
 #
 # @example
-#   _yesno "Do you want to push after merging? (Y/n)" yes
-_yesno() {
+#   local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
+#   if [ "$reply" = "yes" ]; then
+#     ...
+#   fi
+yesno() {
   local reply=$(rlwrap -S "$1" head -1)
   reply=$(echo "${reply:-$2}" | tr "A-Z" "a-z" )
   if $(echo "$reply" | grep -E "^y|yes$" &>/dev/null); then

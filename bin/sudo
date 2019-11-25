@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+executable=$(which -a sudo | grep /usr/)
+if [[ -v TMUX ]]; then
+  $executable TMUX="${TMUX}" "$@"
+else
+  $executable "$@"
+fi

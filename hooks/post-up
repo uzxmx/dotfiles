@@ -2,23 +2,15 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
-warn() {
-  echo $@
-}
+. $(dirname "$0")/../scripts/lib/utils.sh
 
-abort() {
-  echo $@ >>/dev/stderr
-  exit 1
-}
-
-case $OSTYPE in
-  darwin*)
-    platform=osx
-    [[ ! -e ~/.bin/vscode ]] && ln -s "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ~/.bin/vscode
-    ;;
-esac
+if is_mac; then
+  platform=osx
+  [[ ! -e ~/bin/vscode ]] && ln -s "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ~/bin/vscode
+fi
 
 if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
+  # TODO check if we need to use -e to test file existence
   if [ -f ~/.zshrc.platform ]; then
     if [ $? != 0 -o "$(readlink ~/.zshrc.platform)" != "$(ls -d ~)/.zshrc.$platform" ]; then
       warn "Failed to link ~/.zshrc.platform to ~/.zshrc.$platform, please check ~/.zshrc.platform"
@@ -28,12 +20,10 @@ if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
   fi
 fi
 
-if type load_rbenv &>/dev/null; then
-  load_rbenv
-fi
 erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
 erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
+# TODO install netcat
 echo -n 'Checking netcat...'
 if type -p nc &>/dev/null; then
   echo 'Found'
@@ -43,80 +33,24 @@ else
   abort 'Please ensure netcat installed'
 fi
 
-echo -n 'Checking socat...'
-if type -p socat &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_socat.sh >/dev/null`; then
-    echo 'Done'
-  else
-    exit 1
-  fi
-fi
-
-echo -n 'Checking antibody...'
-if type antibody &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
+install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
   antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
-fi
+}
+check_and_install_executable 'antibody' 'install_antibody'
 
-echo -n 'Checking js-beautify for vim-autoformat json...'
-if type js-beautify &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
+# vim-autoformat depends on js-beautify.
+install_js_beautify() {
   npm install -g js-beautify
-  echo 'Done'
-fi
+}
+check_and_install_executable 'js-beautify' 'install_js_beautify'
 
-echo -n 'Checking fzf...'
-if type fzf &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_fzf.sh >/dev/null`; then
-    echo 'Done'
-  else
-    exit 1
-  fi
-fi
-
-echo -n 'Checking fd...'
-if type fd &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_fd.sh >/dev/null`; then
-    echo 'Done'
-  else
-    exit 1
-  fi
-fi
-
-echo -n 'Checking hstr...'
-if type hstr &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_hstr.sh >/dev/null`; then
-    echo 'Done'
-  else
-    exit 1
-  fi
-fi
-
-echo -n 'Checking rlwrap...'
-if type -p rlwrap &>/dev/null; then
-  echo 'Found'
-else
-  echo 'Not found, installing...'
-  if `$(dirname $0)/../scripts/install_rlwrap.sh >/dev/null`; then
-    echo 'Done'
-  else
-    exit 1
-  fi
-fi
+executables=(
+  socat
+  fzf
+  fd
+  hstr
+  rlwrap
+  ag
+)
+check_and_install_executables $executables

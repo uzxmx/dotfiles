@@ -29,11 +29,6 @@ set softtabstop=2
 set wrap
 set wildmode=longest,list
 
-set background=dark
-" solarized scheme is loaded by vim-plug, but the post hook for loadig plugin
-" doesn't work, so here we just ignore the error.
-silent! colorscheme solarized
-
 set ignorecase
 set smartcase
 set incsearch

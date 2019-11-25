@@ -1,5 +1,31 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
 
-require 'securerandom'
+usage() {
+  cat <<-EOF 1>&2
+Generate uuid.
 
-puts SecureRandom.uuid
+Usage: $0 [-d] [-h]
+
+[-d] Keep dash
+[-h] Show help
+EOF
+  exit 1
+}
+
+while getopts "hd" opt; do
+  case "$opt" in
+    e)
+      keepdash=1
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+uuid=$(ruby -e "require 'securerandom'; puts SecureRandom.uuid")
+if [[ -n "$keepdash" ]]; then
+  echo $uuid
+else
+  echo $uuid | sed -e 's/\-//g'
+fi

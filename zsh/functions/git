@@ -47,7 +47,7 @@ ftag() {
 fmerge() {
   local branch=$(_fbranch)
   if [ -n "$branch" ]; then
-    local reply=`_yesno "Do you want to push after merging? (Y/n)" "yes"`
+    local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
     git merge $branch
     if [ $? = 0 -a "$reply" = "yes" ]; then
       git push
@@ -58,7 +58,7 @@ fmerge() {
 fmergeto() {
   local branch
   if branch="$(git symbolic-ref --short HEAD)" && fbr; then
-    local reply=`_yesno "Do you want to push after merging? (Y/n)" "yes"`
+    local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
     git pull && git merge $branch
     if [ $? = 0 -a "$reply" = "yes" ]; then
       git push

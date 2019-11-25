@@ -1,17 +1,9 @@
 #!/usr/bin/env bash
 
-set -e
+. $(dirname "$0")/utils.sh
 
-abort() {
-  echo $@ >>/dev/stderr
-  exit 1
-}
-
-case $OSTYPE in
-  darwin*)
-    if ! type brew &>/dev/null; then
-      abort 'You must install `brew` before you can continue'
-    fi
-    brew install socat
-    ;;
-esac
+if is_mac; then
+  brew_install socat
+else
+  abort "Unsupported system"
+fi
