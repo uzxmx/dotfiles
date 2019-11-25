@@ -4,7 +4,7 @@ alias la="ls -a"
 alias ll="ls -lh"
 alias f="fe"
 alias mkdir="mkdir -p"
-alias get='wget --continue --progress=bar --timestamping'
+alias get='wget --continue --progress=bar'
 alias html2pug="html2pug -d"
 alias vi_tiny="vi -u NONE"
 alias e="$EDITOR"
