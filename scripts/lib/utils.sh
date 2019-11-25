@@ -20,6 +20,24 @@ abort() {
   exit 1
 }
 
+# Split string by separator.
+#
+# @params:
+#   $1: string to split
+#   $2: separator
+#
+# @example
+#   local names=`split_by "$line" ","`
+#   echo "$names" | while read name do;
+#     echo "$name"
+#     ...
+#   done
+split_by() {
+  local str=$1
+  local separator=$2
+  echo "$str" | tr "$separator" "\n"
+}
+
 is_mac() {
   if [[ "$OSTYPE" =~ ^darwin.* ]]; then
     return 0
@@ -63,27 +81,32 @@ brew_install() {
 # should exist in folder ~/.dotfiles/scripts.
 #
 # @params:
-#   $1: executable name
+#   $1: executable name, multiple alias names are supported with `|` as separator, e.g. `netcat|nc`
 #   $2: function to install the executable, optional
 check_and_install_executable() {
   local executable=$1
-  echo -n "Checking $executable..."
-  if type -p $executable &>/dev/null; then
-    echo 'Found'
+  local names=`split_by "$1" "|"`
+  local primary_name=$(echo $names | head -1)
+  echo -n "Checking $primary_name..."
+  echo "$names" | while read name; do
+    if type -p $name &>/dev/null; then
+      echo 'Found'
+      return 0
+    fi
+  done
+
+  echo 'Not found, installing...'
+  local fn=$2
+  if [ -n "$fn" ]; then
+    $fn
   else
-    echo 'Not found, installing...'
-    local fn=$2
-    if [ -n "$fn" ]; then
-      $fn
-    else
-      $HOME/.dotfiles/scripts/install_${executable}.sh >/dev/null
-    fi
-    ret=$?
-    if [ $ret = 0 ]; then
-      echo 'Done'
-    else
-      exit $ret
-    fi
+    $HOME/.dotfiles/scripts/install_${primary_name}.sh >/dev/null
+  fi
+  ret=$?
+  if [ $ret = 0 ]; then
+    echo 'Done'
+  else
+    return $ret
   fi
 }
 

@@ -23,16 +23,6 @@ fi
 erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
 erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
-# TODO install netcat
-echo -n 'Checking netcat...'
-if type -p nc &>/dev/null; then
-  echo 'Found'
-elif type -p netcat &>/dev/null; then
-  echo 'Found'
-else
-  abort 'Please ensure netcat installed'
-fi
-
 install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
   antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
@@ -46,6 +36,7 @@ install_js_beautify() {
 check_and_install_executable 'js-beautify' 'install_js_beautify'
 
 executables=(
+  "netcat|nc"
   socat
   fzf
   fd
