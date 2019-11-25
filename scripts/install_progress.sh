@@ -17,6 +17,6 @@ case $OSTYPE in
       echo 'Only debian system supported'
       exit 1
     fi
-    sudo apt-get install progress
+    sudo apt-get install -y progress
     ;;
 esac

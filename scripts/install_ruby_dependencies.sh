@@ -7,7 +7,7 @@
 echo -n 'Install ruby dependencies...'
 
 if has_yum; then
-  sudo yum install openssl-devel readline-devel
+  sudo yum install -y openssl-devel readline-devel
 fi
 
 echo 'Done'

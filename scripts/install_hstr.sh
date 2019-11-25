@@ -9,7 +9,7 @@ if is_mac; then
 elif has_apt; then
   sudo add-apt-repository ppa:ultradvorka/ppa
   sudo apt-get update
-  sudo apt-get install hstr
+  sudo apt-get install -y hstr
 else
   abort "Unsupported system"
 fi

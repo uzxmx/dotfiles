@@ -17,6 +17,6 @@ case $OSTYPE in
       echo 'Only debian system supported'
       exit 1
     fi
-    apt-get install silversearcher-ag
+    sudo apt-get install -y silversearcher-ag
     ;;
 esac

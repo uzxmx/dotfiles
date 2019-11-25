@@ -5,7 +5,7 @@
 . $(dirname "$0")/utils.sh
 
 if has_yum; then
-  sudo yum install nc
+  sudo yum install -y nc
 else
   abort "Unsupported system"
 fi

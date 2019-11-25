@@ -7,9 +7,9 @@
 if is_mac; then
   brew_install the_silver_searcher
 elif has_apt; then
-  sudo apt-get install silversearcher-ag
+  sudo apt-get install -y silversearcher-ag
 elif has_yum; then
-  sudo yum install the_silver_searcher
+  sudo yum install -y the_silver_searcher
 else
   abort "Unsupported system"
 fi
