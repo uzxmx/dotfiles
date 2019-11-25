@@ -10,6 +10,8 @@ elif has_apt; then
   sudo add-apt-repository ppa:ultradvorka/ppa
   sudo apt-get update
   sudo apt-get install -y hstr
+elif has_yum; then
+  sudo yum install -y hstr
 else
   abort "Unsupported system"
 fi
