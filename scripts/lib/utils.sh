@@ -112,7 +112,7 @@ check_and_install_executable() {
 
 check_and_install_executables() {
   for executable in "$@"; do
-    check_and_install_executable "$executable"
+    check_and_install_executable "$executable" || return $?
   done
 }
 

@@ -27,13 +27,13 @@ install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
   antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
 }
-check_and_install_executable 'antibody' 'install_antibody'
+check_and_install_executable 'antibody' 'install_antibody' || exit $?
 
 # vim-autoformat depends on js-beautify.
 install_js_beautify() {
   npm install -g js-beautify
 }
-check_and_install_executable 'js-beautify' 'install_js_beautify'
+check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
 
 executables=(
   "netcat|nc"
@@ -44,4 +44,4 @@ executables=(
   rlwrap
   ag
 )
-check_and_install_executables $executables
+check_and_install_executables $executables || exit $?
