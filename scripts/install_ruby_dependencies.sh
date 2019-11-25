@@ -4,10 +4,16 @@
 
 . $(dirname "$0")/utils.sh
 
-echo -n 'Install ruby dependencies...'
 
 if has_yum; then
-  sudo yum install -y openssl-devel readline-devel
+  echo -n 'Install ruby dependencies...'
+  sudo yum install -y openssl-devel readline-devel >/dev/null
+else
+  exit 0
 fi
 
-echo 'Done'
+if [[ $? == 0 ]]; then
+  echo 'Done'
+else
+  echo 'Failed'
+fi

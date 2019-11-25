@@ -4,6 +4,8 @@
 
 if is_mac; then
   brew_install socat
+elif has_yum; then
+  sudo yum install -y socat
 else
   abort "Unsupported system"
 fi
