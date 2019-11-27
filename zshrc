@@ -12,6 +12,7 @@ fi
 
 source ~/.zsh_plugins.sh
 source ~/.zsh/configs.zsh
+source ~/.zsh/completions.zsh
 
 # Load library scripts
 source ~/.dotfiles/scripts/lib/prompt.sh
