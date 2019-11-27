@@ -18,5 +18,10 @@ if [ -f ~/.gitconfig -a "$(readlink ~/.gitconfig)" != "$(ls -d ~)/.dotfiles/gitc
   cat ~/.gitconfig >>~/.dotfiles/gitconfig
 fi
 
+# Required by asdf-ruby
 ../scripts/install_ruby_dependencies.sh
+
+# Required by asdf-java
+check_and_install_executable jq || exit $?
+
 ../scripts/setup_asdf.sh

@@ -2,6 +2,7 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+echo 'post-up'
 . $(dirname "$0")/../scripts/lib/utils.sh
 
 if is_mac; then
