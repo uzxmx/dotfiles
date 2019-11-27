@@ -93,3 +93,13 @@ For more help, use `:help :e` or `:help :w`
 ```
 bundle exec vim-flavor test
 ```
+
+## Find where some mapping is defined
+
+```
+:verbose nmap <c-j>
+:verbose nmap <c-n><c-f>
+
+# For more information about `:verbose`
+:h :verbose
+```

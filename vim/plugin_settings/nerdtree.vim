@@ -1,4 +1,9 @@
+" Ref: https://github.com/christoomey/vim-tmux-navigator/issues/205
+let g:NERDTreeMapJumpPrevSibling=""
+let g:NERDTreeMapJumpNextSibling=""
+
 let NERDTreeMinimalUI = 1
+
 nnoremap <silent> <C-n>n :NERDTree<CR>
 nnoremap <silent> <C-n><C-n> :NERDTree<CR>
 nnoremap <silent> <C-n>c :NERDTreeClose<CR>
