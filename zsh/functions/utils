@@ -88,7 +88,7 @@ fcd() {
 c() {
   local dir
   local list=(
-    $(find ~/.dotfiles -type d -maxdepth 1 -not -path "$HOME/.dotfiles/.git")
+    $(find ~/.dotfiles -maxdepth 1 -type d -not -path "$HOME/.dotfiles/.git")
     $ZSH_UTILS_CD_PATH
     $(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)
   )
