@@ -2,21 +2,34 @@
 #
 # This script depends on `prompt.sh`.
 
+# Show output with color.
+#
+# @params:
+#   $1: color
+#   VARARGS: variable arguments that need to output
+#
+# @ref http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html
+_color_output() {
+  local color="$1" reset='%f'
+  shift
+  echo "${(%)color}$@${(%)reset}"
+}
+
 info() {
   echo "$@"
 }
 
 warn() {
-  echo "$@"
+  _color_output '%F{yellow}' "$@"
 }
 
 error() {
-  echo "$@"
+  _color_output '%F{red}' "$@"
 }
 
 # Output error message to stderr, and exit.
 abort() {
-  echo "$@" >/dev/stderr
+  error "$@" >/dev/stderr
   exit 1
 }
 
