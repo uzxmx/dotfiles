@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Push to remote with ssh protocol when local repository uses https protocol.
+#
+# Usage:
+#   git pushs [git push options]
+#
+# Examples:
+#   git pushs
+#   git pushs -f # Force push
+
+remote="$(git config --get remote.origin.url)"
+if echo $remote | grep "^https://" &>/dev/null; then
+  remote="$(echo $remote | sed -e 's/^https:\/\//git@/' -e 's/\//:/')"
+fi
+git push "$remote" "$@"
