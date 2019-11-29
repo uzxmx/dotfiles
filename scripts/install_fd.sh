@@ -6,11 +6,18 @@
 
 if is_mac; then
   brew_install fd
-elif has_dpkg; then
-  dest=/tmp/fd_7.3.0_amd64.deb
-  wget 'https://github.com/sharkdp/fd/releases/download/v7.3.0/fd_7.3.0_amd64.deb' -O $dest
-  sudo dpkg -i $dest
-  rm $dest
 else
-  npm install -g fd-find
+  version=7.4.0
+  if has_dpkg; then
+    dest="/tmp/fd_${version}_amd64.deb"
+    wget "https://github.com/sharkdp/fd/releases/download/v${version}/fd_i${version}_amd64.deb" -O $dest
+    sudo dpkg -i $dest
+    rm $dest
+  else
+    basename="fd-v${version}-x86_64-unknown-linux-musl"
+    cd /tmp && wget "https://github.com/sharkdp/fd/releases/download/v${version}/${basename}.tar.gz" -O "${basename}.tar.gz"
+    tar zxf "$basename.tar.gz"
+    cd "$basename" && sudo cp fd /usr/local/bin/ && sudo cp fd.1 /usr/local/share/man/man1/ && sudo mandb
+    cd /tmp && rm -rf "$basename" "$basename.tar.gz"
+  fi
 fi
