@@ -16,5 +16,5 @@ else
     rm -rf ~/.fzf
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
   fi
-  sudo ~/.fzf/install --key-bindings --completion --no-bash --no-update-rc
+  ~/.fzf/install --key-bindings --completion --no-bash --no-update-rc
 fi
