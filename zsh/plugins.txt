@@ -3,5 +3,5 @@
 # Avoid loading too many plugins to make zsh startup fast.
 
 mafredri/zsh-async
-sindresorhus/pure
+sindresorhus/pure branch:v1.11.0
 zsh-users/zsh-completions

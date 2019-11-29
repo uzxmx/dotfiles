@@ -26,7 +26,7 @@ erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-
 
 install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
-  antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
+  ~/.dotfiles/bin/antibody_bundle
 }
 check_and_install_executable 'antibody' 'install_antibody' || exit $?
 

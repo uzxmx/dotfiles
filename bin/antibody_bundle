@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Download plugins and save zsh settings to ~/.zsh_plugins.sh.
+#
+# Notes:
+#
+# After changing plugins branch, you must execute 'antibody purge' to remove caches, and then
+# bundle again. Also see ~/.dotfiles/bin/antibody_purge.
+#
+# The command 'antibody update' pulls new commits from remote, so if you've specified a branch
+# in plugins.txt, you won't want to run 'antibody update' command.
+
+antibody_purge -s
+antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh

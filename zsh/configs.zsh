@@ -5,6 +5,8 @@ autoload run-help
 alias help=run-help
 
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
+# Keep dirty color same with git:branch.
+zstyle :prompt:pure:git:dirty color 242
 
 # KEYTIMEOUT is only used when a bound key is also used as a prefix key. If timeout happens,
 # action of that prefix key will be taken. The unit is 10ms.
