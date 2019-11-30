@@ -18,6 +18,9 @@ if [ -f ~/.gitconfig -a "$(readlink ~/.gitconfig)" != "$(ls -d ~)/.dotfiles/gitc
   cat ~/.gitconfig >>~/.dotfiles/gitconfig
 fi
 
+# Required by tmux.conf
+check_and_install_executable bc || exit $?
+
 # Required by asdf-ruby
 ../scripts/install_ruby_dependencies.sh
 
