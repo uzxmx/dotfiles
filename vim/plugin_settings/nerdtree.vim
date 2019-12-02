@@ -1,6 +1,6 @@
 " Ref: https://github.com/christoomey/vim-tmux-navigator/issues/205
-let g:NERDTreeMapJumpPrevSibling=""
-let g:NERDTreeMapJumpNextSibling=""
+let g:NERDTreeMapJumpPrevSibling="<m-k>"
+let g:NERDTreeMapJumpNextSibling="<m-j>"
 
 let NERDTreeMinimalUI = 1
 

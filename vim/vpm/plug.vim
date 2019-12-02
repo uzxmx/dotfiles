@@ -73,6 +73,7 @@ Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-rsi'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-scriptease'
 Plug 'mattn/emmet-vim', { 'for': 'html' }
 Plug 'editorconfig/editorconfig-vim'
 Plug 'fidian/hexmode', { 'on': ['Hexmode'] }
