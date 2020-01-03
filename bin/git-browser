@@ -17,7 +17,7 @@ abort() {
 }
 
 get_host() {
-  echo "$1" | sed -e "s/^git@//" -e "s/:.*.git$//"
+  echo "$1" | sed -e "s/^git@//" -e "s/:.*$//"
 }
 
 get_repo_path() {
