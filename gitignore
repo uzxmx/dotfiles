@@ -1,4 +1,5 @@
 .DS_Store
+.vim
 *.sw[nop]
 .bundle
 .byebug_history
