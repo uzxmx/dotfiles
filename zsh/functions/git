@@ -72,26 +72,34 @@ fmergeto() {
 # ctrl-d shows a diff of the stash against your current HEAD
 # ctrl-b checks the stash out as a branch, for easier merging
 fstash() {
-  local out q k sha
+  local out q k ref sha
   local IFS=$'\n'
   while out=$(
-    git stash list --pretty="%C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs" |
+    git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs" |
     fzf --ansi --no-sort --query="$q" --print-query \
-        --expect=ctrl-d,ctrl-b);
+        --expect=ctrl-d,ctrl-b,ctrl-o);
   do
     set -f
     lines=($(<<< "$out"))
     set +f
-    q="${lines[0]}"
-    k="${lines[1]}"
-    sha="${lines[-1]}"
-    sha="${sha%% *}"
+    if [[ ${#lines[@]} == 2 ]]; then
+      q=
+      k="${lines[1]}"
+    else
+      q="${lines[1]}"
+      k="${lines[2]}"
+    fi
+    ref=$(echo ${lines[-1]} | awk '{print $1}' )
+    sha=$(echo ${lines[-1]} | awk '{print $2}' )
     [[ -z "$sha" ]] && continue
     if [[ "$k" == 'ctrl-d' ]]; then
       git diff --color=always $sha | less -r
     elif [[ "$k" == 'ctrl-b' ]]; then
       git stash branch "stash-$sha" $sha
-      break;
+      break
+    elif [[ "$k" == 'ctrl-o' ]]; then
+      git stash pop $ref
+      break
     else
       git stash show --color=always -p $sha | less -r
     fi

@@ -7,9 +7,10 @@ alias mkdir="mkdir -p"
 alias get='wget --continue --progress=bar'
 alias html2pug="html2pug -d"
 alias vi_tiny="vi -u NONE"
-alias e="$EDITOR"
-alias v="$VISUAL"
+alias e='$EDITOR'
+alias v='$VISUAL'
 alias h="sudo vi /etc/hosts"
+alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 
 # Git
 alias ga="git add"
@@ -19,6 +20,7 @@ alias gbr="git browser"
 alias gc='git commit -s'
 alias gcm='git commit -s -m'
 alias gco="git checkout"
+alias gcl="git clone"
 alias gd="git diff"
 alias gdc="git diff --cached"
 alias gh="git help"
@@ -27,8 +29,10 @@ alias gp="git pull"
 alias gps="git push"
 alias gpss="git pushs"
 alias gpr="git pr"
-alias gr="git reset"
-alias gs="git stash"
+alias gr="git remote -v"
+alias grs="git reset"
+alias gs="git status"
+alias gss="git stash"
 
 # Bundler
 alias b="bundle"

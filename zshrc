@@ -21,6 +21,7 @@ source ~/.zsh/completions.zsh
 
 # Load library scripts
 source ~/.dotfiles/scripts/lib/prompt.sh
+source ~/.dotfiles/scripts/lib/fzf.sh
 
 # Load custom functions
 for function in ~/.zsh/functions/*; do

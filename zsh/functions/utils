@@ -87,15 +87,20 @@ c() {
 }
 
 ssh() {
-  local list host port
+  local result key list host port
   if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
-    host=$(echo $ZSH_UTILS_SSH_HOSTS | tr " " "\n" | fzf)
+    echo $ZSH_UTILS_SSH_HOSTS | tr " " "\n" | pipe_to_fzf result --expect=ctrl-e
+    key="${result[1]}"
+    host="${result[2]}"
     if [ -n "$host" ]; then
       list=($(echo $host | tr ":" "\n"))
       host=${list[1]}
       port=${list[2]:-22}
-
-      command ssh -p $port $host
+      if [ "$key" = "ctrl-e" ]; then
+        print -z "ssh -p $port $host"
+      else
+        command ssh -p $port $host
+      fi
     fi
   else
     command ssh $@
