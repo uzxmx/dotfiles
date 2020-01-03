@@ -2,6 +2,9 @@ let g:vim_home = get(g:, 'vim_home', expand('~/.vim/'))
 
 let g:current_colorscheme = 'solarized'
 
+let mapleader = "\<Space>"
+let maplocalleader = "\<Space>"
+
 silent! exe 'source' g:vim_home . 'vimrc.before.local'
 
 exe 'source' g:vim_home . 'plugins.vim'

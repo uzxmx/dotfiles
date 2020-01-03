@@ -9,7 +9,6 @@ endif
 call plug#begin('~/.vim/plugged')
 
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries', 'for': 'go' }
 Plug 'posva/vim-vue', { 'for': 'vue' }
 Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'keith/swift.vim', { 'for': 'swift' }
@@ -17,56 +16,38 @@ Plug 'digitaltoad/vim-pug', { 'for': 'pug' }
 Plug 'tpope/vim-fugitive', { 'tag': 'v2.3' }
 Plug 'airblade/vim-gitgutter'
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' } " TODO make this faster
-" Plug 'tpope/vim-bundler', { 'for': 'ruby' }
 Plug 'uzxmx/vim-rails', { 'for': 'ruby' }
-" Plug 'tpope/vim-rake', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
-Plug 'thoughtbot/vim-rspec', { 'for': 'ruby' }
-" Plug 'tpope/vim-dispatch'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
-augroup nerd_loader
-  autocmd!
-  autocmd VimEnter * silent! autocmd! FileExplorer
-  autocmd BufEnter,BufNew *
-        \  if isdirectory(expand('<amatch>'))
-        \|   call plug#load('nerdtree')
-        \|   execute 'autocmd! nerd_loader'
-        \| endif
-augroup END
 Plug 'tyok/nerdtree-ack', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'pbrisbin/vim-mkdir'
 Plug 'Shougo/context_filetype.vim'
 Plug 'tyru/caw.vim'
 Plug 'chrisbra/csv.vim', { 'for': 'csv' }
-Plug 'w0rp/ale'
 Plug 'chiel92/vim-autoformat', { 'on': 'Autoformat' }
 Plug 'junegunn/vim-easy-align', { 'on': 'EasyAlign' } " TODO enhance this
 Plug 'Yggdroot/indentLine', { 'on': 'IndentLinesEnable' }
 Plug 'uzxmx/vim-table-mode', { 'branch': 'feature/insert-table-columns',  'for': 'markdown' }
 Plug 'tpope/vim-endwise'
 Plug 'alvan/vim-closetag'
-Plug 'ervandew/supertab', { 'on': [] } " TODO
-Plug 'jiangmiao/auto-pairs' " TODO
-" Plug 'ctrlpvim/ctrlp.vim'
+Plug 'jiangmiao/auto-pairs'
 Plug 'dyng/ctrlsf.vim'
 Plug 'mileszs/ack.vim'
 Plug 'henrik/vim-indexed-search' " google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
 Plug 'SirVer/ultisnips', { 'on': [] }
 Plug 'honza/vim-snippets', { 'on': [] }
 Plug 'majutsushi/tagbar', { 'on': ['Tagbar', 'TagbarToggle'] }
-Plug 'szw/vim-tags', { 'on': [] } " TODO
+Plug 'szw/vim-tags', { 'on': [] }
 Plug 'vim-airline/vim-airline'
 Plug 'altercation/vim-colors-solarized', { 'on': [] }
 Plug 'uzxmx/vim-snazzy', { 'on': [] }
-
 Plug 'mkitt/tabline.vim'
-
 Plug 'tpope/vim-repeat'
 Plug 'uzxmx/vim-projectionist'
 Plug 'uzxmx/vim-surround'
 Plug 'jgdavey/tslime.vim'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'uzxmx/vim-pbcopy', { 'branch': 'feature/nvim-support' } " TODO
+Plug 'uzxmx/vim-pbcopy', { 'branch': 'feature/nvim-support' }
 Plug 'tpope/vim-tbone'
 Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-sensible'
@@ -86,12 +67,34 @@ Plug 'vim-scripts/VisIncr', { 'on': ['I'] }
 Plug 'junegunn/fzf', { 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
+" Plug 'ctrlpvim/ctrlp.vim'
+
+Plug 'janko/vim-test'
+Plug 'HerringtonDarkholme/yats.vim'
+Plug 'udalov/kotlin-vim'
+
 call plug#end()
 
-augroup load_on_insert
+augroup nerd_loader
   autocmd!
-  autocmd InsertEnter * call plug#load('ervandew/supertab', 'SirVer/ultisnips', 'honza/vim-snippets')
-                     \| autocmd! load_on_insert
+  autocmd VimEnter * silent! autocmd! FileExplorer
+  autocmd BufEnter,BufNew *
+        \  if isdirectory(expand('<amatch>'))
+        \|   call plug#load('nerdtree')
+        \|   autocmd! nerd_loader
+        \| endif
+augroup END
+
+" Lazy load plugins on insert for faster startup
+"
+" TODO it seems that some plugins does not support lazy loading, e.g.
+" vim-endwise, auto-pairs.
+augroup load_plugins_on_insert
+  autocmd!
+  autocmd InsertEnter * echo 'Loading plugins on insert...'
+        \| call plug#load('ultisnips', 'vim-snippets')
+        \| echo 'Loading plugins done!'
+        \| autocmd! load_plugins_on_insert
 augroup END
 
 " I want to filter out unloaded plugins, but vim-plug doesn't expose s:loaded
@@ -107,6 +110,6 @@ function! s:list_plugins(A, L, P)
   return join(list, "\n")
 endfunction
 
-" Load plugin manually
+" Load plugins manually.
 command! -complete=custom,s:list_plugins -nargs=+ PlugLoad call plug#load(<q-args>)
-nnoremap <leader>l :PlugLoad<space>
+nnoremap <leader>pl :PlugLoad<space>

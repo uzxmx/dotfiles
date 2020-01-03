@@ -4,9 +4,6 @@ endif
 
 set nocompatible
 
-let mapleader = "\<Space>"
-let maplocalleader = "\<Space>"
-
 set encoding=utf-8
 set fileencodings-=latin1
 set fileencodings+=gb18030,latin1
@@ -20,7 +17,11 @@ set clipboard+=unnamedplus
 set backspace=indent,eol,start
 set list lcs=tab:\|\ 
 set confirm
-set tags=./.tags;/,./tags;/ " This will look in the current directory for tags, and walk up the tree towards root until one is found
+set cmdheight=2
+
+" This will look in the current directory for tags, and walk up the tree
+" towards root until one is found
+set tags=./.tags;/,./tags;/
 
 set expandtab
 set tabstop=2
@@ -39,5 +40,4 @@ set foldmethod=indent
 
 " Use the below config to avoid tabstop to be overridden in
 " $VIMRUNTIME/ftpplugin/python.vim
-" TODO
 let g:python_recommended_style = 0
