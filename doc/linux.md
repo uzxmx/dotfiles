@@ -117,3 +117,21 @@ scc -M '.csv' app lib
 # Ignore csv and css files
 scc -M '.csv|css' app lib
 ```
+
+## How to use different network interfaces for different processes?
+
+```
+# Use `ifconfig` to find network interface ip address.
+
+# For wget
+wget --bind-address <network-interface-ip-address> ...
+
+# For curl
+curl --interface <network-interface-name> ...
+```
+
+* Refs
+
+https://superuser.com/questions/241178/how-to-use-different-network-interfaces-for-different-processes
+http://daniel-lange.com/archives/53-Binding-applications-to-a-specific-IP.html
+https://serverfault.com/questions/496731/how-to-set-which-ip-to-use-for-a-http-request

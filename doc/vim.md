@@ -103,3 +103,11 @@ bundle exec vim-flavor test
 # For more information about `:verbose`
 :h :verbose
 ```
+
+## How to replace a character by a newline in Vim
+
+```
+Use \r instead of \n.
+```
+
+Ref: https://stackoverflow.com/questions/71323/how-to-replace-a-character-by-a-newline-in-vim
