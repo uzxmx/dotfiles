@@ -1,7 +1,3 @@
-if has('python3') " This will force python3 to be used
-  silent echomsg 'Use python3'
-endif
-
 set nocompatible
 
 set encoding=utf-8

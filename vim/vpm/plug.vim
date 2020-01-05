@@ -6,6 +6,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
+
 call plug#begin('~/.vim/plugged')
 
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
@@ -34,8 +35,8 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'dyng/ctrlsf.vim'
 Plug 'mileszs/ack.vim'
 Plug 'henrik/vim-indexed-search' " google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
-Plug 'SirVer/ultisnips', { 'on': [] }
-Plug 'honza/vim-snippets', { 'on': [] }
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
 Plug 'majutsushi/tagbar', { 'on': ['Tagbar', 'TagbarToggle'] }
 Plug 'szw/vim-tags', { 'on': [] }
 Plug 'vim-airline/vim-airline'
@@ -83,18 +84,6 @@ augroup nerd_loader
         \|   call plug#load('nerdtree')
         \|   execute 'autocmd! nerd_loader'
         \| endif
-augroup END
-
-" Lazy load plugins on insert for faster startup
-"
-" TODO it seems that some plugins does not support lazy loading, e.g.
-" vim-endwise, auto-pairs.
-augroup load_plugins_on_insert
-  autocmd!
-  autocmd InsertEnter * echo 'Loading plugins on insert...'
-        \| call plug#load('ultisnips', 'vim-snippets')
-        \| echo 'Loading plugins done!'
-        \| autocmd! load_plugins_on_insert
 augroup END
 
 " I want to filter out unloaded plugins, but vim-plug doesn't expose s:loaded

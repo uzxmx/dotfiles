@@ -5,6 +5,7 @@ let g:current_colorscheme = 'solarized'
 let mapleader = "\<Space>"
 let maplocalleader = "\<Space>"
 
+silent! exe 'source' g:vim_home . 'vimrc.generated'
 silent! exe 'source' g:vim_home . 'vimrc.before.local'
 
 exe 'source' g:vim_home . 'plugins.vim'
@@ -21,5 +22,4 @@ for config in config_list
   endfor
 endfor
 
-silent! exe 'source' g:vim_home . 'vimrc.generated'
 silent! exe 'source' g:vim_home . 'vimrc.after.local'
