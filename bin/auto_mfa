@@ -1,0 +1,53 @@
+#!/usr/bin/env expect
+#
+# Automatic multi-factor authentication. Use `totp config list` to find secret names.
+#
+# Example:
+#   auto_mfa -n <secret-name> -- <command>
+
+set options {
+  {n.arg "" "TOTP secret name. Use `totp config list` to find"}
+}
+set usage "- Automatic multi-factor authentication"
+
+source ~/.dotfiles/scripts/expect/cmdline.tcl
+
+set secret_name $params(n)
+set program [lindex $argv 0]
+set arguments [lrange $argv 1 end]
+spawn $program {*}$arguments
+
+proc process_auth {} {
+  global secret_name
+  set value [exec totp $secret_name]
+  send "$value\n"
+}
+
+expect -re "^.+:\[\[:space:]]*$"
+process_auth
+
+if {$params(c) != ""} {
+  eval $params(c)
+}
+
+interact
+
+# We actually don't need to retry. Keep below codes in case we need that.
+# set success 0
+# set retry_count 1
+# while { $retry_count <= 3 } {
+#   expect {
+#     -re "^.+:\[\[:space:]]*$" { process_auth }
+#     -re "\[Pp]lease enter" { exp_continue }
+#     -re "\n\[a-zA-Z0-9]+" { set success 1; break }
+#     eof { exit }
+#   }
+#   set retry_count [expr $retry_count+1]
+#   sleep 0.5
+# }
+#
+# if { $success == 1 } {
+#   interact
+# } else {
+#   puts "Authentication failed"
+# }
