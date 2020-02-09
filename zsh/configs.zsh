@@ -24,7 +24,7 @@ bindkey "^E" end-of-line
 bindkey "^P" up-line-or-search
 bindkey "^N" down-line-or-search
 bindkey '^R' history-incremental-search-backward
-bindkey '^W' backward-kill-word
+bindkey '^W' vi-backward-kill-word
 bindkey "^V" edit-command-line
 
 # TODO bindkey "^S" to search something
@@ -104,7 +104,7 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 export VISUAL=vi
 export EDITOR=$VISUAL
 
-PATH=$HOME/.local/bin:$HOME/bin:$HOME/.dotfiles/bin:/usr/local/bin:$PATH
+PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:/usr/local/bin:$PATH
 
 # TODO add doc
 ZSH_UTILS_CD_PATH=(~/tmp)

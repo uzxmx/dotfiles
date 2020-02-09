@@ -1,15 +1,12 @@
 # vim: ft=zsh
 
-# No arguments: `git status`
-# With one argument `.`: `git status .`
+# No arguments: `git status .`
 # With arguments: acts like `git`
 g() {
-  if [ $# -eq 1 -a "$1" = "." ]; then
-    git status .
-  elif [ $# -gt 0 ]; then
+  if [ $# -gt 0 ]; then
     git "$@"
   else
-    git status
+    git status .
   fi
 }
 

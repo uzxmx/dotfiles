@@ -23,31 +23,29 @@ proc process_auth {} {
   send "$value\n"
 }
 
-expect -re "^.+:\[\[:space:]]*$"
+set auth_pattern "^.+:\[\[:space:]]*$"
+
+expect -re $auth_pattern
 process_auth
 
-if {$params(c) != ""} {
-  eval $params(c)
+set success 0
+set retry_count 1
+while { $retry_count <= 3 } {
+  expect {
+    -re $auth_pattern { process_auth }
+    -re "\[Pp]lease enter" { exp_continue }
+    -re "\n\[\[:space:]]*\[a-zA-Z0-9]+" { set success 1; break }
+    eof { exit }
+  }
+  set retry_count [expr $retry_count+1]
+  sleep 0.5
 }
 
-interact
-
-# We actually don't need to retry. Keep below codes in case we need that.
-# set success 0
-# set retry_count 1
-# while { $retry_count <= 3 } {
-#   expect {
-#     -re "^.+:\[\[:space:]]*$" { process_auth }
-#     -re "\[Pp]lease enter" { exp_continue }
-#     -re "\n\[a-zA-Z0-9]+" { set success 1; break }
-#     eof { exit }
-#   }
-#   set retry_count [expr $retry_count+1]
-#   sleep 0.5
-# }
-#
-# if { $success == 1 } {
-#   interact
-# } else {
-#   puts "Authentication failed"
-# }
+if { $success == 1 } {
+  if {$params(c) != ""} {
+    eval $params(c)
+  }
+  interact
+} else {
+  puts "Authentication failed"
+}

@@ -1,3 +1,6 @@
+alias va="vagrant"
+alias p="pwd"
+
 # Utils
 alias l="ls -1tA"
 alias la="ls -a"
@@ -39,7 +42,6 @@ alias b="bundle"
 
 # Rails
 alias migrate="bundle exec rake db:migrate"
-alias s="bundle exec rspec"
 
 # Docker
 alias dc="docker-compose"

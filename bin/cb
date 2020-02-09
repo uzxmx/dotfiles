@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Wrapper for clipboard-cli.
+
+if ! type clipboard &>/dev/null; then
+  echo '`clipboard` not found. Please install it by running `npm install --global clipboard-cli`'
+  exit 1
+fi
+
+# Send stdin to `clipboard` only if stdin is a tty.
+if [[ ! -t 0 ]]; then
+  clipboard
+  count=`STDIN=0 clipboard | wc -c | sed -e 's/ //g'`
+  if [[ $count > 1 ]]; then
+    echo "$count characters are copied."
+  else
+    echo "$count character is copied."
+  fi
+  echo
+fi
+
+echo '===== Tail 5 of clipboard ====='
+STDIN=0 clipboard | tail -5
+echo '===== End of clipboard ====='

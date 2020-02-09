@@ -86,20 +86,31 @@ c() {
   dir=$(echo "$list" | fzf +m) && cd "$dir"
 }
 
+# `ZSH_UTILS_SSH_HOSTS` defines an array of ssh hosts. Each item can be composed
+# of a human-readable description and an optional command to be executed when
+# selected. When the command is omitted, the description must obey the format
+# `user@host` or `user@host:port` to help to infer the command. The description
+# and the optional command are separated by `\t`, and they shouldn't contain `\t`.
 ssh() {
   local result key list host port
   if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
-    echo $ZSH_UTILS_SSH_HOSTS | tr " " "\n" | pipe_to_fzf result --expect=ctrl-e
+    join_to_lines $ZSH_UTILS_SSH_HOSTS | pipe_to_fzf result --delimiter="\t" --with-nth=1 --expect=ctrl-e
     key="${result[1]}"
     host="${result[2]}"
     if [ -n "$host" ]; then
-      list=($(echo $host | tr ":" "\n"))
+      split_str_into_array "$host" "\t" list
+      cmd=${list[2]}
+      split_str_into_array "${list[1]}" ":" list
       host=${list[1]}
       port=${list[2]:-22}
+      if [ -z "$cmd" ]; then
+        cmd="ssh -p $port $host"
+      fi
       if [ "$key" = "ctrl-e" ]; then
-        print -z "ssh -p $port $host"
+        print -z "$cmd"
       else
-        command ssh -p $port $host
+        print -s "$cmd"
+        eval $cmd
       fi
     fi
   else
@@ -113,7 +124,7 @@ cp_p () {
 }
 
 # Extract archive
-function x() {
+x() {
   if [ -f "$1" ]; then
     local filename=$(basename "$1")
     local foldername="${filename%%.*}"
@@ -146,5 +157,17 @@ function x() {
     esac
   else
     echo "'$1' is not a valid file"
+  fi
+}
+
+a() {
+  local script
+  if [ $# -lt 2 ]; then
+    script=$(~/.dotfiles/scripts/asdf_common_workflow.sh "$@")
+    if [ $? -eq 0 -a -n "$script" ]; then
+      eval "$script"
+    fi
+  else
+    asdf "$@"
   fi
 }

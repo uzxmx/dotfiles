@@ -18,10 +18,7 @@ fi
 source ~/.zsh_plugins.sh
 source ~/.zsh/configs.zsh
 source ~/.zsh/completions.zsh
-
-# Load library scripts
-source ~/.dotfiles/scripts/lib/prompt.sh
-source ~/.dotfiles/scripts/lib/fzf.sh
+source ~/.zsh/library.zsh
 
 # Load custom functions
 for function in ~/.zsh/functions/*; do

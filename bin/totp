@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+if [[ $# = 0 ]]; then
+  selection=$(totp config list | sed 1,2d | awk '{print $1}' | fzf)
+  if [[ -n $selection ]]; then
+    totp $selection | cb
+  fi
+else
+  totp "$@"
+fi

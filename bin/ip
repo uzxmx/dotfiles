@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+source ~/.dotfiles/scripts/lib/path.sh
+
+if [[ $# = 0 ]]; then
+  ifconfig en0 | grep 'inet ' | awk '{print $2}' | cb
+else
+  PATH=$(new_path_exclude ~/.dotfiles/bin) ip "$@"
+fi

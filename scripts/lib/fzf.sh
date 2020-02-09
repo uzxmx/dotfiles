@@ -2,7 +2,9 @@
 
 # This function must be used as a side of a pipe. When call is finished, an
 # array variable will be defined with name specified by the first parameter.
-# 
+#
+# NOTE: this function relies on zsh.
+#
 # @params:
 #   $1: the array name
 #   VARARGS: fzf arguments
