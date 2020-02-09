@@ -1,0 +1,3 @@
+# When asdf is located under user home directory, if ASDF_DATA_DIR env is not specified,
+# by default it will be $HOME/.asdf. If HOME env is not provided, an error will happen.
+build --action_env=HOME
