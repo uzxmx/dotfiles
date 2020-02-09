@@ -1,9 +1,17 @@
 " Run selected text in buffer as shell command and save the output to a scratch buffer.
 " http://vim.wikia.com/wiki/Display_output_of_shell_commands_in_new_window
-command! -range -complete=shellcmd -nargs=* ShellJSON <line1>,<line2>call s:RunShellCommand(<q-args>, 'json', 0)
-command! -range -complete=shellcmd -nargs=* QShellJSON <line1>,<line2>call s:RunShellCommand(<q-args>, 'json', 1)
-command! -range -complete=shellcmd -nargs=* Shell <line1>,<line2>call s:RunShellCommand(<q-args>, '', 0)
-command! -range -complete=shellcmd -nargs=* QShell <line1>,<line2>call s:RunShellCommand(<q-args>, '', 1)
+command! -range -complete=shellcmd -nargs=* -bang ShellJSON <line1>,<line2>call s:RunShellCommand(<q-args>, 'json', <bang>0)
+command! -range -complete=shellcmd -nargs=* -bang Shell     <line1>,<line2>call s:RunShellCommand(<q-args>, '', <bang>0)
+
+function! s:shellescape_special(cmd)
+  return substitute(substitute(a:cmd, '\([!%#]\)', '\\\1', 'g'), '\(<cword>\)', '\\\1', 'g')
+endfunction
+
+" Run shell command.
+"
+" @param str the command string
+" @param filetype the scratch buffer file type
+" @param quiet if 1, then stderr will be redirected to /dev/null
 function! s:RunShellCommand(str, filetype, quiet) range
   if empty(a:str)
     let cmdline = join(map(range(a:firstline, a:lastline), "substitute(getline(v:val), '\\\\$', '', '')"), '')
@@ -12,11 +20,12 @@ function! s:RunShellCommand(str, filetype, quiet) range
   endif
 
   let expanded_cmdline = cmdline
+  " Expand filename if argument starts with `%`, `#` or `<`. See `:h filename-modifiers`.
   for part in split(cmdline, ' ')
-     if part[0] =~ '\v[%#<]'
-        let expanded_part = fnameescape(expand(part))
-        let expanded_cmdline = substitute(expanded_cmdline, part, expanded_part, '')
-     endif
+    if part[0] =~ '\v[%#<]'
+      let expanded_part = fnameescape(expand(part))
+      let expanded_cmdline = substitute(expanded_cmdline, part, expanded_part, '')
+    endif
   endfor
 
   if a:quiet == 1
@@ -25,7 +34,7 @@ function! s:RunShellCommand(str, filetype, quiet) range
 
   botright new
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
-  execute '$read !'. expanded_cmdline
+  execute '$read !' . s:shellescape_special(expanded_cmdline)
   if a:filetype == 'json'
     setlocal ft=json
     execute ':Autoformat'
