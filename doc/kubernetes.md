@@ -23,3 +23,13 @@ This method works by changing the image to a specific digest.
 ```
 kubectl set image deployment deployment-name container-name=$(docker inspect --format='{{index .RepoDigests 0}}' image-name:latest)
 ```
+
+## Multi pod and container log tailing for Kubernetes
+
+Ref: https://github.com/wercker/stern
+
+```
+wget -O stern ...
+chmod a+x stern
+sudo mv stern /usr/loca/bin
+```

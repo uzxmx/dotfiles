@@ -32,3 +32,14 @@ EOF
 ```
 find . -name '*.h' -print0 | xargs -0 grep qemu_find_opts
 ```
+
+## Materials
+
+https://www.gnu.org/software/bash/manual/html_node/ANSI_002dC-Quoting.html
+
+## Error: -bash: _get_comp_words_by_ref: command not found
+
+```
+# For centos
+yum install bash-completion
+```

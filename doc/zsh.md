@@ -25,3 +25,9 @@ BUFFER="the-command-to-be-executed"
 zle redisplay
 zle accept-line
 ```
+
+### How to add something to zsh history?
+
+Use `print -s`
+
+Ref: https://stackoverflow.com/a/2816792

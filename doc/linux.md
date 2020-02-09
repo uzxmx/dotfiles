@@ -2,6 +2,7 @@
 
 ```
 # Show process tree
+pstree
 pstree -aps <pid>
 
 # Show ppid (https://unix.stackexchange.com/questions/237214/how-to-get-ppid-with-ps-aux-under-aix
@@ -135,3 +136,45 @@ curl --interface <network-interface-name> ...
 https://superuser.com/questions/241178/how-to-use-different-network-interfaces-for-different-processes
 http://daniel-lange.com/archives/53-Binding-applications-to-a-specific-IP.html
 https://serverfault.com/questions/496731/how-to-set-which-ip-to-use-for-a-http-request
+
+## How to use tcpdump?
+
+```
+# Listen on localhost interface
+tcpdump -i lo
+
+# Listen on eth0 interface
+tcpdump -i eth0
+
+# Listen on all interfaces
+tcpdump -i any
+
+tcpdump -i any port 8080
+tcpdump -i any dst port 8080 and src 172.0.0.3
+
+# Print all packets arriving at or departing from 172.0.0.3
+tcpdump host 172.0.0.3
+```
+
+## How to use `nc`?
+
+```
+# Act as chat server, listen at 2399
+nc -l 1234
+
+# Act as chat client
+nc localhost 1234
+```
+
+## screen
+
+```
+# List sessions
+screen -ls
+
+# Reattach to a detached screen process
+screen -r
+
+Reattach if possible, otherwise start a new session
+screen -R
+```

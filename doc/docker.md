@@ -11,6 +11,45 @@ docker run -p "3000:8080" image-name
 docker run -p "3000:8080" -it image-name bash
 ```
 
+### Show node labels
+
+```
+docker node ls -q | xargs docker node inspect \
+  -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'
+
+docker node ls -q | xargs docker node inspect \
+  -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ range $k, $v := .Spec.Labels }}{{ $k }}={{ $v }} {{end}}'
+```
+
+### Swarm network
+
+```
+https://stackoverflow.com/questions/52665442/docker-swarm-host-cannot-resolve-hosts-on-other-nodes
+```
+
+## Ctrl-p behaving unexpectedly under Docker
+
+The command sequence to detach from a docker container is ctrl-p ctrl-q, which is why ctrl-p doesn't
+work as expected. When you hit ctrl-p, docker is waiting on ctrl-q, so nothing happens.
+
+You can use the new --detach-keys argument to docker run to override this sequence to be something other than ctrl-p:
+
+```
+docker run -ti --detach-keys="ctrl-@" ubuntu:14.04 bash
+```
+
+If you want, you can add this to your ~/.docker/config.json file to persist this change:
+
+```
+{
+  ...
+  "detachKeys": "ctrl-@",
+  ...
+}
+```
+
+Ref: https://stackoverflow.com/questions/41820108/ctrl-p-and-ctrl-n-behaving-unexpectedly-under-docker
+
 ## How to build a docker image with http proxy?
 
 ```
