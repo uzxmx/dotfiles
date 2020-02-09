@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+#
+# Search file contents.
+
+source ~/.dotfiles/scripts/lib/fzf.sh
+
+rg --line-number --hidden . | pipe_to_fzf result --delimiter=: --nth=3..
+
+if [[ -n "${result[2]}" ]]; then
+  file=$(echo ${result[2]} | awk -F : '{print $1}')
+  lineno=$(echo ${result[2]} | awk -F : '{print $2}')
+fi
+
+if [[ -z "${result[1]}" && -n "$file" && -n "$lineno" ]]; then
+  vi "$file" "+norm ${lineno}G"
+  exit $?
+fi
