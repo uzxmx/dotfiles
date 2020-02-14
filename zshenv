@@ -1,4 +1,3 @@
-# Use `~/.zshenv.pre.local` if you want to predefine values for PATH for some system.
 [[ -f ~/.zshenv.pre.local ]] && source ~/.zshenv.pre.local
 
 export GOPATH=$HOME/go
@@ -10,4 +9,5 @@ export GOPROXY=https://goproxy.io
 # Use `asdf where java` to find the JAVA_HOME
 export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
 
-PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/bin:$PATH
+# Use a clean PATH variable
+PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
