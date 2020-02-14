@@ -17,6 +17,7 @@ fi
 
 source ~/.zsh_plugins.sh
 source ~/.zsh/configs.zsh
+source ~/.zsh/aliases.zsh
 source ~/.zsh/completions.zsh
 source ~/.zsh/library.zsh
 

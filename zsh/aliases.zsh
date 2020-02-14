@@ -1,19 +1,7 @@
-alias va="vagrant"
-alias p="pwd"
-
-# Utils
-alias l="ls -1tA"
-alias la="ls -a"
-alias ll="ls -lh"
-alias f="fe"
-alias mkdir="mkdir -p"
-alias get='wget --continue --progress=bar'
-alias html2pug="html2pug -d"
-alias vi_tiny="vi -u NONE"
+alias dc="docker-compose"
 alias e='$EDITOR'
-alias v='$VISUAL'
-alias h="sudo vi /etc/hosts"
-alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
+alias f="fe"
+alias get='wget --continue --progress=bar'
 
 # Git
 alias ga="git add"
@@ -37,18 +25,22 @@ alias grs="git reset"
 alias gs="git status"
 alias gss="git stash"
 
-# Bundler
-alias b="bundle"
-
-# Rails
+alias h="sudo vi /etc/hosts"
+alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
+alias l="ls -1tA"
+alias la="ls -a"
+alias ll="ls -lh"
+alias m="mkdir -p"
 alias migrate="bundle exec rake db:migrate"
-
-# Docker
-alias dc="docker-compose"
+alias vi_tiny="vi -u NONE"
+alias v='$VISUAL'
+alias va="vagrant"
+alias p="pwd"
+alias sd="s ~/.dotfiles"
+alias sdd="s ~/.dotfiles/doc"
 
 case $OSTYPE in
   darwin*)
-    # alias ctags-objc="ctags --languages=objectivec --langmap=objectivec:.h.m"
     alias ctags="ctags --languages=objectivec --langmap=objectivec:.h.m"
     ;;
 esac

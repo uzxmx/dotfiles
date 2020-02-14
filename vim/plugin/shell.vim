@@ -47,7 +47,7 @@ endfunction
 " For example:
 "
 "   `:'<,'>PipeToShell tr a-z A-Z` will make selected characters upper case.
-"   `:'<,'>PipeToShell html2pug` will convert selected html to pug.
+"   `:'<,'>PipeToShell html2pug -d` will convert selected html to pug.
 "
 command! -range -complete=shellcmd -nargs=* PipeToShell <line1>,<line2>call s:PipeToShell(<q-args>)
 function! s:PipeToShell(str) range

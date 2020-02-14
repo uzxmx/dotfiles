@@ -104,17 +104,5 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 export VISUAL=vi
 export EDITOR=$VISUAL
 
-PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:/usr/local/bin:$PATH
-
-# TODO add doc
+# `ZSH_UTILS_CD_PATH` defines an array of directory paths to be selected when using `c`.
 ZSH_UTILS_CD_PATH=(~/tmp)
-
-export GOPATH=$HOME/go
-PATH=$GOPATH/bin:$PATH
-
-# This requires go version >= 1.11
-export GO111MODULE=on
-export GOPROXY=https://goproxy.io
-
-# Use `asdf where java` to find the JAVA_HOME
-export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
