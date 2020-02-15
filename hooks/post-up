@@ -20,8 +20,8 @@ if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
   fi
 fi
 
-erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
-erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
+type -p erb &>/dev/null && erb -T - $(dirname $0)/../vim/vimrc.generated.erb >~/.vim/vimrc.generated
+type -p erb &>/dev/null && erb -T - $(dirname $0)/../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
 
 install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
@@ -33,15 +33,18 @@ check_and_install_executable 'antibody' 'install_antibody' || exit $?
 install_js_beautify() {
   npm install -g js-beautify
 }
-check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
+type -p npm &>/dev/null && check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
 
+# `bc` is required by tmux.conf
 executables=(
+  bc
+  jq
   "netcat|nc"
   socat
   fzf
   fd
   hstr
   rlwrap
-  ag
+  rg
 )
 check_and_install_executables $executables || exit $?

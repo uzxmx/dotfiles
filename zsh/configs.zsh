@@ -106,3 +106,15 @@ export EDITOR=$VISUAL
 
 # `ZSH_UTILS_CD_PATH` defines an array of directory paths to be selected when using `c`.
 ZSH_UTILS_CD_PATH=(~/tmp)
+
+export GOPATH=$HOME/go
+
+# This requires go version >= 1.11
+export GO111MODULE=on
+export GOPROXY=https://goproxy.io
+
+# Use `asdf where java` to find the JAVA_HOME
+export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
+
+# Use a clean PATH variable
+PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
