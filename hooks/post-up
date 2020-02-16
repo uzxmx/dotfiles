@@ -29,11 +29,13 @@ install_antibody() {
 }
 check_and_install_executable 'antibody' 'install_antibody' || exit $?
 
-# vim-autoformat depends on js-beautify.
-install_js_beautify() {
-  npm install -g js-beautify
-}
-type -p npm &>/dev/null && check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
+if type -p npm &>/dev/null; then
+  # vim-autoformat depends on js-beautify.
+  install_js_beautify() {
+    npm install -g js-beautify
+  }
+  check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
+fi
 
 # `bc` is required by tmux.conf
 executables=(

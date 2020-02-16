@@ -1,12 +1,19 @@
 # Zsh 5.3.1 is required.
 
 autoload -Uz compinit
-if [[ "$OSTYPE" =~ ^darwin.* ]]; then
-  [[ $(date +'%j') == $(stat -f '%Sm' -t '%j' ~/.zcompdump) ]]
+if [[ -f ~/.zcompdump ]]; then
+  if [[ "$OSTYPE" =~ ^darwin.* ]]; then
+    [[ $(date +'%j') == $(stat -f '%Sm' -t '%j' ~/.zcompdump) ]]
+  else
+    [[ $(date +'%j') == $(date -d "`stat -c '%z' ~/.zcompdump`" +'%j') ]]
+  fi
+  if [[ $? != 0 ]]; then
+    valid_zcompdump=0
+  fi
 else
-  [[ $(date +'%j') == $(date -d "`stat -c '%z' ~/.zcompdump`" +'%j') ]]
+  valid_zcompdump=0
 fi
-if [[ $? != 0 ]]; then
+if [[ $valid_zcompdump == 0 ]]; then
   compinit
   # On mac, it seems that ~/.zcompdump modification time is not updated when
   # executing `compinit`, so we force updating it.
