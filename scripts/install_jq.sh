@@ -7,6 +7,7 @@
 if is_mac; then
   brew_install jq
 elif has_yum; then
+  sudo yum install -y epel-release
   sudo yum install -y jq
 else
   abort "Unsupported system"

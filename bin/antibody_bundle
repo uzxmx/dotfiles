@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 #
 # Download plugins and save zsh settings to ~/.zsh_plugins.sh.
 #
