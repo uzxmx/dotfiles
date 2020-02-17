@@ -6,7 +6,6 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-
 call plug#begin('~/.vim/plugged')
 
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
@@ -63,7 +62,7 @@ Plug 'uzxmx/Match-Bracket-for-Objective-C', { 'for': 'objc' }
 Plug 'vim-scripts/VisIncr', { 'on': ['I'] }
 
 " This plugin causes the menu of nerdtree to show with an annoying delay.
-" Plug 'kshenoy/vim-signature' 
+" Plug 'kshenoy/vim-signature'
 
 Plug 'junegunn/fzf', { 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -73,6 +72,8 @@ Plug 'junegunn/fzf.vim'
 Plug 'janko/vim-test'
 Plug 'HerringtonDarkholme/yats.vim'
 Plug 'udalov/kotlin-vim'
+
+Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 
 call plug#end()
 

@@ -28,5 +28,37 @@
     "*.h": {
       "alternate": "./{}.cpp"
     }
+  },
+  "*.go": {
+    "*.go": {
+      "alternate": "{}_test.go"
+    },
+    "*_test.go": {
+      "alternate": "{}.go",
+      "template": [
+        "package {}",
+        "",
+        "import (",
+        "\t\"testing\"",
+        ")",
+        "",
+        "func TestFoo(t *testing.T) {",
+        "}"
+      ]
+    }
+  },
+  "pom.xml": {
+    "src/main/java/*.java": {
+      "alternate": "src/test/java/{}Tests.java"
+    },
+    "src/test/java/*Tests.java": {
+      "alternate": "src/main/java/{}.java",
+      "template": [
+        "package {dirname|dot};",
+        "",
+        "public class {basename}Tests {",
+        "}"
+      ]
+    }
   }
 }
