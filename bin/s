@@ -1,17 +1,28 @@
 #!/usr/bin/env zsh
 #
 # Search file contents.
+#
+# Usage:
+#   <enter>: Open selected file in curren shell.
+#   ctrl-v: View selected file in tmux panel.
 
 source ~/.dotfiles/scripts/lib/fzf.sh
 
-rg --line-number --hidden . | pipe_to_fzf result --delimiter=: --nth=3..
+# Note: {} is single quoted in fzf, so below we use `$(echo {2})` to strip single quotes.
+# Ref:
+#   https://github.com/junegunn/fzf#executing-external-programs
+#   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
+rg --line-number --hidden . "${1:-.}" | pipe_to_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
+  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo {2})G\"")'
 
-if [[ -n "${result[2]}" ]]; then
-  file=$(echo ${result[2]} | awk -F : '{print $1}')
-  lineno=$(echo ${result[2]} | awk -F : '{print $2}')
+# Above we didn't pass in any `--expect=`, so the array size is only 1.
+selection=${result[1]}
+if [[ -n $selection ]]; then
+  file=$(echo $selection | awk -F : '{print $1}')
+  lineno=$(echo $selection | awk -F : '{print $2}')
 fi
 
-if [[ -z "${result[1]}" && -n "$file" && -n "$lineno" ]]; then
-  vi "$file" "+norm ${lineno}G"
-  exit $?
+if [[ -n "$file" && -n "$lineno" ]]; then
+  cmd="vi '$file' '+norm ${lineno}G'"
+  eval $cmd
 fi

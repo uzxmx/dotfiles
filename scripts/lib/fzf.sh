@@ -2,6 +2,7 @@
 
 # This function must be used as a side of a pipe. When call is finished, an
 # array variable will be defined with name specified by the first parameter.
+# If you pass in `--expect=` argument, the array size will be 2, otherwise 1.
 #
 # NOTE: this function relies on zsh.
 #
