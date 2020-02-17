@@ -116,5 +116,8 @@ export GOPROXY=https://goproxy.io
 # Use `asdf where java` to find the JAVA_HOME
 export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
 
+export RUSTUP_HOME=/home/vagrant/.asdf/installs/rust/stable
+export CARGO_HOME=/home/vagrant/.asdf/installs/rust/stable
+
 # Use a clean PATH variable
 PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
