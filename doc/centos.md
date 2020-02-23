@@ -64,6 +64,14 @@ yum install yum-utils
 yumdownloader bucardo
 ```
 
+### yum whatprovides
+
+Find out which package owns some command:
+
+```
+yum whatprovides '*bin/dig'
+```
+
 ## rpm
 
 ### List files in an RPM file

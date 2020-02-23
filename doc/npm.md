@@ -1,3 +1,9 @@
+## npm install
+
+If `package-lock.json` satisfies `package.json`, then `package-lock.json` won't
+change. `npm install` won't update dependency version. For CI environment, you
+can use `npm ci` to install dependencies.
+
 ## NPM taobao mirrors
 
 ```

@@ -8,18 +8,19 @@
 
 source ~/.dotfiles/scripts/lib/fzf.sh
 
-# Note: {} is single quoted in fzf, so below we use `$(echo {2})` to strip single quotes.
+# Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
 # Ref:
 #   https://github.com/junegunn/fzf#executing-external-programs
 #   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
+export BAT_STYLE="numbers,header"
 rg --line-number --hidden . "${1:-.}" | pipe_to_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
-  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo {2})G\"")'
+  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")'
 
 # Above we didn't pass in any `--expect=`, so the array size is only 1.
 selection=${result[1]}
 if [[ -n $selection ]]; then
-  file=$(echo $selection | awk -F : '{print $1}')
-  lineno=$(echo $selection | awk -F : '{print $2}')
+  file=$(echo -E "$selection" | awk -F : '{print $1}')
+  lineno=$(echo -E "$selection" | awk -F : '{print $2}')
 fi
 
 if [[ -n "$file" && -n "$lineno" ]]; then

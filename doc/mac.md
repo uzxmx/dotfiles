@@ -25,3 +25,9 @@ sudo ntfs-3g /dev/disk2s3 /mount_point
 ```
 
 Refs: https://github.com/osxfuse/osxfuse/wiki/NTFS-3G
+
+## `date` gives wrong time (several seconds late)
+
+For 10.14 Mojave, execute `sudo sntp -sS pool.ntp.org`.
+
+Ref: https://apple.stackexchange.com/a/117865

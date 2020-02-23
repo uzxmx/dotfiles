@@ -178,3 +178,21 @@ screen -r
 Reattach if possible, otherwise start a new session
 screen -R
 ```
+
+## How to use dig?
+
+```
+dig @nameserver hostname
+dig @8.8.8.8 google.com
+dig @8.8.4.4 google.com
+```
+
+## tar
+
+```
+# List tar contents
+tar ztvf foo.tar.gz
+
+# Extract tar without root directory
+tar zxvf foo.tar.gz --strip-components=1
+```

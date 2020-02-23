@@ -11,4 +11,7 @@ elif [[ $# -eq 2 ]]; then
   git clone --depth 1 -b "$branch" "$url"
 elif [[ $# -eq 3 ]]; then
   git clone --depth 1 -b "$branch" "$url" "$directory"
+else
+  echo 'Usage: gcld <url> [branch] [directory]'
+  exit 1
 fi

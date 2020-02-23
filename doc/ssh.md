@@ -16,6 +16,12 @@ ssh-keygen -E md5 -lf id_rsa
 ssh-keygen -E md5 -lf id_rsa.pub
 ```
 
+## Force ssh client to use password authentication
+
+```
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no user@host
+```
+
 ## Agent forwarding
 
 ```

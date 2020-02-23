@@ -38,4 +38,14 @@ journalctl -k
 
 # Monitor new log messages
 journalctl -f
+journalctl -u <service-name> -f
 ```
+
+# SysVInit
+
+```
+service --status-all
+```
+
+According to ansible service module, init systems include BSD init, OpenRC, SysV, Solaris SMF, systemd, upstart.
+Ref: https://docs.ansible.com/ansible/latest/modules/service_module.html

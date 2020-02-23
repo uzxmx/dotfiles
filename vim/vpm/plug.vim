@@ -65,7 +65,7 @@ Plug 'vim-scripts/VisIncr', { 'on': ['I'] }
 " Plug 'kshenoy/vim-signature'
 
 Plug 'junegunn/fzf', { 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf.vim', { 'branch': '48a2d80' }
 
 " Plug 'ctrlpvim/ctrlp.vim'
 

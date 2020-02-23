@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 
+#
 # Convert multiple lines of pem file to one line.
 #
 # Example:

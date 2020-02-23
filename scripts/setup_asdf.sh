@@ -33,4 +33,4 @@ if [[ ! -e ~/.asdf/shims/node ]]; then
 fi
 asdf install nodejs 12.13.0
 
-asdf install java adopt-openjdk-9+181
+asdf install java adopt-openjdk-11.0.6+10

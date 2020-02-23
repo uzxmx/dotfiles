@@ -1,5 +1,6 @@
 python 3.8.0
 ruby 2.6.4
 nodejs 12.13.0
-java adopt-openjdk-9+181
+java adopt-openjdk-11.0.6+10
+maven 3.6.3
 rust stable

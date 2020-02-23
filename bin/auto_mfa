@@ -38,7 +38,7 @@ while { $retry_count <= 3 } {
     eof { exit }
   }
   set retry_count [expr $retry_count+1]
-  sleep 0.5
+  sleep 1
 }
 
 if { $success == 1 } {

@@ -119,5 +119,7 @@ export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
 export RUSTUP_HOME=/home/vagrant/.asdf/installs/rust/stable
 export CARGO_HOME=/home/vagrant/.asdf/installs/rust/stable
 
+export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
+
 # Use a clean PATH variable
 PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin

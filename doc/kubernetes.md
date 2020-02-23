@@ -33,3 +33,34 @@ wget -O stern ...
 chmod a+x stern
 sudo mv stern /usr/loca/bin
 ```
+
+## Megabyte v.s. Mebibyte
+
+1 Megabyte (MB)  = (1000)^2 bytes
+1 Mebibyte (MiB) = (1024)^2 bytes
+
+## security context, root container, non-root container
+
+fsGroup (volume ownership) isn't working as expected, so we need to use initContainer to fix file permissions.
+
+https://github.com/kubernetes/minikube/issues/1990
+https://github.com/kubernetes/examples/issues/260
+
+https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+https://github.com/elastic/helm-charts/blob/master/elasticsearch/values.yaml
+https://engineering.bitnami.com/articles/the-road-to-production-ready-charts.html
+https://engineering.bitnami.com/articles/running-non-root-containers-on-openshift.html
+
+## Helm chart: deleting a default key
+
+If you need to delete a key from the default values, you may override the value
+of the key to be `null`, in which case Helm will remove the key from the overridden
+values merge.
+
+Ref: https://helm.sh/docs/chart_template_guide/values_files/#deleting-a-default-key
+
+## kubectl exec as root
+
+1. Use `kubectl describe pod <pod-name>` to find docker container id
+1. SSH into the corresponding node
+1. Exec `docker exec -it -u root <docker-container-id> bash`
