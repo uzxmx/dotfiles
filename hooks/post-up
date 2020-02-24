@@ -2,6 +2,16 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+# We can think that when ~/.zcompdump doesn't exist, it indicates that it's the first time to run
+# `rcup`, so we need to source ~/.zshrc manually in order to make things right (like configuring
+# PATH variable etc.).
+if [ ! -e ~/.zcompdump ]; then
+  . ~/.zshrc
+  # After sourcing ~/.zshrc, ~/.zcompdump will be generated, so we need to remove it on exit.
+  zshexit() { rm ~/.zcompdump }
+  trap exit INT
+fi
+
 . $(dirname "$0")/../scripts/lib/utils.sh
 
 if is_mac; then
