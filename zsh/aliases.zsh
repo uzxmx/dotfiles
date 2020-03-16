@@ -37,6 +37,12 @@ alias vi_tiny="vi -u NONE"
 alias v='$VISUAL'
 alias va="vagrant"
 alias p="pwd"
+
+# proxyctl
+alias pe='() { source <(~/.dotfiles/scripts/proxyctl enable "$@") }'
+alias pd='() { source <(~/.dotfiles/scripts/proxyctl disable "$@") }'
+alias pi='() { source <(~/.dotfiles/scripts/proxyctl dump "$@") }'
+
 alias sd="s ~/.dotfiles"
 alias sdd="s ~/.dotfiles/doc"
 
