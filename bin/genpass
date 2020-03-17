@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Generate random password.
+
+set -e
+
+# GNU tr is required.
+if type gtr &>/dev/null; then
+  TR=gtr
+else
+  TR=tr
+fi
+
+head /dev/urandom | $TR -dc 'A-Za-z0-9' | head -c 15

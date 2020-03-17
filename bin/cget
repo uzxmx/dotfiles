@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# curl version of get. Continue download from last position.
+#
+# Usage:
+#   cget <url> [path-to-save]
+
+set -e
+
+case "$1" in
+  '' | '-h' | '--help')
+    sed -ne '/^#/!q;s/.\{1,2\}//;1,2d;p' <"$0"
+    exit 0
+    ;;
+esac
+
+if [[ -n "$2" ]]; then
+  curl -C- -L -o "$2" "$1"
+else
+  curl -C- -L -O "$1" "$2"
+fi
