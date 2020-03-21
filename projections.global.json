@@ -7,8 +7,8 @@
       "alternate": "./{}.c"
     }
   },
-  ".locals/playgrounds/": {
-    ".locals/playgrounds/*.rb": {
+  ".local/playgrounds/": {
+    ".local/playgrounds/*.rb": {
       "type": "playground",
       "timeline": true
     }
