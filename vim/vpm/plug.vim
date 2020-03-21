@@ -18,8 +18,8 @@ Plug 'airblade/vim-gitgutter'
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' } " TODO make this faster
 Plug 'uzxmx/vim-rails', { 'for': 'ruby' }
 Plug 'slim-template/vim-slim', { 'for': 'slim' }
-Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
-Plug 'tyok/nerdtree-ack', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
+Plug 'scrooloose/nerdtree', { 'on': ['NERDTree', 'NERDTreeToggle', 'NERDTreeFind'] }
+Plug 'tyok/nerdtree-ack', { 'on': ['NERDTree', 'NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'pbrisbin/vim-mkdir'
 Plug 'Shougo/context_filetype.vim'
 Plug 'tyru/caw.vim'
