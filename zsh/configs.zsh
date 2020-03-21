@@ -116,7 +116,7 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.io
 
 # Use `asdf where java` to find the JAVA_HOME
-export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-9+181
+export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.6+10
 
 export RUSTUP_HOME=/home/vagrant/.asdf/installs/rust/stable
 export CARGO_HOME=/home/vagrant/.asdf/installs/rust/stable
