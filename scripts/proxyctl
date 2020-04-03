@@ -37,7 +37,7 @@ check_gsed() {
     else
       cmd=sed
     fi
-    if ! gsed --version | head -1 | grep 'GNU sed' &>/dev/null; then
+    if ! $cmd --version | head -1 | grep 'GNU sed' &>/dev/null; then
       fatal 'GNU sed is required.'
       exit 1
     fi
