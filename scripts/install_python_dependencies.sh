@@ -7,6 +7,9 @@
 if has_yum; then
   echo -n 'Install python dependencies...'
   sudo yum install -y libffi-devel >/dev/null
+elif has_apt; then
+  echo -n 'Install python dependencies...'
+  sudo apt-get install -y libffi-dev zlib1g-dev libssl-dev libreadline-dev >/dev/null
 else
   exit 0
 fi

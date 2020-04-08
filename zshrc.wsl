@@ -1,0 +1,3 @@
+# Specific setup for WSL (Windows Subsystem for Linux)
+
+source ~/.zsh/ssh-agent.zsh

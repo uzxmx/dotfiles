@@ -1,0 +1,41 @@
+// Use vim to edit this file, so that it can be copied to the correct location on saving.
+//
+// To view the default settings, hold "alt" while clicking on the "Settings" button.
+// For documentation on these settings, see: https://aka.ms/terminal-documentation
+{
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "defaultProfile": "{9a771fbb-cb68-4e92-aaf3-79efbbeb3ed0}",
+  "copyOnSelect": true,
+  "profiles": {
+    "defaults":{},
+    "list": [
+      {
+        "guid": "{9a771fbb-cb68-4e92-aaf3-79efbbeb3ed0}",
+        "name": "Default",
+        "commandline": "wsl.exe -u root -- /bin/login -f uzxmx",
+        "hidden": false,
+        "icon": "ms-appx:///ProfileIcons/{61c54bbd-c2c6-5271-96e7-009a87ff44bf}.png",
+        "colorScheme": "Solarized Dark"
+      }
+    ]
+  },
+
+  // Add custom color schemes to this array
+  "schemes": [],
+
+  // Add any keybinding overrides to this array.
+  // To unbind a default keybinding, set the command to "unbound"
+  "keybindings": [
+    { "command": "newTab", "keys": "ctrl+shift+t" },
+    { "command": { "action": "switchToTab", "index": 0 }, "keys": "alt+1" },
+    { "command": { "action": "switchToTab", "index": 1 }, "keys": "alt+2" },
+    { "command": { "action": "switchToTab", "index": 2 }, "keys": "alt+3" },
+    { "command": { "action": "switchToTab", "index": 3 }, "keys": "alt+4" },
+    { "command": { "action": "switchToTab", "index": 4 }, "keys": "alt+5" },
+    { "command": { "action": "switchToTab", "index": 5 }, "keys": "alt+6" },
+    { "command": { "action": "switchToTab", "index": 6 }, "keys": "alt+7" },
+    { "command": { "action": "switchToTab", "index": 7 }, "keys": "alt+8" },
+    { "command": { "action": "switchToTab", "index": 8 }, "keys": "alt+9" },
+    { "command": "toggleFullscreen", "keys": "alt+enter" }
+  ]
+}

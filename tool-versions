@@ -4,3 +4,4 @@ nodejs 12.13.0
 java adopt-openjdk-11.0.6+10
 maven 3.6.3
 rust stable
+golang 1.14.1

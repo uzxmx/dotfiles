@@ -125,3 +125,10 @@ export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+a
 
 # Use a clean PATH variable
 PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
+  _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"
+  if [[ -n "$_path" ]]; then
+    PATH="$PATH:$_path"
+  fi
+fi

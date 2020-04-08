@@ -7,8 +7,6 @@
 if is_mac; then
   brew_install fzf
   /usr/local/opt/fzf/install --key-bindings --completion --no-bash --no-update-rc
-elif has_apt; then
-  sudo apt-get install -y fzf
 else
   if $(test -d ~/.fzf && cd ~/.fzf && git status &>/dev/null); then
     git pull

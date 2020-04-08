@@ -9,6 +9,8 @@ if is_mac; then
 elif has_yum; then
   sudo yum install -y epel-release
   sudo yum install -y jq
+elif has_apt; then
+  sudo apt-get install -y jq
 else
   abort "Unsupported system"
 fi

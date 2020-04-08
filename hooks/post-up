@@ -20,10 +20,11 @@ chmod 600 ~/.ssh/config
 if is_mac; then
   platform=osx
   [[ ! -e ~/bin/vscode ]] && ln -s "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ~/bin/vscode
+elif is_wsl; then
+  platform=wsl
 fi
 
 if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
-  # TODO check if we need to use -e to test file existence
   if [ -f ~/.zshrc.platform ]; then
     if [ $? != 0 -o "$(readlink ~/.zshrc.platform)" != "$(ls -d ~)/.zshrc.$platform" ]; then
       warn "Failed to link ~/.zshrc.platform to ~/.zshrc.$platform, please check ~/.zshrc.platform"
@@ -50,7 +51,6 @@ if type -p npm &>/dev/null; then
   check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
 fi
 
-# `bc` is required by tmux.conf
 executables=(
   bc
   jq

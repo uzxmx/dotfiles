@@ -3,6 +3,11 @@
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
+if ! type totp &>/dev/null; then
+  echo 'totp not found. Please install it by running ~/.dotfiles/scripts/install_totp.sh'
+  exit 1
+fi
+
 if [[ $# = 0 ]]; then
   selection=$(totp config list | sed 1,2d | awk '{print $1}' | fzf)
   if [[ -n $selection ]]; then

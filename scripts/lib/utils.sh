@@ -12,7 +12,12 @@
 _color_output() {
   local color="$1" reset='%f'
   shift
-  echo "${(%)color}$@${(%)reset}"
+  # TODO add bash support
+  if [[ "$SHELL" =~ "zsh$" ]]; then
+    echo "${(%)color}$@${(%)reset}"
+  else
+    echo "$@"
+  fi
 }
 
 info() {
@@ -29,7 +34,9 @@ error() {
 
 # Output error message to stderr, and exit.
 abort() {
-  error "$@" >/dev/stderr
+  # Here if we use /dev/stderr, nvim on WSL may raise error '/dev/stderr: no such device or address' when executing a job.
+  error "$@" >&2
+
   exit 1
 }
 
@@ -57,6 +64,10 @@ is_mac() {
   else
     return 1
   fi
+}
+
+is_wsl() {
+  [[ "$(uname -r)" =~ "Microsoft$" ]]
 }
 
 has_apt() {

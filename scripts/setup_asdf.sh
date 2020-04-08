@@ -18,19 +18,21 @@ if [[ ! -e ~/.asdf ]]; then
   . ~/.asdf/asdf.sh
 fi
 
-plugins=(python ruby nodejs java)
+plugins=(python ruby nodejs java golang)
 for plugin in ${plugins[*]}; do
   if ! asdf plugin-list | grep "$plugin" &>/dev/null; then
     asdf plugin-add "$plugin"
   fi
 done
 
-asdf install python 3.8.0
-asdf install ruby 2.6.4
-
 if [[ ! -e ~/.asdf/shims/node ]]; then
   ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
 fi
-asdf install nodejs 12.13.0
 
-asdf install java adopt-openjdk-11.0.6+10
+parse_package_version() {
+  grep "$1" ~/.dotfiles/tool-versions | cut -d ' ' -f 2 | head -1
+}
+
+for plugin in ${plugins[*]}; do
+  asdf install "$plugin" "$(parse_package_version $plugin)"
+done
