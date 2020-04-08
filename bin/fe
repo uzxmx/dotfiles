@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# Open the selected file with the default editor. You can also press ctrl-n to
+# create a new file from selected file and edit it.
+
+set -e
+
+dir="${1:-.}"
+shift || true
+IFS=$'\n'
+files=($(fd --type f . "$dir" | fzf --query="$1" --multi --select-1 --exit-0 --expect="ctrl-n"))
+if [ "${files[0]}" = "ctrl-n" ]; then
+  src_file="${files[1]}"
+  if [ -z "$src_file" ]; then
+    echo 'A source file is required when creating a new file.'
+    exit 1
+  fi
+  while true; do
+    target_file=$(rlwrap -S "Target file: " -P "$src_file" -o cat)
+    if [ -e "$target_file" ]; then
+      echo "File '$target_file' already exists"
+    else
+      break
+    fi
+  done
+  cp "$src_file" "$target_file"
+  files=("$target_file")
+fi
+
+if [ -n "$files" ]; then
+  editor=${EDITOR:-vim}
+  if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
+    args="+lcd %:h"
+  fi
+  $editor $args ${files[@]}
+fi

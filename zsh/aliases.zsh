@@ -1,6 +1,16 @@
 alias dc="docker-compose"
 alias e='$EDITOR'
+
 alias f="fe"
+alias fed="fe ~/.dotfiles"
+alias fedb="fe ~/.dotfiles/bin"
+alias fedd="fe ~/.dotfiles/doc"
+alias fedz="fe ~/.dotfiles/zsh"
+alias fedv="fe ~/.dotfiles/vim"
+alias fedh="fe ~/.dotfiles/hooks"
+alias feds="fe ~/.dotfiles/scripts"
+alias fev="fe ~/.vim"
+
 alias get='wget --continue --progress=bar'
 
 # Git
@@ -31,6 +41,9 @@ alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 alias l="ls -1tA"
 alias la="ls -a"
 alias ll="ls -lh"
+
+alias lg="lazygit"
+
 alias m="mkdir -p"
 alias migrate="bundle exec rake db:migrate"
 alias vi_tiny="vi -u NONE"

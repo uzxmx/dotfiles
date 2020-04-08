@@ -16,4 +16,4 @@ tmp/**/*
 *.pyc
 .projections.json
 /config/projections.json
-.locals
+.local

@@ -17,32 +17,6 @@ disable_pry_rails() {
   export DISABLE_PRY_RAILS=1
 }
 
-# Open the selected file with the default editor
-# Bypass fuzzy finder if there's only one match (--select-1)
-# Exit if there's no match (--exit-0)
-_fe() {
-  local IFS files dir editor args
-  dir="$1"
-  shift
-  IFS=$'\n'
-  files=($(fd --type f . "$dir" | fzf --query="$1" --multi --select-1 --exit-0 --expect="ctrl-n"))
-  if [ "${files[1]}" = "ctrl-n" ]; then
-    local newfile
-    if [ -n "${files[2]}" ]; then
-      newfile=$(dirname "${files[2]}")
-    else
-      newfile=$dir
-    fi
-    local name=$(rlwrap -S "New file name: /usr/test" -P "$newfile" -o cat)
-  elif [ -n "$files" ]; then
-    editor=${EDITOR:-vim}
-    if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
-      args="+lcd %:h"
-    fi
-    $editor $args ${files[@]}
-  fi
-}
-
 _fed() {
   local IFS target dir editor
   dir=$1
@@ -56,16 +30,6 @@ _fed() {
   fi
 }
 
-alias fe="_fe ."
-alias fed="_fe ~/.dotfiles"
-alias fedb="_fe ~/.dotfiles/bin"
-alias fedd="_fe ~/.dotfiles/doc"
-alias fedz="_fe ~/.dotfiles/zsh"
-alias fedv="_fe ~/.dotfiles/vim"
-alias fedh="_fe ~/.dotfiles/hooks"
-alias feds="_fe ~/.dotfiles/scripts"
-
-alias fev="_fe ~/.vim"
 alias fevp="_fed ~/.vim/plugged"
 
 # Select a directory from current directory and change to there.
@@ -119,7 +83,7 @@ ssh() {
 }
 
 # Copy with progress
-cp_p () {
+cp_p() {
   rsync -WavP --human-readable --progress $1 $2
 }
 
