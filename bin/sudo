@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-executable=$(which -a sudo | grep /usr/)
+executable=$(which -a sudo | grep /usr/ | sed -n 1p)
 if [[ -v TMUX ]]; then
   $executable TMUX="${TMUX}" "$@"
 else

@@ -17,5 +17,5 @@ esac
 if [[ -n "$2" ]]; then
   curl -C- -L -o "$2" "$1"
 else
-  curl -C- -L -O "$1" "$2"
+  curl -C- -L -O "$1"
 fi
