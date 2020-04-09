@@ -37,3 +37,16 @@ git diff --cached --binary >foo.patch
 # Apply patch
 git apply foo.patch
 ```
+
+## Diff two directories with color
+
+```
+git diff --no-index dir1 dir2
+```
+
+## Find which branches a commit is on
+
+```
+git branch --contains <commit>
+git branch -r --contains <commit>
+```

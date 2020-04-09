@@ -196,3 +196,17 @@ tar ztvf foo.tar.gz
 # Extract tar without root directory
 tar zxvf foo.tar.gz --strip-components=1
 ```
+
+## User management
+
+```
+# List all groups
+getent group
+
+# Show current user groups
+groups
+id
+
+# Append a user to newgroup
+usermod -a -G newgroup user
+```
