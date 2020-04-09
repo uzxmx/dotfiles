@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+. $(dirname "$0")/utils.sh
+
+if is_mac; then
+  brew_install fortune cowsay
+elif has_apt; then
+  # `libaa-bin` provides `aafire` command to show fire in terminal.
+  sudo apt-get install -y fortune cowsay cmatrix sl libaa-bin figlet
+else
+  abort "Unsupported system"
+fi

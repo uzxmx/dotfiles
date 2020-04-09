@@ -124,7 +124,7 @@ export CARGO_HOME=/home/vagrant/.asdf/installs/rust/stable
 export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
 # Use a clean PATH variable
-PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 if [[ "$(uname -r)" =~ "Microsoft$" ]]; then
   _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"
