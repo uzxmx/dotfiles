@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#
+# https://major.io/icanhazip-com-faq/
+
+curl --silent https://ipv4.icanhazip.com/ | tee /dev/tty | cb >/dev/null
