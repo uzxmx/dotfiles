@@ -210,3 +210,27 @@ id
 # Append a user to newgroup
 usermod -a -G newgroup user
 ```
+
+## Pipe stdout while keeping it on screen
+
+```
+echo foo | tee >(grep foo)
+
+echo foo | tee /dev/tty | grep foo
+```
+
+Ref:
+
+* http://www.gnu.org/savannah-checkouts/gnu/bash/manual/bash.html#Process-Substitution
+* https://stackoverflow.com/a/5677265
+
+## Change ls colors
+
+```
+man dircolors
+```
+
+Ref:
+
+* https://unix.stackexchange.com/a/94505
+* http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors

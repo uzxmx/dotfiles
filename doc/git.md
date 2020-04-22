@@ -50,3 +50,13 @@ git diff --no-index dir1 dir2
 git branch --contains <commit>
 git branch -r --contains <commit>
 ```
+
+## Delete tag
+
+```
+# Delete remote tag
+git push --delete origin tagname
+
+# Delete local tag
+git tag -d tagname
+```

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# Override vendor wslpath because it's not satisfying.
+
+usage() {
+  cat <<-EOF 1>&2
+Translate a Windows path to a WSL path, and vice-versa.
+
+Usage: $0 [-u | -w] <path>
+
+[-u] Translate from a Windows path to a WSL path (default)
+[-w] Translate from a WSL path to a Windows path (default)
+[-h] Show help
+EOF
+  exit 1
+}
+
+while getopts "uwh" opt; do
+  case "$opt" in
+    u)
+      wanttype=unix
+      ;;
+    w)
+      wanttype=windows
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+shift $(($OPTIND - 1))
+
+source ~/.dotfiles/scripts/lib/wsl.sh
+
+case $wanttype in
+  unix)
+    # TODO
+    ;;
+  windows)
+    path="$(realpath "$1")"
+    if [[ "$path" =~ ^/mnt/? ]]; then
+      drive=$(echo "$path" | cut -d "/" -f 3)
+      path=$(echo "$path" | sed -e "s:^/mnt/$drive::")
+    fi
+    path=$(echo "$path" | sed -e "s:/:\\\\:g")
+    if [ -n "$drive" ]; then
+      echo "$(echo $drive | tr "a-z" "A-Z"):$path"
+    else
+      if [[ "$WSL_ROOTFS_PATH" =~ \\$ ]]; then
+        WSL_ROOTFS_PATH="$(echo "$WSL_ROOTFS_PATH" | sed -e "s:\\\\\$::")"
+      fi
+      echo "${WSL_ROOTFS_PATH}$path"
+    fi
+    ;;
+esac

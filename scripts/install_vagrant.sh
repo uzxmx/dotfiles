@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Install vagrant (https://www.vagrantup.com/downloads.html)
+
+. $(dirname "$0")/utils.sh
+
+version="2.2.7"
+if has_dpkg; then
+  download_and_install_debian_package "https://releases.hashicorp.com/vagrant/$version/vagrant_${version}_x86_64.deb"
+else
+  abort 'Unsupported system'
+fi

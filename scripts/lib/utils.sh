@@ -67,7 +67,7 @@ is_mac() {
 }
 
 is_wsl() {
-  [[ "$(uname -r)" =~ "Microsoft$" ]]
+  [[ "$(uname -r)" =~ Microsoft$ ]]
 }
 
 has_apt() {
@@ -181,4 +181,19 @@ create_link() {
     rm "$src_file"
   fi
   ln -s "$target_file" "$src_file"
+}
+
+# Download and install a debian package.
+#
+# @params:
+#   $1: remote url
+download_and_install_debian_package() {
+  if [ -z "$1" ]; then
+    abort 'Remote url is required.'
+  fi
+  name="$(basename "$1")"
+  dest="/tmp/$name"
+  curl -C- -L -o "$dest" "$1"
+  sudo dpkg -i "$dest"
+  rm "$dest"
 }

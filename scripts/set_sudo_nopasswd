@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+. $(dirname "$0")/utils.sh
+
+if [ -z "$USER" ]; then
+  abort '$USER is empty.'
+fi
+
+echo "$USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers 1>/dev/null

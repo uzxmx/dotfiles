@@ -11,10 +11,9 @@
 #   git browser
 #   git browser release # View release branch in a browser.
 
-abort() {
-  echo $1 >/dev/stderr
-  exit 1
-}
+set -e
+
+source ~/.dotfiles/scripts/lib/utils.sh
 
 get_host() {
   echo "$1" | sed -e "s/^git@//" -e "s/:.*$//"
@@ -25,7 +24,7 @@ get_repo_path() {
 }
 
 open_url() {
-  if [ "$(uname -s)" = "Darwin" ]; then
+  if is_mac || is_wsl; then
     open "$1" 2>/dev/null
   else
     xdg-open "$1" &>/dev/null

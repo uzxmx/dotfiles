@@ -1,3 +1,5 @@
+# Kubernetes
+
 ## How to expose pod to be accessible directly out of cluster
 
 ```
@@ -32,6 +34,9 @@ Ref: https://github.com/wercker/stern
 wget -O stern ...
 chmod a+x stern
 sudo mv stern /usr/loca/bin
+
+stern kafka --tail 10
+stern -l app.kubernetes.io/name=kafka --tail 10
 ```
 
 ## Megabyte v.s. Mebibyte
@@ -51,7 +56,16 @@ https://github.com/elastic/helm-charts/blob/master/elasticsearch/values.yaml
 https://engineering.bitnami.com/articles/the-road-to-production-ready-charts.html
 https://engineering.bitnami.com/articles/running-non-root-containers-on-openshift.html
 
-## Helm chart: deleting a default key
+
+## kubectl exec as root
+
+1. Use `kubectl describe pod <pod-name>` to find docker container id
+1. SSH into the corresponding node
+1. Exec `docker exec -it -u root <docker-container-id> bash`
+
+# Helm
+
+## deleting a default key
 
 If you need to delete a key from the default values, you may override the value
 of the key to be `null`, in which case Helm will remove the key from the overridden
@@ -59,8 +73,20 @@ values merge.
 
 Ref: https://helm.sh/docs/chart_template_guide/values_files/#deleting-a-default-key
 
-## kubectl exec as root
+## Automatically roll
 
-1. Use `kubectl describe pod <pod-name>` to find docker container id
-1. SSH into the corresponding node
-1. Exec `docker exec -it -u root <docker-container-id> bash`
+Add `alwaysRoll` to `values.yaml`, and update deployment to:
+
+```
+spec:
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.alwaysRoll }}
+        rollUUID: {{ uuidv4 }}
+        {{- end }}
+```
+
+Then specify `--set alwaysRoll=true` when using helm command.
+
+Ref: https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments

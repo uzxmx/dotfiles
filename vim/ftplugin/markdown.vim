@@ -1,5 +1,5 @@
 " Enable spellchecking
 setlocal spell
 
-" Disable line wrap
-setlocal textwidth=0
+" Enable line wrap
+setlocal textwidth=80

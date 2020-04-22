@@ -9,10 +9,7 @@ if is_mac; then
 else
   version=7.4.0
   if has_dpkg; then
-    dest="/tmp/fd_${version}_amd64.deb"
-    wget "https://github.com/sharkdp/fd/releases/download/v${version}/fd_i${version}_amd64.deb" -O $dest
-    sudo dpkg -i $dest
-    rm $dest
+    download_and_install_debian_package "https://github.com/sharkdp/fd/releases/download/v${version}/fd_i${version}_amd64.deb"
   else
     basename="fd-v${version}-x86_64-unknown-linux-musl"
     cd /tmp && wget "https://github.com/sharkdp/fd/releases/download/v${version}/${basename}.tar.gz" -O "${basename}.tar.gz"

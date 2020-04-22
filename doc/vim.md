@@ -111,3 +111,11 @@ Use \r instead of \n.
 ```
 
 Ref: https://stackoverflow.com/questions/71323/how-to-replace-a-character-by-a-newline-in-vim
+
+## Ctrl-M is equivalent to Enter key
+
+```
+:h key-notation
+```
+
+Ref: https://stackoverflow.com/a/3936449

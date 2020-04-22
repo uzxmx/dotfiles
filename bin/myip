@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
-# https://major.io/icanhazip-com-faq/
+# Get IP of current machine (https://major.io/icanhazip-com-faq/)
+# We can also use `curl -s https://ipinfo.io/ip`.
 
-curl --silent https://ipv4.icanhazip.com/ | tee /dev/tty | cb >/dev/null
+curl --silent https://ipv4.icanhazip.com/ | tee >(cb >/dev/null)

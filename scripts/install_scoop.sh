@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Install scoop (https://scoop.sh/)
+
+. $(dirname "$0")/utils.sh
+
+command="Set-ExecutionPolicy RemoteSigned -scope CurrentUser; Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
+
+if [ -n "$http_proxy" ]; then
+  command="[net.webrequest]::defaultwebproxy = new-object net.webproxy $http_proxy; $command"
+fi
+
+powershell.exe -command "$command"

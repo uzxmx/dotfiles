@@ -5,6 +5,12 @@
 if [[ "$OSTYPE" =~ ^darwin.* ]]; then
   copy_cmd="pbcopy"
   paste_cmd="pbpaste"
+elif [[ "$(uname -r)" =~ Microsoft$ ]]; then
+  copy_cmd="clip.exe"
+  paste_cmd="pbpaste.exe"
+else
+  echo 'Unspported system'
+  exit 1
 fi
 
 # Copy from stdin when stdin is not a terminal.

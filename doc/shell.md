@@ -43,3 +43,13 @@ https://www.gnu.org/software/bash/manual/html_node/ANSI_002dC-Quoting.html
 # For centos
 yum install bash-completion
 ```
+
+## Print array elements on separate lines in bash
+
+```
+printf '%s\n' "${my_array[@]}"
+
+( IFS=$'\n'; echo "${my_array[*]}"  )
+```
+
+Ref: https://stackoverflow.com/questions/15691942/print-array-elements-on-separate-lines-in-bash
