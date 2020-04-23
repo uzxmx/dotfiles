@@ -35,8 +35,8 @@ alias gr="git remote -v"
 alias grs="git reset"
 alias gs="git status"
 alias gss="git stash"
+alias gt="git tag"
 
-alias h="sudo vi /etc/hosts"
 alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 alias l="ls -1tA"
 alias la="ls -a"

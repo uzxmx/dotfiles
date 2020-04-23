@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# This script can be used to update ips in Aliyun ECS security group rules
+# which are filtered by a description.
+
+set -e
+
+usage() {
+  cat <<-EOF 1>&2
+Update ips in Aliyun ECS security group rules.
+
+Usage: $0 -n <security group name> -d <rule description>
+
+[-n] Security group name
+[-d] Security group rule description
+[-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/utils.sh
+source ~/.dotfiles/scripts/lib/utils/check_variables.sh
+
+while getopts "n:d:h" opt; do
+  case "$opt" in
+    n)
+      securitygroupname="$OPTARG"
+      ;;
+    d)
+      ruledescription="$OPTARG"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+check_variables securitygroupname ruledescription || exit
+
+securitygroupid=$(aliyun ecs DescribeSecurityGroups | jq -r ".SecurityGroups.SecurityGroup[] | select(.SecurityGroupName == \"$securitygroupname\") | .SecurityGroupId")
+if [ -z "$securitygroupid" ]; then
+  abort 'Cannot find Security Group Id'
+fi
+list=$(aliyun ecs DescribeSecurityGroupAttribute --SecurityGroupId "$securitygroupid" | jq -r ".Permissions.Permission[] | select(.Description == \"$ruledescription\") | (.IpProtocol, .PortRange, .SourceCidrIp)")
+myip="$(myip)/32"
+while read protocol; read port; read ip; do
+  if [ "$myip" != "$ip" ]; then
+    aliyun ecs RevokeSecurityGroup --SecurityGroupId "$securitygroupid" --IpProtocol "$protocol" --PortRange "$port" --SourceCidrIp "$ip" >/dev/null
+    aliyun ecs AuthorizeSecurityGroup --SecurityGroupId "$securitygroupid" --IpProtocol "$protocol" --PortRange "$port" --SourceCidrIp "$myip" --Description "$ruledescription" >/dev/null
+  fi
+done < <(echo "$list" | tr ' ' "\n")

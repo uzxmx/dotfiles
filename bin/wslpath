@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Override vendor wslpath because it's not satisfying.
+# Override vendor wslpath because it cannot convert path in WSL rootfs
+# to Windows path, and vice-versa.
 
 usage() {
   cat <<-EOF 1>&2
@@ -9,7 +10,7 @@ Translate a Windows path to a WSL path, and vice-versa.
 Usage: $0 [-u | -w] <path>
 
 [-u] Translate from a Windows path to a WSL path (default)
-[-w] Translate from a WSL path to a Windows path (default)
+[-w] Translate from a WSL path to a Windows path
 [-h] Show help
 EOF
   exit 1
