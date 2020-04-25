@@ -13,10 +13,10 @@ _color_output() {
   local color="$1" reset='%f'
   shift
   # TODO add bash support
-  if [[ "$SHELL" =~ "zsh$" ]]; then
-    echo "${(%)color}$@${(%)reset}"
-  else
+  if [ -n "$BASH" ]; then
     echo "$@"
+  else
+    echo "${(%)color}$@${(%)reset}"
   fi
 }
 
@@ -112,12 +112,12 @@ check_and_install_executable() {
   local names=`split_by "$1" "|"`
   local primary_name=$(echo $names | head -1)
   echo -n "Checking $primary_name..."
-  echo "$names" | while read name; do
+  while read name; do
     if type -p $name &>/dev/null; then
       echo 'Found'
       return 0
     fi
-  done
+  done < <(echo "$names")
 
   echo 'Not found, installing...'
   local fn=$2

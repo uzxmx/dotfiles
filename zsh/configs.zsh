@@ -106,9 +106,6 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 export VISUAL=vi
 export EDITOR=$VISUAL
 
-# `ZSH_UTILS_CD_PATH` defines an array of directory paths to be selected when using `c`.
-ZSH_UTILS_CD_PATH=(~/tmp)
-
 export GOPATH=$HOME/go
 
 # This requires go version >= 1.11
@@ -116,15 +113,12 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.io
 
 # Use `asdf where java` to find the JAVA_HOME
-export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.6+10
-
-export RUSTUP_HOME=/home/vagrant/.asdf/installs/rust/stable
-export CARGO_HOME=/home/vagrant/.asdf/installs/rust/stable
+export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.7+10
 
 export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
 # Use a clean PATH variable
-PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/bin:$HOME/.cargo/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 if [[ "$(uname -r)" =~ Microsoft$ ]]; then
   _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"

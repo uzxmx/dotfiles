@@ -2,6 +2,8 @@
 #
 # This script will be evaluated after `rcup` finishes.
 
+set -eo pipefail
+
 # We can think that when ~/.zcompdump doesn't exist, it indicates that it's the first time to run
 # `rcup`, so we need to source ~/.zshrc manually in order to make things right (like configuring
 # PATH variable etc.).
@@ -13,6 +15,7 @@ if [ ! -e ~/.zcompdump ]; then
 fi
 
 . $(dirname "$0")/../scripts/lib/utils.sh
+. $(dirname "$0")/../scripts/lib/debug.sh
 
 # Fix bad permissions.
 chmod 600 ~/.ssh/config
@@ -44,14 +47,14 @@ install_antibody() {
   curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin
   ~/.dotfiles/bin/antibody_bundle
 }
-check_and_install_executable 'antibody' 'install_antibody' || exit $?
+check_and_install_executable 'antibody' 'install_antibody'
 
 if type -p npm &>/dev/null; then
   # vim-autoformat depends on js-beautify.
   install_js_beautify() {
     npm install -g js-beautify
   }
-  check_and_install_executable 'js-beautify' 'install_js_beautify' || exit $?
+  check_and_install_executable 'js-beautify' 'install_js_beautify'
 fi
 
 executables=(
@@ -60,10 +63,11 @@ executables=(
   "netcat|nc"
   socat
   fzf
-  bat
+  cargo
+  # bat
   fd
   hstr
   rlwrap
   rg
 )
-check_and_install_executables $executables || exit $?
+check_and_install_executables $executables

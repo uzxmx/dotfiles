@@ -1,9 +1,12 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 #
 # This script will be evaluated before `rcup` starts.
 
+set -eo pipefail
+
 . $(dirname "$0")/../scripts/lib/prompt.sh
 . $(dirname "$0")/../scripts/lib/utils.sh
+. $(dirname "$0")/../scripts/lib/debug.sh
 
 if [[ ! -d ~/bin ]]; then
   mkdir ~/bin

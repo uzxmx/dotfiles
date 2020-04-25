@@ -53,3 +53,9 @@ printf '%s\n' "${my_array[@]}"
 ```
 
 Ref: https://stackoverflow.com/questions/15691942/print-array-elements-on-separate-lines-in-bash
+
+## Pass arguments to a script read via stdin
+
+```
+cat script.sh | bash -s - arguments
+```
