@@ -21,7 +21,11 @@ fi
 plugins=(python ruby nodejs java golang)
 for plugin in ${plugins[*]}; do
   if ! asdf plugin-list | grep "$plugin" &>/dev/null; then
-    asdf plugin-add "$plugin"
+    if [ "$plugin" = "java" ]; then
+      asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
+    else
+      asdf plugin-add "$plugin"
+    fi
   fi
 done
 
