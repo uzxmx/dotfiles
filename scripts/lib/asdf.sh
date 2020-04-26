@@ -13,7 +13,7 @@ install_plugin_package() {
   if ! plugin_installed "$plugin"; then
     if [ "$plugin" = "java" ]; then
       asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
-    elif [ "$plugin" = "golang" ]
+    elif [ "$plugin" = "golang" ]; then
       # TODO Once https://github.com/kennyp/asdf-golang/pull/31 is merged, we can delete this.
       asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-golang.git
     else
