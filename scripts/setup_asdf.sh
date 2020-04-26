@@ -16,8 +16,8 @@ check_and_install_executable jq
 
 if [[ ! -e ~/.asdf ]]; then
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.7.4
-  . ~/.asdf/asdf.sh
 fi
+. ~/.asdf/asdf.sh
 
 plugins=(python ruby nodejs java golang)
 for plugin in ${plugins[*]}; do
