@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+
+install_plugin_package maven

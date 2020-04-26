@@ -3,6 +3,7 @@
 # Setup asdf
 
 . $(dirname "$0")/utils.sh
+. $(dirname "$0")/lib/asdf.sh
 
 # Required by asdf-python
 $(dirname "$0")/install_python_dependencies.sh
@@ -20,23 +21,5 @@ fi
 
 plugins=(python ruby nodejs java golang)
 for plugin in ${plugins[*]}; do
-  if ! asdf plugin-list | grep "$plugin" &>/dev/null; then
-    if [ "$plugin" = "java" ]; then
-      asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
-    else
-      asdf plugin-add "$plugin"
-    fi
-  fi
-done
-
-if [[ ! -e ~/.asdf/shims/node ]]; then
-  ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
-fi
-
-parse_package_version() {
-  grep "$1" ~/.dotfiles/tool-versions | cut -d ' ' -f 2 | head -1
-}
-
-for plugin in ${plugins[*]}; do
-  asdf install "$plugin" "$(parse_package_version $plugin)"
+  install_plugin_package "$plugin"
 done

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
-. $(dirname "$0")/lib/utils.sh
+. $(dirname "$BASH_SOURCE")/lib/utils.sh
