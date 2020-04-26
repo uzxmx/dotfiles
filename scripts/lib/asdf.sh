@@ -25,5 +25,9 @@ install_plugin_package() {
     ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
   fi
 
-  asdf install "$plugin" "$(parse_package_version $plugin)"
+  if [ "$plugin" = "golang" ]; then
+    BASE_URL=https://dl.google.com/go asdf install "$plugin" "$(parse_package_version $plugin)"
+  else
+    asdf install "$plugin" "$(parse_package_version $plugin)"
+  fi
 }
