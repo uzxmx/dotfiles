@@ -4,7 +4,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
   if v:shell_error
     echom 'Failed to download vim-plug.'
-    quit
+    cquit
   endif
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
