@@ -1,8 +1,11 @@
 " Check and install vim-plug automatically
 if empty(glob('~/.vim/autoload/plug.vim'))
-  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+  !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  " TODO prompt for confirmation to execute PlugInstall
+  if v:shell_error
+    echom 'Failed to download vim-plug.'
+    quit
+  endif
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
