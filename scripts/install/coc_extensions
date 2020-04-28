@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+cd ~/.config/coc/extensions
+npm install --global-style --ignore-scripts --no-bin-links --no-package-lock --only=prod
+
+# TODO Install jdt.ls for coc-java
