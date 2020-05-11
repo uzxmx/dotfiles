@@ -1,11 +1,11 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/utils.sh
 
 PROG="$0"
 
 ensure_passwordless_sudo() {
-  if ! sudo echo foo; then
+  if ! sudo echo foo > /dev/null; then
     tmux display-message "$PROG: Passwordless sudo is required."
     exit 1
   fi
