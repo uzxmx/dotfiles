@@ -13,9 +13,6 @@ install_plugin_package() {
   if ! plugin_installed "$plugin"; then
     if [ "$plugin" = "java" ]; then
       asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
-    elif [ "$plugin" = "golang" ]; then
-      # TODO Once https://github.com/kennyp/asdf-golang/pull/31 is merged, we can delete this.
-      asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-golang.git
     else
       asdf plugin-add "$plugin"
     fi
@@ -25,9 +22,5 @@ install_plugin_package() {
     ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
   fi
 
-  if [ "$plugin" = "golang" ]; then
-    BASE_URL=https://dl.google.com/go asdf install "$plugin" "$(parse_package_version $plugin)"
-  else
-    asdf install "$plugin" "$(parse_package_version $plugin)"
-  fi
+  asdf install "$plugin" "$(parse_package_version $plugin)"
 }
