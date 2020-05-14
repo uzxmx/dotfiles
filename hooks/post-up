@@ -25,9 +25,6 @@ if is_mac; then
   [[ ! -e ~/bin/vscode ]] && ln -s "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ~/bin/vscode
 elif is_wsl; then
   platform=wsl
-  [[ ! -e ~/bin/vagrant ]] && which vagrant.exe &>/dev/null \
-    && echo "#!/usr/bin/env bash\nvagrant.exe \"\$@\"" >~/bin/vagrant \
-    && chmod a+x ~/bin/vagrant
 fi
 
 if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then

@@ -2,8 +2,11 @@
 
 source ~/.zsh/ssh-agent.zsh
 
+# This is required when running vagrant from WSL.
+# Ref: https://www.vagrantup.com/docs/other/wsl.html#windows-access
+export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS=1
+
 eval "$(dircolors ~/.dircolors)"
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 
 alias scoop="powershell.exe -command scoop"
-alias vagrant="vagrant.exe"
