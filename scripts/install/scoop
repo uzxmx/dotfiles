@@ -2,7 +2,7 @@
 #
 # Install scoop (https://scoop.sh/)
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 command="Set-ExecutionPolicy RemoteSigned -scope CurrentUser; Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')"
 

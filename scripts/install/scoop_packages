@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Install scoop packages.
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/scoop.sh
+
+scoop install coreutils
