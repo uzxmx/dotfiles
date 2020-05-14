@@ -59,3 +59,41 @@ Ref: https://stackoverflow.com/questions/15691942/print-array-elements-on-separa
 ```
 cat script.sh | bash -s - arguments
 ```
+
+## How is return handled in a function while loop?
+
+In Bash, if `while` struct is specified as a pipe side, then it runs in a
+subshell. So `return` keyword will not exit from function.
+
+```
+testfn() {
+  echo "$names" | while read name; do
+    return 0
+  done
+  echo foo
+}
+```
+
+Instead, we can use process substitution.
+
+```
+testfn() {
+  while read name; do
+    return 0
+  done < <(echo "$names")
+  echo foo
+}
+```
+
+Ref: https://stackoverflow.com/questions/20910112/how-is-return-handled-in-a-function-while-loop
+
+## Aliases
+
+In bash, aliases are not expanded when the shell is not interactive, unless the
+`expand_aliases` shell option is set using `shopt`.
+
+## References
+
+* https://tldp.org/LDP/abs/html/index.html
+* http://zsh.sourceforge.net/Doc/Release/Parameters.html
+* https://www.gnu.org/software/bash/manual/html_node/index.html

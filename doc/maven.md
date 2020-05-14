@@ -24,3 +24,10 @@ mvn help:describe
 mvn help:describe -Dcmd=spring-boot:run -Ddetail
 mvn help:describe -Dplugin=org.jacoco:jacoco-maven-plugin -Ddetail
 ```
+
+## Redirect output to file when using surefire to test
+
+```
+# Output will be saved in PROJECT_ROOT/target/surefire-reports/xxx-output.txt
+mvn test -Dmaven.test.redirectTestOutputToFile=true
+```

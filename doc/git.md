@@ -60,3 +60,11 @@ git push --delete origin tagname
 # Delete local tag
 git tag -d tagname
 ```
+
+## Pull git submodules after cloning
+
+```
+git submodule update --init
+```
+
+Ref: https://stackoverflow.com/questions/16773642/pull-git-submodules-after-cloning-project-from-github

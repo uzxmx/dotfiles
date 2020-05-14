@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+#
+# Install coc.nvim extensions. (https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim#automation-script)
 
 . $(dirname "$BASH_SOURCE")/../utils.sh
 

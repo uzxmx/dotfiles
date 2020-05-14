@@ -110,3 +110,16 @@ rpm -i some-file.rpm
 # Install without dependencies
 rpm -i --nodeps some-file.rpm
 ```
+
+## Boot in GUI mode
+
+Make sure command `startx` is available, if not, execute below:
+
+```
+sudo yum groups install -y 'GNOME Desktop'
+```
+
+Then execute `startx` to go into GUI mode. To always go into gui mode after
+rebooting, do this: `sudo systemctl set-default graphical.target`.
+
+Ref: https://geekflare.com/centos-gui-mode/
