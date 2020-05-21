@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#
+# OSC52 copy to clipboard.
+
+if [ ! -t 0 ]; then
+  content="$(base64)"
+else
+  content="$(echo -n "$1" | base64)"
+fi
+echo -en "\e]52;;$content\a"
