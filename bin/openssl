@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+#
+# Usage:
+#
+# - exp: show expiration info
+# openssl exp example.com
+#
+# - exp_file: show expiration info by file
+# openssl exp_file cert.pem
+#
+# - verify: verify a host
+# openssl verify example.com
+#
+# - pubkey: get public key of a host
+# openssl pubkey example.com
+#
+# - cert: get certificate of a host
+# openssl cert example.com
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+show_expiration() {
+  echo | openssl s_client -connect $1:443 -servername $1 2>/dev/null | openssl x509 -noout -dates
+}
+
+host="$2"
+case "$1" in
+  exp)
+    show_expiration $host
+    ;;
+  exp_file)
+    openssl x509 -enddate -noout -in $2
+    ;;
+  verify)
+    openssl s_client -connect $host:443 -servername $host < /dev/null
+    show_expiration $host
+    ;;
+  pubkey)
+    openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509 -pubkey -noout
+    ;;
+  cert)
+    openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509
+    ;;
+  *)
+    openssl "$@"
+    exit
+esac
