@@ -30,7 +30,8 @@ fi
 if [ -n "$files" ]; then
   editor=${EDITOR:-vim}
   if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
-    args="+lcd %:h"
+    # Invoke `Rooter` command to change to correct root directory.
+    args="+Rooter"
   fi
   $editor $args ${files[@]}
 fi

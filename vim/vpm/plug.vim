@@ -78,6 +78,8 @@ Plug 'udalov/kotlin-vim'
 
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 
+Plug 'airblade/vim-rooter'
+
 call plug#end()
 
 augroup nerd_loader
