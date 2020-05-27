@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Install yarn (https://yarnpkg.com/getting-started/install)
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+npm install -g yarn
