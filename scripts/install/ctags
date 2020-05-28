@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Install ctags.
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if is_mac; then
+  brew_install ctags --HEAD
+elif has_yum; then
+  sudo yum install -y ctags
+else
+  abort "Unsupported system"
+fi
