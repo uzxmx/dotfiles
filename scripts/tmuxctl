@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# This script helps you manage tmux.
+
+set -eo pipefail
+
+usage() {
+  echo "Usage: $0 <new | attach | detach>" >&2
+  exit 1
+}
+
+fatal() {
+  echo "$@" >&2
+  exit 1
+}
+
+is_in_tmux_session() {
+  [ -n "$TMUX" ]
+}
+
+# TODO Prompt for a session name
+new() {
+  tmux new-session
+}
+
+attach() {
+  local IFS=$'\n'
+  sessions=($(tmux list-sessions))
+  if [ -z "$sessions" ]; then
+    new
+    return
+  fi
+
+  if [ "${#sessions[@]}" = "1" ]; then
+    session="${sessions[0]}"
+  else
+    session="$(echo "${sessions[*]}" | fzf)"
+  fi
+
+  name="$(echo "$session" | cut -d ":" -f 1)"
+  tmux attach -t "$name"
+}
+
+detach() {
+  if ! is_in_tmux_session; then
+    fatal "Failed to detach, because you are currently not in a Tmux session."
+  fi
+  tmux detach
+}
+
+case "$1" in
+  new | attach | detach)
+    $1
+    ;;
+  *)
+    usage
+    ;;
+esac

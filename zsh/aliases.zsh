@@ -25,6 +25,7 @@ alias gco="git checkout"
 alias gcl="git clone"
 alias gd="git diff"
 alias gdc="git diff --cached"
+alias gf="git fetch"
 alias gh="git help"
 alias gl="git log"
 alias gp="git pull"
@@ -32,9 +33,12 @@ alias gps="git push"
 alias gpss="git pushs"
 alias gpr="git pr"
 alias gr="git remote -v"
+alias grb="git rebase"
 alias grs="git reset"
 alias gs="git status"
+alias gsa="git stash apply"
 alias gss="git stash"
+alias gsp="git stash pop"
 alias gt="git tag"
 
 alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
@@ -58,6 +62,10 @@ alias pi='() { source <(~/.dotfiles/scripts/proxyctl dump "$@") }'
 
 alias sd="s ~/.dotfiles"
 alias sdd="s ~/.dotfiles/doc"
+
+alias ta="~/.dotfiles/scripts/tmuxctl attach"
+alias td="~/.dotfiles/scripts/tmuxctl detach"
+alias tn="~/.dotfiles/scripts/tmuxctl new"
 
 case $OSTYPE in
   darwin*)
