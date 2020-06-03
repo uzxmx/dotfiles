@@ -16,7 +16,8 @@ let g:python3_host_prog = '<%= python3_path %>'
 let g:coc_node_path = '<%= node_path %>'
 <% end -%>
 
-<% if %x[uname -r] =~ /Microsoft/ -%>
+<%# WSL or ~/.windows_terminal file indicates we are currently in windows terminal. %>
+<% if %x[uname -r] =~ /Microsoft/ || File.exist?(File.expand_path('~/.windows_terminal')) -%>
 " For windows terminal, it doesn't support semi-transparent cursor, so we
 " change vim's cursor shape to thin vertical bar in normal mode to view text
 " clearly. Once microsoft/terminal#1203 is resolved, it may support
