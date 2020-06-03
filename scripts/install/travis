@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#
+# Install travis.
+
+gem install travis

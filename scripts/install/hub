@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Install hub (https://github.com/github/hub).
+
+type -p hub &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="2.14.2"
+path_to_save="/tmp/hub-$version.tgz"
+if is_mac; then
+  platform="darwin"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "https://github.com/github/hub/releases/download/v$version/hub-$platform-amd64-$version.tgz" $path_to_save
+tar zxf $path_to_save -C /tmp
+dir=/tmp/hub-$platform-amd64-$version
+cp $dir/bin/hub ~/bin
+rm -rf $dir
