@@ -70,6 +70,10 @@ is_wsl() {
   [[ "$(uname -r)" =~ Microsoft$ ]]
 }
 
+is_linux() {
+  [[ "$OSTYPE" =~ ^linux ]]
+}
+
 has_apt() {
   if type -p apt-get &>/dev/null; then
     return 0

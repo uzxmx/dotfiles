@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install aliyun-cli (https://github.com/aliyun/aliyun-cli)
+
+type -p aliyun &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="3.0.38"
+path_to_save="/tmp/aliyun-cli-$version.tgz"
+if is_mac; then
+  platform="macosx"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" $path_to_save
+tar zxf $path_to_save -C ~/bin
