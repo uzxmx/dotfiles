@@ -1,5 +1,5 @@
 let g:loaded_python_provider = 1
-let g:python_host_skip_check=1
+let g:python_host_skip_check = 1
 <% python2_path = File.expand_path('~/.asdf/installs/python/2.7.17/bin/python') -%>
 <% if File.exist?(python2_path) -%>
 let g:python_host_prog = '<%= python2_path %>'
@@ -14,4 +14,12 @@ let g:python3_host_prog = '<%= python3_path %>'
 <% node_path = File.expand_path('~/.asdf/installs/nodejs/12.13.0/bin/node') -%>
 <% if File.exist?(node_path) -%>
 let g:coc_node_path = '<%= node_path %>'
+<% end -%>
+
+<% if %x[uname -r] =~ /Microsoft/ -%>
+" For windows terminal, it doesn't support semi-transparent cursor, so we
+" change vim's cursor shape to thin vertical bar in normal mode to view text
+" clearly. Once microsoft/terminal#1203 is resolved, it may support
+" semi-transparency.
+set guicursor+=n:ver25,i-ci-ve:hor20-Cursor/lCursor
 <% end -%>

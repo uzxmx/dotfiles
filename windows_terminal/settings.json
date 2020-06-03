@@ -15,7 +15,8 @@
         "commandline": "wsl.exe -u root -- /bin/login -f uzxmx",
         "hidden": false,
         "icon": "ms-appx:///ProfileIcons/{61c54bbd-c2c6-5271-96e7-009a87ff44bf}.png",
-        "colorScheme": "Solarized Dark"
+        "colorScheme": "Solarized Dark",
+        "cursorShape": "bar"
       }
     ]
   },
@@ -36,6 +37,8 @@
     { "command": { "action": "switchToTab", "index": 6 }, "keys": "alt+7" },
     { "command": { "action": "switchToTab", "index": 7 }, "keys": "alt+8" },
     { "command": { "action": "switchToTab", "index": 8 }, "keys": "alt+9" },
+    { "command": { "action": "splitPane", "split": "horizontal" }, "keys": "ctrl+shift+-" },
+    { "command": { "action": "splitPane", "split": "vertical" }, "keys": "ctrl+shift+|" },
     { "command": "toggleFullscreen", "keys": "alt+enter" }
   ]
 }
