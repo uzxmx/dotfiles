@@ -75,27 +75,19 @@ is_linux() {
 }
 
 has_apt() {
-  if type -p apt-get &>/dev/null; then
-    return 0
-  else
-    return 1
-  fi
+  type -p apt-get &>/dev/null
 }
 
 has_dpkg() {
-  if type -p dpkg &>/dev/null; then
-    return 0
-  else
-    return 1
-  fi
+  type -p dpkg &>/dev/null
 }
 
 has_yum() {
-  if type -p yum &>/dev/null; then
-    return 0
-  else
-    return 1
-  fi
+  type -p yum &>/dev/null
+}
+
+has_snap() {
+  type -p snap &>/dev/null
 }
 
 brew_install() {
@@ -105,8 +97,8 @@ brew_install() {
   brew install "$@"
 }
 
-# Check if executable exists. If not, install it. A script with name `install_${executable}.sh`
-# should exist in folder ~/.dotfiles/scripts.
+# Check if executable exists. If not, install it. A script with name `${executable}'
+# should exist in folder ~/.dotfiles/scripts/install.
 #
 # @params:
 #   $1: executable name, multiple alias names are supported with `|` as separator, e.g. `netcat|nc`
@@ -128,7 +120,7 @@ check_and_install_executable() {
   if [ -n "$fn" ]; then
     $fn
   else
-    $HOME/.dotfiles/scripts/install_${primary_name}.sh >/dev/null
+    $HOME/.dotfiles/scripts/install/${primary_name} >/dev/null
   fi
   ret=$?
   if [ $ret = 0 ]; then

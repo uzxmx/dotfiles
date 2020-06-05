@@ -6,10 +6,10 @@
 . $(dirname "$0")/lib/asdf.sh
 
 # Required by asdf-python
-$(dirname "$0")/install_python_dependencies.sh
+$(dirname "$0")/install/python_dependencies
 
 # Required by asdf-ruby
-$(dirname "$0")/install_ruby_dependencies.sh
+$(dirname "$0")/install/ruby_dependencies
 
 # Required by asdf-java
 check_and_install_executable jq

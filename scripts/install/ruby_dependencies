@@ -2,7 +2,7 @@
 #
 # Install ruby dependencies.
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if has_yum; then
   echo -n 'Install ruby dependencies...'

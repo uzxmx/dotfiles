@@ -2,12 +2,13 @@
 #
 # Install bat (https://github.com/sharkdp/bat)
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if is_mac; then
   brew_install bat
 elif has_yum && [ -z "$SKIP_ASDF" ]; then
-  $(dirname "$0")/install_rust.sh
+  # TODO install rust?
+  # $(dirname "$BASH_SOURCE")/rust
 
   # We won't need clang if below issue is resolved.
   # Ref: https://github.com/sharkdp/bat/issues/650

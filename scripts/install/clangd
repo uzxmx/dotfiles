@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Install clangd (https://clangd.llvm.org/installation.html).
+
+# type -p clangd &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if is_mac; then
+  brew_install llvm
+elif is_linux; then
+  # clangd depends on glibc 2.18. Manually run `~/.dotfiles/scripts/install/glibc 2.18'
+  version="10.0.0"
+  path_to_save="/tmp/clangd-$version.zip"
+  ~/.dotfiles/bin/cget "https://github.com/clangd/clangd/releases/download/$version/clangd-linux-$version.zip" $path_to_save
+  cd /tmp && unzip $path_to_save
+  cp /tmp/clangd_$version/bin/clangd ~/bin
+  rm -rf /tmp/clangd_$version
+else
+  abort "Unsupported system"
+fi

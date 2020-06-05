@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install bear (https://github.com/rizsotto/Bear).
+
+type -p bear &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="2.4.3"
+path_to_save="/tmp/Bear-$version.tgz"
+~/.dotfiles/bin/cget "https://github.com/rizsotto/Bear/archive/v$version.tar.gz" $path_to_save
+tar zxf $path_to_save -C /tmp
+cd /tmp/Bear-$version
+cmake .
+make all && sudo make install

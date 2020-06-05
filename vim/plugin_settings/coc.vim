@@ -31,8 +31,8 @@ nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
 
 augroup coc_group
     au!
-    au FileType java,go,typescript,kotlin nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
-    au FileType java,go,typescript,kotlin nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+    au FileType java,go,typescript,kotlin,c,cpp nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    au FileType java,go,typescript,kotlin,c,cpp nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
 
     au BufWritePre *.go :call CocAction('format')
     au User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')

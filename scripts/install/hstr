@@ -2,7 +2,7 @@
 #
 # Install hstr (https://github.com/dvorka/hstr)
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if is_mac; then
   brew_install hstr

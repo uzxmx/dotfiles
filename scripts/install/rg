@@ -2,7 +2,7 @@
 #
 # Install rg (https://github.com/BurntSushi/ripgrep)
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if is_mac; then
   brew_install ripgrep

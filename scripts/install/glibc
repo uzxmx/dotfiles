@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Install a glibc version.
+#
+# TODO check if a version has been installed before continuing.
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="$1"
+if [ -z "$version" ]; then
+  abort "A glibc version must be specified."
+fi
+
+if ! is_linux; then
+  abort "Unsupported system"
+fi
+
+install() {
+  local version="$1"
+  local path_to_save="/tmp/glibc-$version.tar.gz"
+  ~/.dotfiles/bin/cget "http://mirrors.ustc.edu.cn/gnu/libc/glibc-$version.tar.gz" $path_to_save
+  tar zxf $path_to_save -C /tmp
+  cd /tmp/glibc-$version && mkdir build && cd build \
+    && ../configure --prefix=/usr \
+    && make && sudo make install
+}
+
+install "$version"

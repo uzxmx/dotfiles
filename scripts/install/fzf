@@ -2,7 +2,7 @@
 #
 # Install fzf (https://github.com/junegunn/fzf)
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if is_mac; then
   brew_install fzf

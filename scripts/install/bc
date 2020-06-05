@@ -2,7 +2,7 @@
 #
 # Install bc.
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$BASH_SOURCE")/../utils.sh
 
 if has_yum; then
   sudo yum install -y bc

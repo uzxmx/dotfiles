@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "coc-clangd": ">=0.4.7",
     "coc-java": ">=1.4.10",
     "coc-omnisharp": ">=0.0.26",
     "coc-python": ">=1.2.12",

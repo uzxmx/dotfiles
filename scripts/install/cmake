@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Install cmake.
+
+type -p cmake &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if has_yum; then
+  sudo yum install -y cmake
+else
+  abort "Unsupported system"
+fi

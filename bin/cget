@@ -4,6 +4,8 @@
 #
 # Usage:
 #   cget <url> [path-to-save]
+#
+# TODO HTTP server doesn't seem to support byte ranges. Cannot resume.
 
 set -e
 

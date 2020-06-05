@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install snap (https://snapcraft.io/).
+
+type -p snap &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if has_yum; then
+  sudo yum install snapd
+  sudo systemctl enable --now snapd.socket
+  sudo ln -s /var/lib/snapd/snap /snap
+else
+  abort "Unsupported system"
+fi
