@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install kubectl (https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+type -p kubectl &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if is_mac; then
+  brew_install kubectl
+elif has_apt; then
+  # https://mirrors.tuna.tsinghua.edu.cn/help/kubernetes/
+  sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
+  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  echo "deb https://mirrors.tuna.tsinghua.edu.cn/kubernetes/apt kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+  sudo apt-get update
+  sudo apt-get install -y kubectl
+else
+  abort "Unsupported system"
+fi

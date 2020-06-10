@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Install eksctl (https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
+
+type -p eksctl &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+path_to_save="/tmp/eksctl.tar.gz"
+~/.dotfiles/bin/cget "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" $path_to_save
+tar zxf $path_to_save -C ~/bin

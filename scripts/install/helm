@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install helm (https://helm.sh/docs/intro/install/)
+
+type -p helm &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="3.2.3"
+path_to_save="/tmp/helm-$version.tgz"
+if is_mac; then
+  platform="darwin"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "https://get.helm.sh/helm-v$version-$platform-amd64.tar.gz" $path_to_save
+tar zxf $path_to_save -C ~/bin $platform-amd64/helm --strip-components 1
