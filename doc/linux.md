@@ -207,8 +207,11 @@ getent group
 groups
 id
 
-# Append a user to newgroup
+# Append a user to newgroup (need to re-login)
 usermod -a -G newgroup user
+
+# Remove a user from a group (need to re-login)
+gpasswd -d user group
 ```
 
 ## Pipe stdout while keeping it on screen

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Install docker (https://docs.docker.com/engine/install/)
+
+set -eo pipefail
+
+# Ensure current user is in docker group.
+check_group() {
+  if ! groups | grep docker &> /dev/null; then
+    sudo usermod -a -G docker vagrant
+    echo "You've been appended to docker group. To make it effective, you need to logout and login again."
+  fi
+}
+
+type -p docker &> /dev/null && check_group && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if has_yum; then
+  # https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/
+  sudo wget -O /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
+  sudo sed -i 's+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+  sudo yum install -y docker-ce
+else
+  abort "Unsupported system"
+fi
+
+check_group
