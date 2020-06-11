@@ -1,0 +1,46 @@
+# vi: ft=zsh tw=80
+<%# Banner for the generated file. -%>
+# Generated from ~/.dotfiles/zshrc.local.erb. When you add new changes to this
+# file, you may consider if those changes are valuable to go into that original
+# source file.
+
+<% if is_wsl = %x[uname -r] =~ /Microsoft/ -%>
+  <%- windows_username = %x[cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//'].chomp -%>
+<% end -%>
+## Uncomment below to use fzf to select a host to ssh.
+# ZSH_UTILS_SSH_HOSTS=(
+#   user@host
+#   "some-useful-description\tssh user@host"
+#   "with-custom-identity-file\tssh -i ~/.ssh/private.pem user@host"
+#   "bastion-server\tauto_mfa -n totp-secret-name -- ssh -p port user@host"
+#   "another-bastion-server\tauto_mfa -n totp-secret-name -c 'expect \"Opt>\"; send \"p\r\"; expect \"Opt>\"; send \"1\r\"' -- ssh -p port user@host"
+# )
+
+zsh_utils_cd_path_fn() {
+  find ~/projects -maxdepth 1 -type d
+  echo ~/go/src/github.com/uzxmx
+  <%- if is_wsl -%>
+  find /mnt/e/projects -maxdepth 1 -type d
+  echo '/mnt/c/Users/<%= windows_username -%>'
+  echo '/mnt/c/Users/<%= windows_username -%>/Downloads'
+  <%- end -%>
+}
+
+<% if is_wsl -%>
+PATH=/mnt/e/projects/boxes/bin:$PATH:/mnt/e/VirtualBox
+<% end -%>
+
+## Ref: ~/.dotfiles/scripts/proxyctl
+# export DEFAULT_HTTP_PROXY=localhost:8123
+## Speicify the ips that you don't want to proxy for.
+# export NO_PROXY="192.168.1.2,172.17.10.101,localhost"
+
+## Update values with your github tokens.
+# export TRAVIS_GITHUB_TOKEN=YOUR_TRAVIS_GITHUB_TOKEN
+# export GITHUB_TOKEN=YOUR_GITHUB_TOKEN
+
+## Update values with your aws keys.
+## Ref: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
+# export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
+# export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
+# export AWS_DEFAULT_REGION=YOUR_REGION
