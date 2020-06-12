@@ -2,7 +2,7 @@
 #
 # Install clangd (https://clangd.llvm.org/installation.html).
 
-# type -p clangd &> /dev/null && exit
+type -p clangd &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../utils.sh
 
