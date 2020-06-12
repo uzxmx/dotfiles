@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Install gcc (https://gcc.gnu.org/).
+#
+# By default, it installs gcc-10.1.0. If you want to install another version,
+# you can pass a tag as the first argument. You can find tags at
+# https://gcc.gnu.org/git/?p=gcc.git;a=tags
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if [ ! -d /tmp/gcc ] || ! (cd /tmp/gcc; git status &> /dev/null) ; then
+  rm -rf /tmp/gcc
+  tag=${1:-releases/gcc-10.1.0}
+  # https://mirrors.tuna.tsinghua.edu.cn/help/gcc.git/
+  ~/.dotfiles/bin/gcld https://mirrors.tuna.tsinghua.edu.cn/git/gcc.git $tag /tmp/gcc
+fi
+
+cd /tmp/gcc
+mkdir -p build && cd build
+
+if has_yum; then
+  sudo yum install -y gmp-devel mpfr-devel libmpc-devel gcc-c++ flex
+fi
+
+../configure --enable-languages=c,c++,objc --disable-multilib
+make -j$(nproc)
+sudo make install
+
+# In Centos 7, `cc' is linked to `gcc', so we create a new link as well.
+sudo ln -s /usr/local/bin/gcc /usr/local/bin/cc
