@@ -237,3 +237,26 @@ Ref:
 
 * https://unix.stackexchange.com/a/94505
 * http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
+
+## GNU coreutils
+
+```
+# Compare two sorted files line by line
+# man comm
+comm foo.txt bar.txt
+
+# man join
+```
+
+## VT OSC
+
+```
+echo -en "\e[1;97;41m"
+echo -en "\e[1;97;42m"
+
+# Copy contents to system clipboard. Contents should be base64 encoded.
+echo -en "\e]52;;Zm9v\a"
+echo -en "\e]52;;Zm9vDQpiYXI=\a"
+```
+
+Ref: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html

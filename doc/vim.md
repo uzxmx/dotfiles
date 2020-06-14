@@ -119,3 +119,20 @@ Ref: https://stackoverflow.com/questions/71323/how-to-replace-a-character-by-a-n
 ```
 
 Ref: https://stackoverflow.com/a/3936449
+
+## Tags
+
+```
+:tn
+:tp
+:ts
+g]
+g<C-]>
+
+:help tag-matchlist
+```
+
+Ref:
+
+* https://stackoverflow.com/questions/14465383/how-to-navigate-multiple-ctags-matches-in-vim
+* https://vim.fandom.com/wiki/Browsing_programs_with_tags
