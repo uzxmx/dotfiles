@@ -41,13 +41,12 @@ fcd() {
 # Select a directory from configured directory lists and change to there.
 c() {
   local dir
-  local list=(
-    $(find ~/.dotfiles -maxdepth 1 -type d -not -path "$HOME/.dotfiles/.git")
-    $ZSH_UTILS_CD_PATH
-    $(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)
-  )
-  list=$(IFS=$'\n'; echo "${list[*]}")
-  dir=$(echo "$list" | fzf +m) && cd "$dir"
+  local lines="\
+$(find ~/.dotfiles -maxdepth 1 -type d -not -path "$HOME/.dotfiles/.git")
+$HOME/tmp
+$(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)\
+"
+  dir=$(echo "$lines" | fzf +m) && cd "$dir"
 }
 
 # `ZSH_UTILS_SSH_HOSTS` defines an array of ssh hosts. Each item can be composed
