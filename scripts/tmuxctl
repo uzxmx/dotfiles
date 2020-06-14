@@ -18,14 +18,33 @@ is_in_tmux_session() {
   [ -n "$TMUX" ]
 }
 
-# TODO Prompt for a session name
+session_exists() {
+  tmux list-sessions -F '#{session_name}' 2>/dev/null || true | grep "^$1$"
+}
+
 new() {
-  tmux new-session
+  local session_name="$1"
+  if [ -z "$session_name" ]; then
+    session_name="default"
+    if session_exists "$session_name" &>/dev/null; then
+      session_name=
+    fi
+  fi
+
+  if [ -z "$session_name" ]; then
+    session_name=$(rlwrap -S "Session name: " -o cat)
+  fi
+
+  if [ -z "$session_name" ]; then
+    tmux new-session
+  else
+    tmux new-session -s "$session_name"
+  fi
 }
 
 attach() {
   local IFS=$'\n'
-  sessions=($(tmux list-sessions))
+  sessions=($(tmux list-sessions 2>/dev/null || true))
   if [ -z "$sessions" ]; then
     new
     return
