@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Install docker-compose (https://docs.docker.com/compose/install/)
+
+set -eo pipefail
+
+which docker-compose &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if is_linux; then
+  ~/.dotfiles/bin/cget "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" ~/bin/docker-compose
+  chmod +x ~/bin/docker-compose
+else
+  abort "Unsupported system"
+fi
