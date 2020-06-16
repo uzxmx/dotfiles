@@ -71,9 +71,11 @@ detach() {
   tmux detach
 }
 
-case "$1" in
+cmd="$1"
+case "$cmd" in
   new | attach | detach)
-    $1
+    shift
+    $cmd "$@"
     ;;
   *)
     usage
