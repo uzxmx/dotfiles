@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Install words (https://en.wikipedia.org/wiki/Words_(Unix))
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if has_yum; then
+  sudo yum install -y words
+else
+  abort "Unsupported system"
+fi
