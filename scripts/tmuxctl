@@ -57,7 +57,11 @@ attach() {
   fi
 
   name="$(echo "$session" | cut -d ":" -f 1)"
-  tmux attach -t "$name"
+  if is_in_tmux_session; then
+    tmux switch -t "$name"
+  else
+    tmux attach -t "$name"
+  fi
 }
 
 detach() {

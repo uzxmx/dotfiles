@@ -65,7 +65,9 @@ alias sdd="s ~/.dotfiles/doc"
 
 alias ta="~/.dotfiles/scripts/tmuxctl attach"
 alias td="~/.dotfiles/scripts/tmuxctl detach"
+alias tl="ta"
 alias tn="~/.dotfiles/scripts/tmuxctl new"
+alias ts="ta"
 
 case $OSTYPE in
   darwin*)
