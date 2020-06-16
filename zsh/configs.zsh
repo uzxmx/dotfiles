@@ -110,7 +110,7 @@ export GOPATH=$HOME/go
 
 # This requires go version >= 1.11
 export GO111MODULE=on
-export GOPROXY=https://goproxy.io
+export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 
 # Use `asdf where java` to find the JAVA_HOME
 export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.7+10
