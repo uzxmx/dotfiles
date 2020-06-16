@@ -260,3 +260,10 @@ echo -en "\e]52;;Zm9vDQpiYXI=\a"
 ```
 
 Ref: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
+
+## Generate random permutations
+
+```
+shuf -n 1 /usr/share/dict/words
+echo "0\n1" | shuf -n 1
+```
