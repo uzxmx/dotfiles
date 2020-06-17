@@ -25,11 +25,30 @@ Restart-Service -Name "LxssManager"
   https://github.com/microsoft/WSL/issues/3153#issuecomment-386903821
   https://github.com/microsoft/WSL/issues/352#issuecomment-575421509
 
-## Show cmd help
+## CMD
+
+### Show cmd help
 
 ```
 cmd.exec "/?"
 cmd.exec /c start "/?"
+```
+
+### Tricks
+
+```
+# The output is '%JAVA_HOME%'.
+cmd.exe /c "set JAVA_HOME=foo & echo %JAVA_HOME%"
+
+# The output is 'foo'.
+cmd.exe /c "set JAVA_HOME=foo & call echo %JAVA_HOME%"
+# Above output actually contains a whitespace.
+cmd.exe /c "set JAVA_HOME=foo & call echo %JAVA_HOME%" | hexdump -C
+# Below output doesn't contain a whitespace.
+cmd.exe /c "set JAVA_HOME=foo& call echo %JAVA_HOME%" | hexdump -C
+
+# The output is 'foo'.
+cmd.exe /v /c 'set JAVA_HOME=foo & echo !JAVA_HOME!'
 ```
 
 ## Get clipboard content

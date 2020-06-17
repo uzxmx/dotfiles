@@ -11,18 +11,22 @@ Usage: $0 [-u | -w] <path>
 
 [-u] Translate from a Windows path to a WSL path (default)
 [-w] Translate from a WSL path to a Windows path
+[-e] Escape backward slash, when a Windows path is expected
 [-h] Show help
 EOF
   exit 1
 }
 
-while getopts "uwh" opt; do
+while getopts "uweh" opt; do
   case "$opt" in
     u)
       wanttype=unix
       ;;
     w)
       wanttype=windows
+      ;;
+    e)
+      escape=1
       ;;
     *)
       usage
@@ -44,13 +48,22 @@ case $wanttype in
       drive=$(echo "$path" | cut -d "/" -f 3)
       path=$(echo "$path" | sed -e "s:^/mnt/$drive::")
     fi
-    path=$(echo "$path" | sed -e "s:/:\\\\:g")
+    if [ -n "$escape" ]; then
+      path=$(echo "$path" | sed -e "s:/:\\\\\\\\:g")
+    else
+      path=$(echo "$path" | sed -e "s:/:\\\\:g")
+    fi
+
     if [ -n "$drive" ]; then
       echo "$(echo $drive | tr "a-z" "A-Z"):$path"
     else
       if [[ "$WSL_ROOTFS_PATH" =~ \\$ ]]; then
         WSL_ROOTFS_PATH="$(echo "$WSL_ROOTFS_PATH" | sed -e "s:\\\\\$::")"
       fi
+      if [ -n "$escape" ]; then
+        WSL_ROOTFS_PATH=$(echo "$WSL_ROOTFS_PATH" | sed -e "s:\\\\:\\\\\\\\:g")
+      fi
+
       echo "${WSL_ROOTFS_PATH}$path"
     fi
     ;;

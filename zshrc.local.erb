@@ -4,7 +4,10 @@
 # file, you may consider if those changes are valuable to go into that original
 # source file.
 
-<% if is_wsl = %x[uname -r] =~ /Microsoft/ -%>
+<% is_mac = %x[uname] =~ /Darwin/ -%>
+<% is_wsl = %x[uname -r] =~ /Microsoft/ -%>
+
+<% if is_wsl -%>
   <%- windows_username = %x[cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//'].chomp -%>
 <% end -%>
 ## Uncomment below to use fzf to select a host to ssh.
@@ -44,3 +47,26 @@ PATH=/mnt/e/projects/boxes/bin:$PATH:/mnt/e/VirtualBox
 # export AWS_ACCESS_KEY_ID=YOUR_ACCESS_KEY
 # export AWS_SECRET_ACCESS_KEY=YOUR_SECRET_KEY
 # export AWS_DEFAULT_REGION=YOUR_REGION
+
+<% if is_mac -%>
+export ANDROID_STUDIO_HOME="/Applications/Android Studio.app"
+export ANDROID_STUDIO_JAVA_HOME="$ANDROID_STUDIO_HOME/Contents/jre/jdk/Contents/Home"
+export ANDROID_HOME=~/Library/Android/sdk
+<% else -%>
+export ANDROID_STUDIO_HOME="/mnt/d/android_studio"
+export ANDROID_STUDIO_JAVA_HOME="$ANDROID_STUDIO_HOME/jre"
+<% if is_wsl -%>
+export ANDROID_HOME="/mnt/c/Users/<%= windows_username -%>/AppData/Local/Android/Sdk"
+<% end -%>
+<% end -%>
+
+## Set current build tools version to make them in PATH.
+## TODO maybe we can set it on the fly when there is only one version available.
+# ANDROID_CURRENT_BUILD_TOOLS_VERSION=
+
+if [ -n "$ANDROID_HOME" ]; then
+  PATH="$ANDROID_HOME/platform-tools:$PATH"
+  if [ -n "$ANDROID_CURRENT_BUILD_TOOLS_VERSION" ]; then
+    PATH="$ANDROID_HOME/build-tools/$ANDROID_CURRENT_BUILD_TOOLS_VERSION"
+  fi
+fi
