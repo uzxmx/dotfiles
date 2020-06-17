@@ -156,7 +156,9 @@ tcpdump -i any dst port 8080 and src 172.0.0.3
 tcpdump host 172.0.0.3
 ```
 
-## How to use `nc`?
+## Netcat
+
+Some netcat implementation doesn't support `-z` option.
 
 ```
 # Act as chat server, listen at 2399
@@ -164,6 +166,15 @@ nc -l 1234
 
 # Act as chat client
 nc localhost 1234
+
+# Only scan with verbose output
+nc -z -v example.com 80
+
+# Test connection with 5s timeout
+nc -z -v -w 5 example.com 80
+
+# For UDP port
+nc -z -v -u example.com 888
 ```
 
 ## screen
