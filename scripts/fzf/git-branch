@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#
+# Switch to a branch, or checkout a new branch from a selected branch.
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/git-common
+
+select_branch --prompt '(CTRL-E:NewBranch CTRL-Y:yank)> ' --expect "ctrl-e"
+
+if [ "${result[0]}" = "ctrl-e" ]; then
+  branch=$(parse_branch "${result[1]}")
+  new_branch=$(rlwrap -S "From $branch, create new branch: " -o cat)
+  git checkout -b $new_branch $branch
+elif [ -n "$result" ]; then
+  git checkout $(convert_remote_branch_to_local $(parse_branch "$result"))
+else
+  exit 1
+fi

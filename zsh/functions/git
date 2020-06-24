@@ -14,22 +14,6 @@ gi() {
   curl -s "https://www.gitignore.io/api/$*"
 }
 
-_fbranch() {
-  local branches branch
-  branches=$(git branch --all | grep -v HEAD) &&
-  branch=$(echo "$branches" |
-           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
-  echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##"
-}
-
-# fbr - checkout git branch (including remote branches)
-fbr() {
-  local branch=$(_fbranch)
-  if [ -n "$branch" ]; then
-    git checkout $branch
-  fi
-}
-
 # ftag - checkout git tag
 ftag() {
   local tags tag
@@ -37,29 +21,6 @@ ftag() {
   tag=$(echo "$tags" | fzf +m)
   if [ -n "$tag" ]; then
     git checkout -b $tag $tag
-  fi
-}
-
-# fmerge - merge git branch
-fmerge() {
-  local branch=$(_fbranch)
-  if [ -n "$branch" ]; then
-    local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
-    git merge $branch
-    if [ $? = 0 -a "$reply" = "yes" ]; then
-      git push
-    fi
-  fi
-}
-
-fmergeto() {
-  local branch
-  if branch="$(git symbolic-ref --short HEAD)" && fbr; then
-    local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
-    git pull && git merge $branch
-    if [ $? = 0 -a "$reply" = "yes" ]; then
-      git push
-    fi
   fi
 }
 

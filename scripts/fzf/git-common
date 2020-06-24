@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+. ~/.dotfiles/scripts/lib/fzf.sh
+
+get_branches() {
+  git branch --all | grep -v HEAD
+}
+
+select_branch() {
+  local branches=$(get_branches)
+  call_fzf_tmux result -d $((2 + $(wc -l <<<"$branches"))) +m "$@" <<<"$branches"
+}
+
+parse_branch() {
+  # Strip off '*' when current branch selected.
+  echo "$1" | cut -d ' ' -f 2
+}
+
+convert_remote_branch_to_local() {
+  echo "$1" | sed "s/.* //" | sed "s#remotes/[^/]*/##"
+}

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Merge a selected branch into current branch.
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/git-common
+. ~/.dotfiles/scripts/lib/prompt.sh
+
+select_branch
+
+if [ -n "$result" ]; then
+  reply=$(yesno "Do you want to push after merging? (Y/n)" "yes")
+  git merge $result
+  if [ "$reply" = "yes" ]; then
+    git push
+  fi
+fi

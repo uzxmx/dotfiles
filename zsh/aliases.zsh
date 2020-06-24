@@ -2,6 +2,7 @@ alias dc="docker-compose"
 alias e='$EDITOR'
 
 alias f="fe"
+alias fbr="~/.dotfiles/scripts/fzf/git-branch"
 alias fed="fe ~/.dotfiles"
 alias fedb="fe ~/.dotfiles/bin"
 alias fedd="fe ~/.dotfiles/doc"
@@ -10,6 +11,8 @@ alias fedv="fe ~/.dotfiles/vim"
 alias fedh="fe ~/.dotfiles/hooks"
 alias feds="fe ~/.dotfiles/scripts"
 alias fev="fe ~/.vim"
+alias fmerge="~/.dotfiles/scripts/fzf/git-merge"
+alias fmergeto="~/.dotfiles/scripts/fzf/git-merge-to"
 
 alias get='wget --continue --progress=bar'
 

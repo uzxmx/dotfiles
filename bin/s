@@ -1,10 +1,18 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 #
 # Search file contents.
 #
 # Usage:
 #   <enter>: Open selected file in curren shell.
 #   ctrl-v: View selected file in tmux panel.
+
+set -eo pipefail
+
+target=${1:-.}
+if [ ! -d "$target" ]; then
+  echo 'Target should be a directory.'
+  exit 1
+fi
 
 source ~/.dotfiles/scripts/lib/fzf.sh
 
@@ -13,18 +21,19 @@ source ~/.dotfiles/scripts/lib/fzf.sh
 #   https://github.com/junegunn/fzf#executing-external-programs
 #   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
 export BAT_STYLE="numbers,header"
-rg --line-number --hidden . "${1:-.}" | pipe_to_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
+call_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
   --prompt '(CTRL-V:vsplit CTRL-Y:yank)> ' \
-  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")'
+  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
+  < <(rg --line-number --hidden . "$target")
 
 # Above we didn't pass in any `--expect=`, so the array size is only 1.
-selection=${result[1]}
-if [[ -n $selection ]]; then
+selection=${result[0]}
+if [ -n "$selection" ]; then
   file=$(echo -E "$selection" | awk -F : '{print $1}')
   lineno=$(echo -E "$selection" | awk -F : '{print $2}')
 fi
 
-if [[ -n "$file" && -n "$lineno" ]]; then
+if [ -n "$file" -a -n "$lineno" ]; then
   cmd="vi '$file' '+norm ${lineno}G'"
   eval $cmd
 fi

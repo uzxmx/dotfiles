@@ -55,11 +55,18 @@ $(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)\
 # `user@host` or `user@host:port` to help to infer the command. The description
 # and the optional command are separated by `\t`, and they shouldn't contain `\t`.
 ssh() {
-  local result key list host port
+  local -a result
+  local key list host port
   if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
-    join_to_lines $ZSH_UTILS_SSH_HOSTS | pipe_to_fzf result --delimiter="\t" --with-nth=1 --expect=ctrl-e
-    key="${result[1]}"
-    host="${result[2]}"
+    join_to_lines $ZSH_UTILS_SSH_HOSTS | call_fzf result --delimiter="\t" --with-nth=1 --expect=ctrl-e
+
+    if [ ${#result[@]} -eq 2 ]; then
+      key="${result[1]}"
+      host="${result[2]}"
+    else
+      host="${result[1]}"
+    fi
+
     if [ -n "$host" ]; then
       split_str_into_array "$host" "\t" list
       cmd=${list[2]}
