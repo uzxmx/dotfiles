@@ -1,10 +1,13 @@
-#!/usr/bin/env awk -f
+#!/usr/bin/env bash
 #
 # Trim beginning and trailing whitespaces, just like ruby's strip method.
 # For multi lines, the lines between the first non-blank line and the last
 # non-blank line won't be affected, you can think of multi lines as a whole
 # long string, only beginning and trailing whitespaces are removed.
 
+# Note: the shebang line '#!/usr/bin/env awk -f' is not portable, and may
+# result in 'awk -f' file not found.
+awk '
 BEGIN {
   non_empty_line_found = 0
   first_line_printed = 0
@@ -42,4 +45,4 @@ END {
   }
   sub("[[:space:]]*$", "", str)
   printf "%s", str
-}
+}'
