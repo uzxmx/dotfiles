@@ -63,6 +63,22 @@ https://engineering.bitnami.com/articles/running-non-root-containers-on-openshif
 1. SSH into the corresponding node
 1. Exec `docker exec -it -u root <docker-container-id> bash`
 
+## kubectl run a pod on the fly
+
+```
+kubectl run -it busybox --image=busybox --restart=Never -- sh
+
+# Automatically delete pod after exit.
+kubectl run -it busybox --image=busybox --restart=Never --rm -- sh
+
+kubectl run -it alpine --image=alpine --restart=Never -- sh
+kubectl run -it pgclient --image=postgres:11-alpine --restart=Never -- sh
+
+# Run a detached pod, so that we can attach to it anytime.
+# Use `kubectl exec -it pgclient -- sh` to attach.
+kubectl run pgclient --image=postgres:11-alpine --restart=Never -- sleep infinity
+```
+
 # Helm
 
 ## deleting a default key

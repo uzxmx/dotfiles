@@ -136,3 +136,10 @@ Ref:
 
 * https://stackoverflow.com/questions/14465383/how-to-navigate-multiple-ctags-matches-in-vim
 * https://vim.fandom.com/wiki/Browsing_programs_with_tags
+
+## Insert special characters
+
+We can use `CTRL-V` in insert mode to input special characters, e.g. `<TAB>`,
+`<CR>`.
+
+For more information, see `:help i_CTRL-V`.
