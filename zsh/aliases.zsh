@@ -70,6 +70,9 @@ alias tl="ta"
 alias tn="~/.dotfiles/scripts/tmuxctl new"
 alias ts="ta"
 
+alias wb="wget www.baidu.com -O- >/dev/null"
+alias zl="vi ~/.zshrc.local"
+
 case $OSTYPE in
   darwin*)
     alias ctags="ctags --languages=objectivec --langmap=objectivec:.h.m"

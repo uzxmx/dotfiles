@@ -4,6 +4,7 @@
 
 . $(dirname "$BASH_SOURCE")/utils.sh
 
+mkdir -p ~/.dotfiles/.local
 mkdir -p ~/projects
 mkdir -p ~/go/src/github.com/uzxmx
 mkdir -p ~/tmp
