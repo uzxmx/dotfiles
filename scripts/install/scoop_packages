@@ -6,3 +6,4 @@
 . $(dirname "$BASH_SOURCE")/../lib/scoop.sh
 
 scoop install coreutils
+scoop install https://github.com/lukesampson/scoop-extras/blob/master/bucket/pasteboard.json
