@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Install meson (https://mesonbuild.com/Getting-meson.html)
+
+type -p meson &> /dev/null && exit
+
+pip3 install meson
