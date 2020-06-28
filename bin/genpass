@@ -2,13 +2,8 @@
 #
 # Generate random password.
 
-set -e
+set -eo pipefail
 
-# GNU tr is required.
-if type gtr &>/dev/null; then
-  TR=gtr
-else
-  TR=tr
-fi
+source ~/.dotfiles/scripts/lib/utils/random.sh
 
-head /dev/urandom | $TR -dc 'A-Za-z0-9' | head -c 15
+random_string 15

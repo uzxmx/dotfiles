@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Extract archive.
+
+set -eo pipefail
+
+source ~/.dotfiles/scripts/lib/utils.sh
+source ~/.dotfiles/scripts/lib/utils/random.sh
+
+file="$1"
+if [ ! -f "$file" ]; then
+  abort 'Invalid input file'
+fi
+
+fullpath="$(realpath "$file")"
+if [[ "$file" =~ (.+)(\.tar\.gz|\.tgz)$ ]]; then
+  cmd=(tar zxvf "$fullpath")
+elif [[ "$file" =~ (.+)(\.tar\.xz|\.txz)$ ]]; then
+  cmd=(tar Jxvf "$fullpath")
+elif [[ "$file" =~ (.+)(\.tar\.bz2|\.tbz|\.tb2)$ ]]; then
+  cmd=(tar jxvf "$fullpath")
+elif [[ "$file" =~ (.+)\.tar$ ]]; then
+  cmd=(tar xvf "$fullpath")
+elif [[ "$file" =~ (.+)\.zip$ ]]; then
+  cmd=(unzip "$fullpath")
+elif [[ "$file" =~ (.+)\.rar$ ]]; then
+  cmd=(unrar x "$fullpath")
+else
+  abort "Cannot extract $file"
+fi
+
+create_directory() {
+  local name="$1"
+  while [ -d "$name" ]; do
+    name="$1.$(random_string 4)"
+  done
+  mkdir "$name"
+  echo "$name"
+}
+
+finalpath="$(create_directory "${BASH_REMATCH[1]}")"
+cd "$finalpath"
+
+"${cmd[@]}" 1>&2
+
+# If there is only one file in the current directory and it's a directory, then
+# we need to append it to the final path.
+files="$(ls -a | grep -v '^\(\.\|\.\.\)$')"
+if [ "$(echo "$files" | wc -l)" -eq "1" -a -d "${files[0]}" ]; then
+  finalpath="$finalpath/${files[0]}"
+fi
+
+echo "$finalpath"
