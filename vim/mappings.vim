@@ -51,3 +51,8 @@ endfunction
 xnoremap <Plug>(visual-put-without-messing-register) :call <SID>xput()<CR>
 xmap <silent> p <Plug>(visual-put-without-messing-register)
 xmap <silent> P <Plug>(visual-put-without-messing-register)
+
+" In plugin_settings/coc.vim, we remapped <C-]>, so in order to quickly jump
+" to the first tag for a source file like C, we do below mapping (because in
+" most cases, we donot want a list). Use `:tjump` to select from a list.
+nnoremap g<c-]> <c-]>

@@ -29,10 +29,17 @@ nnoremap <silent> <Leader>clr :<C-u>CocListResume<CR>
 nnoremap <silent> <Leader>co :call CocAction('runCommand', 'editor.action.organizeImport')<CR>
 nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
 
+function! s:onCocStatusChange() abort
+  " Only do these mappings when coc indicates it can help.
+  au FileType c,cpp nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+  au FileType c,cpp nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+endfunction
+
 augroup coc_group
     au!
-    au FileType java,go,typescript,kotlin,c,cpp nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
-    au FileType java,go,typescript,kotlin,c,cpp nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+    au FileType java,go,typescript,kotlin nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    au FileType java,go,typescript,kotlin nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+    au User CocStatusChange call s:onCocStatusChange()
 
     au BufWritePre *.go :call CocAction('format')
     au User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
