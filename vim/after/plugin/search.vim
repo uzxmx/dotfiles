@@ -54,18 +54,20 @@ vnoremap / yb/<c-r>"
 
 nnoremap <silent> <Leader><Space> :nohlsearch<cr>:call <SID>clear_current_search()<cr>
 
-function s:insert_keyword_marker()
-  if getcmdtype() == "/" || getcmdtype() == "?"
-    let cmd = getcmdline()
-    let keyword_marker = "\\<\\>\<Left>\<Left>"
-    if empty(cmd)
-      return keyword_marker
-    else
-      return "\<c-u>" . keyword_marker . cmd
-    endif
-  else
-    return "\<c-w>"
-  endif
-endfunction
-
-cnoremap <expr> <c-w> <SID>insert_keyword_marker()
+" Disable this because we usually want to use `<c-w>` to delete a word.
+"
+" function s:insert_keyword_marker()
+"   if getcmdtype() == "/" || getcmdtype() == "?"
+"     let cmd = getcmdline()
+"     let keyword_marker = "\\<\\>\<Left>\<Left>"
+"     if empty(cmd)
+"       return keyword_marker
+"     else
+"       return "\<c-u>" . keyword_marker . cmd
+"     endif
+"   else
+"     return "\<c-w>"
+"   endif
+" endfunction
+"
+" cnoremap <expr> <c-w> <SID>insert_keyword_marker()
