@@ -1,0 +1,58 @@
+#!/usr/bin/env perl
+#
+# TODO:
+#   * auto-complete when prompting for a file path
+#   * improve editing capabilities (readline)
+
+use strict;
+use warnings;
+
+use String::ShellQuote 'shell_quote';
+
+require glob('~/.dotfiles/scripts/perl/ssh.pl');
+
+run_original_if_required();
+
+require glob('~/.dotfiles/scripts/perl/prompt.pl');
+
+my $upload = prompt_yes_no('Upload?', 1);
+my $local_path = glob(prompt_string('Local path', '.'));
+my $remote_path = prompt_string('Remote path');
+
+my $s = select_host();
+
+my @command = ('rsync', '-avuz');
+
+my $exclude = glob('~/.rsync.excludes');
+if (-e $exclude) {
+  push @command, '--exclude-from', $exclude;
+}
+
+my @ssh_args = ();
+
+if (my $identity = $s->get_identity()) {
+  push @ssh_args, '-i', $identity;
+}
+
+if (my $port = $s->get_port()) {
+  push @ssh_args, '-p', $port;
+}
+
+if (my $ssh_options = $s->get_ssh_options()) {
+  push @ssh_args, '-o', $_ for @$ssh_options;
+}
+
+if (scalar(@ssh_args)) {
+  push @command, '-e', shell_quote(@ssh_args);
+}
+
+my $user_host = $s->get_user_host();
+if ($upload) {
+  push @command, $local_path;
+  push @command, "$user_host:$remote_path";
+} else {
+  push @command, "$user_host:$remote_path";
+  push @command, $local_path;
+}
+
+$s->run(@command);

@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+require glob('~/.dotfiles/scripts/perl/ssh.pl');
+
+run_original_if_required();
+
+my $s = select_host();
+
+my @command = ('ssh');
+
+if (my $identity = $s->get_identity()) {
+  push @command, '-i', $identity;
+}
+
+if (my $port = $s->get_port()) {
+  push @command, '-p', $port;
+}
+
+if (my $user_host = $s->get_user_host()) {
+  push @command, $user_host;
+}
+
+if (my $ssh_options = $s->get_ssh_options()) {
+  push @command, '-o', $_ for @$ssh_options;
+}
+
+$s->run(@command);

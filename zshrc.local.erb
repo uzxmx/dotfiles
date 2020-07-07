@@ -10,14 +10,6 @@
 <% if is_wsl -%>
   <%- windows_username = %x[cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//'].chomp -%>
 <% end -%>
-## Uncomment below to use fzf to select a host to ssh.
-# ZSH_UTILS_SSH_HOSTS=(
-#   user@host
-#   "some-useful-description\tssh user@host"
-#   "with-custom-identity-file\tssh -i ~/.ssh/private.pem user@host"
-#   "bastion-server\tauto_mfa -n totp-secret-name -- ssh -p port user@host"
-#   "another-bastion-server\tauto_mfa -n totp-secret-name -c 'expect \"Opt>\"; send \"p\r\"; expect \"Opt>\"; send \"1\r\"' -- ssh -p port user@host"
-# )
 
 zsh_utils_cd_path_fn() {
   find ~/projects -maxdepth 1 -type d
@@ -67,6 +59,6 @@ export ANDROID_HOME="/mnt/c/Users/<%= windows_username -%>/AppData/Local/Android
 if [ -n "$ANDROID_HOME" ]; then
   PATH="$ANDROID_HOME/platform-tools:$PATH"
   if [ -n "$ANDROID_CURRENT_BUILD_TOOLS_VERSION" ]; then
-    PATH="$ANDROID_HOME/build-tools/$ANDROID_CURRENT_BUILD_TOOLS_VERSION"
+    PATH="$ANDROID_HOME/build-tools/$ANDROID_CURRENT_BUILD_TOOLS_VERSION:$PATH"
   fi
 fi

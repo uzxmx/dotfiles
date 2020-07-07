@@ -49,44 +49,43 @@ $(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)\
   dir=$(echo "$lines" | fzf +m) && cd "$dir"
 }
 
-# `ZSH_UTILS_SSH_HOSTS` defines an array of ssh hosts. Each item can be composed
-# of a human-readable description and an optional command to be executed when
-# selected. When the command is omitted, the description must obey the format
-# `user@host` or `user@host:port` to help to infer the command. The description
-# and the optional command are separated by `\t`, and they shouldn't contain `\t`.
-ssh() {
-  local -a result
-  local key list host port
-  if [ $# -eq 0 -a -n "$ZSH_UTILS_SSH_HOSTS" ]; then
-    join_to_lines $ZSH_UTILS_SSH_HOSTS | call_fzf result --delimiter="\t" --with-nth=1 --expect=ctrl-e
+# Dynamically define a shell function in current context, which calls the
+# wrapper for an executable. The wrapper can exit with specific codes to signal
+# to the function, and data sent to FD 3 is captured by the function.
+#
+# Supported exit codes include:
+#   100: use stdout as a command to execute and append that to shell history.
+#   101: feed stdout into prompt line, allow user to edit.
+#
+# Note: only support zsh.
+#
+# @params:
+#   $1: wrapper name, usually the executable name
+#   $2: wrapper path
+wrap_executable() {
+  local name=$1
+  local wrapper_path=$2
 
-    if [ ${#result[@]} -eq 2 ]; then
-      key="${result[1]}"
-      host="${result[2]}"
-    else
-      host="${result[1]}"
-    fi
-
-    if [ -n "$host" ]; then
-      split_str_into_array "$host" "\t" list
-      cmd=${list[2]}
-      split_str_into_array "${list[1]}" ":" list
-      host=${list[1]}
-      port=${list[2]:-22}
-      if [ -z "$cmd" ]; then
-        cmd="ssh -p $port $host"
-      fi
-      if [ "$key" = "ctrl-e" ]; then
-        print -z "$cmd"
-      else
-        print -s "$cmd"
-        eval $cmd
-      fi
-    fi
-  else
-    command ssh $@
-  fi
+  eval "
+    $name() {
+      local result
+      { result=\$($wrapper_path \"\$@\" 3>&1 >&4 4>&-) } 4>&1
+      case \$? in
+        100)
+          print -s \"\${result:q}\"
+          # Use 'command' to avoid dead loop.
+          eval \"command \${result}\"
+          ;;
+        101)
+          print -z \"\${result:q}\"
+          ;;
+      esac
+    }
+  "
 }
+
+wrap_executable ssh ~/.dotfiles/scripts/bin/ssh
+wrap_executable rsync ~/.dotfiles/scripts/bin/rsync
 
 # Copy with progress
 cp_p() {
