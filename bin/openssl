@@ -18,15 +18,15 @@ Provided subcommands include:
 
   * verify: verify a host
 
-    $> openssl verify example.com
+      $> openssl verify example.com
 
   * pubkey: get public key of a host
 
-    $> openssl pubkey example.com
+      $> openssl pubkey example.com
 
   * cert: get certificate of a host
 
-    $> openssl cert example.com
+      $> openssl cert example.com
 
 Global options:
 
