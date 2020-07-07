@@ -1,21 +1,40 @@
 #!/usr/bin/env bash
-#
-# Usage:
-#
-# - exp: show expiration info
-# openssl exp example.com
-#
-# - exp_file: show expiration info by file
-# openssl exp_file cert.pem
-#
-# - verify: verify a host
-# openssl verify example.com
-#
-# - pubkey: get public key of a host
-# openssl pubkey example.com
-#
-# - cert: get certificate of a host
-# openssl cert example.com
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for openssl utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * exp: show expiration info
+
+      $> openssl exp example.com
+
+  * exp_file: show expiration info by file
+
+      $> openssl exp_file cert.pem
+
+  * verify: verify a host
+
+    $> openssl verify example.com
+
+  * pubkey: get public key of a host
+
+    $> openssl pubkey example.com
+
+  * cert: get certificate of a host
+
+    $> openssl cert example.com
+
+Global options:
+
+  [-h] Show help
+
+EOF
+  exit 1
+}
 
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
@@ -42,7 +61,11 @@ case "$1" in
   cert)
     openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509
     ;;
-  *)
+  -)
+    shift
     openssl "$@"
-    exit
+    ;;
+  *)
+    usage
+    ;;
 esac
