@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
 # Split string into lines of strings with a specified separator.
 #
@@ -33,5 +33,5 @@ split_str_into_array() {
   local str=$1
   local separator=$2
   local name=$3
-  split_str_into_lines $str $separator | lines_to_array $name
+  lines_to_array $name < <(split_str_into_lines $str $separator)
 }

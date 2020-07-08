@@ -12,6 +12,7 @@ if [ -n "$dir" -a ! -d "$dir" ]; then
 fi
 shift || true
 
+source ~/.dotfiles/scripts/lib/utils/common.sh
 source ~/.dotfiles/scripts/lib/fzf.sh
 
 call_fzf files --query="$1" --multi --select-1 --exit-0 \

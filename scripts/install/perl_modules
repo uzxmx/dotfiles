@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#
+# Install perl modules.
+
+cpanm String::ShellQuote

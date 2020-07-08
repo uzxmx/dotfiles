@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Install latest perl (https://www.perl.org/get.html#unix_like)
+
+set -eo pipefail
+
+. ~/.dotfiles/scripts/lib/utils/common.sh
+. ~/.dotfiles/scripts/lib/utils/lines_to_array.sh
+. ~/.dotfiles/scripts/lib/utils/split.sh
+. ~/.dotfiles/scripts/lib/utils/version.sh
+
+version="5.32.0"
+type -p perl &>/dev/null && ! version_lt "$(perl -e 'print $^V;')" "v$version" && exit
+
+path_to_save="/tmp/perl-$version.tar.gz"
+~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/CPAN/src/5.0/perl-$version.tar.gz" $path_to_save
+tar zxf $path_to_save -C /tmp
+
+cd /tmp/perl-$version
+./Configure -des -Dprefix=/usr/local
+sudo make
+sudo make install
+
+sudo rm -rf $path_to_save /tmp/perl-$version

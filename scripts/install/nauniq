@@ -2,10 +2,4 @@
 #
 # Install nauniq (https://metacpan.org/pod/nauniq)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
-
-if type cpan &>/dev/null; then
-  sudo cpan App::nauniq
-else
-  abort 'Cannot find cpan'
-fi
+cpanm App::nauniq

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install cpanm (https://metacpan.org/pod/App::cpanminus)
+
+set -eo pipefail
+
+[ -n "$(which -a cpanm | grep -v ~/.dotfiles)" ] && exit
+
+version="1.7044"
+path_to_save="/tmp/cpanm-$version.tar.gz"
+~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/CPAN/modules/by-module/App/App-cpanminus-$version.tar.gz" $path_to_save
+tar zxf $path_to_save -C ~/bin --strip-components=2 App-cpanminus-1.7044/bin/cpanm
+chmod a+x ~/bin/cpanm
+
+sudo rm -rf $path_to_save

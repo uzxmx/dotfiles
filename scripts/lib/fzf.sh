@@ -31,19 +31,6 @@ call_fzf_tmux() {
   _call_program_with_array_output fzf-tmux "$@"
 }
 
-# Base doesn't support ${parameter@Q} before 4.4.
-# Ref:
-#   https://github.com/bminor/bash/blob/bash-4.4-alpha/CHANGES#L425-L426
-#   https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-_bash_quote() {
-  local value=$1
-  if [ "$(echo "${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]} >= 4.4" | bc)" = "1" ]; then
-    echo "${value@Q}"
-  else
-    printf "%q" "$value"
-  fi
-}
-
 _call_program_with_array_output() {
   local program=$1; shift
   local name=$1; shift
