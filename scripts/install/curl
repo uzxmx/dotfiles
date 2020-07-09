@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Install latest curl (https://curl.haxx.se/).
+#
+# We actually want to use '--connect-to' option (see https://curl.haxx.se/docs/manpage.html#--connect-to).
+# See also '--resolve'.
+
+set -eo pipefail
+
+. ~/.dotfiles/scripts/lib/utils/common.sh
+. ~/.dotfiles/scripts/lib/utils/lines_to_array.sh
+. ~/.dotfiles/scripts/lib/utils/split.sh
+. ~/.dotfiles/scripts/lib/utils/version.sh
+
+version="7.71.1"
+type -p curl &>/dev/null && ! version_lt "$(curl -V | head -1 | cut -d' ' -f 2)" "$version" && exit
+
+path_to_save="/tmp/curl-$version.tar.xz"
+~/.dotfiles/bin/cget "https://curl.haxx.se/download/curl-$version.tar.xz" $path_to_save
+tar Jxf $path_to_save -C /tmp
+
+cd /tmp/curl-$version
+./configure
+make
+sudo make install
+
+sudo rm -rf $path_to_save /tmp/curl-$version
