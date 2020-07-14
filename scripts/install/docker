@@ -12,7 +12,13 @@ check_group() {
   fi
 }
 
-type -p docker &> /dev/null && check_group && exit
+check_enabled() {
+  if [ "$(sudo systemctl is-enabled docker)" = "disabled" ]; then
+    sudo systemctl enable docker
+  fi
+}
+
+type -p docker &> /dev/null && check_group && check_enabled && exit
 
 . $(dirname "$BASH_SOURCE")/../utils.sh
 
@@ -26,3 +32,5 @@ else
 fi
 
 check_group
+check_enabled
+sudo systemctl start docker
