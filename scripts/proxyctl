@@ -74,8 +74,15 @@ if [[ "$subcommand" = "enable" ]]; then
   if [[ -z "$http_proxy" ]]; then
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       http_proxy="$DEFAULT_HTTP_PROXY"
+    elif test_proxy localhost:8124; then
+      # Port 8124 can be used as a ssh tunnelled port. For example, we can
+      # start a ssh tunnel by `ssh user@host -L 0.0.0.0:8124:localhost:8123`.
+      # This requires a remote http proxy is listening at 8123 on the remote server.
+      http_proxy='localhost:8124'
     elif test_proxy localhost:8123; then
       http_proxy='localhost:8123'
+    elif [[ -d '/home/vagrant' ]] && test_proxy 10.0.2.2:8124; then
+      http_proxy='10.0.2.2:8124'
     elif [[ -d '/home/vagrant' ]] && test_proxy 10.0.2.2:8123; then
       http_proxy='10.0.2.2:8123'
     else
