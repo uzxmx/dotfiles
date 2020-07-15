@@ -5,39 +5,12 @@ use JSON::PP;
 use IPC::Open2;
 use File::Basename;
 use Text::ParseWords;
-use String::ShellQuote 'shell_quote';
 
-sub remove_path_from_env {
-  my ($target) = @_;
-  my @paths = split(/:/, $ENV{'PATH'});
-  my @tmp = ();
-  for my $path (@paths) {
-    if ($path ne $target and $path ne "") {
-      push @tmp, $path;
-    }
-  }
-  $ENV{'PATH'} = join(':', @tmp);
-}
+require glob('~/.dotfiles/scripts/perl/wrapper.pl');
 
-sub print_and_exit {
-  my ($cmdline, $code) = @_;
-
-  open(SIGNAL, ">&=3");
-  print SIGNAL shell_quote(@$cmdline);
-  close(SIGNAL);
-  exit $code;
-}
-
-sub run_original_if_required {
-  if (scalar(@ARGV)) {
-    # Note: We cannot execute in this process, because the stdout may be
-    # captured into a shell variable by calling script, so for safe we print
-    # the command to let the caller execute for us.
-    #
-    # exec basename($0), @ARGV or die $!;
-
-    unshift @ARGV, basename($0);
-    print_and_exit(\@ARGV, 100);
+sub check_ssh_hosts_file {
+  if (! -e glob('~/.ssh_hosts')) {
+    run_original();
   }
 }
 
@@ -60,9 +33,16 @@ sub select_host {
 
   print $in "$_->{label}\n" for @$json;
   close($in);
-  chomp(my $key = <$out>);
-  chomp(my $selected = <$out>);
+  my $key = <$out>;
+  my $selected = <$out>;
   close($out);
+
+  if ($key) {
+    chomp($key);
+  }
+  if ($selected) {
+    chomp($selected);
+  }
 
   if (!$selected) {
     exit;

@@ -5,6 +5,7 @@ use warnings;
 
 require glob('~/.dotfiles/scripts/perl/ssh.pl');
 
+check_ssh_hosts_file();
 run_original_if_required();
 
 my $s = select_host();

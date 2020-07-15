@@ -31,7 +31,6 @@ Provided subcommands include:
 Global options:
 
   [-h] Show help
-
 EOF
   exit 1
 }

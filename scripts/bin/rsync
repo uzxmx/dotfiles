@@ -11,6 +11,7 @@ use String::ShellQuote 'shell_quote';
 
 require glob('~/.dotfiles/scripts/perl/ssh.pl');
 
+check_ssh_hosts_file();
 run_original_if_required();
 
 require glob('~/.dotfiles/scripts/perl/prompt.pl');
