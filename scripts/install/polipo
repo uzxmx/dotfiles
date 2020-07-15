@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# Install polipo (https://www.irif.fr/~jch//software/polipo/).
+
+set -eo pipefail
+
+which polipo &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+check_makeinfo() {
+  which makeinfo &> /dev/null && return
+
+  if ! has_yum; then
+    sudo yum install -y texinfo
+  else
+    abort 'Please install `makeinfo` command beforehand.'
+  fi
+}
+
+if is_mac; then
+  brew_install polipo
+elif has_apt; then
+  sudo apt-get install -y polipo
+else
+  dir="/tmp/polipo"
+  if [ ! -d "$dir" ] || ! (cd "$dir" && git status &> /dev/null); then
+    mkdir -p "$dir"
+    git clone --depth 1 https://github.com/jech/polipo.git "$dir"
+  fi
+
+  cd "$dir"
+  make
+  check_makeinfo
+  # This depends on `makeinfo` command.
+  sudo make install
+  rm -rf "$dir"
+fi
