@@ -6,10 +6,8 @@ set -eo pipefail
 
 . $(dirname "$0")/utils.sh
 
-USE_DEV_BUILD=${USE_DEV_BUILD:-1}
-
 username="$(cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//')"
-if [ "$USE_DEV_BUILD" = "1" ]; then
+if [ "$USE_WINDOWS_TERMINAL_DEV_BUILD" = "1" ]; then
   dir="/mnt/c/Users/$username/AppData/Local/Packages/WindowsTerminalDev_8wekyb3d8bbwe/LocalState"
 else
   dir="/mnt/c/Users/$username/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState"
