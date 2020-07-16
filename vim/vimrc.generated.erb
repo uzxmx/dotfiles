@@ -18,9 +18,12 @@ let g:coc_node_path = '<%= node_path %>'
 
 <%# WSL or ~/.windows_terminal file indicates we are currently in windows terminal. %>
 <% if %x[uname -r] =~ /Microsoft/ || File.exist?(File.expand_path('~/.windows_terminal')) -%>
+" Update: this issue is resolved.
+"
 " For windows terminal, it doesn't support semi-transparent cursor, so we
 " change vim's cursor shape to thin vertical bar in normal mode to view text
 " clearly. Once microsoft/terminal#1203 is resolved, it may support
 " semi-transparency.
-set guicursor+=n:ver25,i-ci-ve:hor20-Cursor/lCursor
+"
+" set guicursor+=n:ver25,i-ci-ve:hor20-Cursor/lCursor
 <% end -%>
