@@ -18,7 +18,7 @@ EOF
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
-if type -p cpanm &> /dev/null; then
+if ! type -p cpanm &> /dev/null; then
   ~/.dotfiles/scripts/install/cpanm
 fi
 
