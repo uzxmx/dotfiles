@@ -25,6 +25,36 @@ systemctl disable <service>
 systemctl start <service>
 systemctl stop <service>
 systemctl restart <service>
+
+man systemd.unit
+man systemd.service
+```
+
+## Notes on environment variables
+
+`systemd.service` manual says:
+
+> Basic environment variable substitution is supported. Use "${FOO}" as part of a word, or as a word of its own, on the command line, in which case it will be replaced by the value of the
+> environment variable including all whitespace it contains, resulting in a single argument. Use "$FOO" as a separate word on the command line, in which case it will be replaced by the value of the
+> environment variable split at whitespace resulting in zero or more arguments. For this type of expansion, quotes and respected when splitting into words, and afterwards removed.
+
+To clarify:
+
+If "$FOO" is used when the character before "$" is not a whitespace, the
+variable won't be substituted. In that situation, "${FOO}" should be used.
+
+```
+[Service]
+Environment=FOO=bar
+ExecStart=/bin/echo --long-opts=$FOO
+```
+
+Above config won't work as expected. But below works.
+
+```
+[Service]
+Environment=FOO=bar
+ExecStart=/bin/echo --long-opts=${FOO}
 ```
 
 ## journalctl
