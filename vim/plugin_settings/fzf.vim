@@ -39,4 +39,8 @@ command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, { 'options': '--delimiter :
 nnoremap <silent> <c-p> :execute system('git rev-parse --is-inside-work-tree') =~ 'true' ? 'GFiles' : 'Files'<CR>
 nnoremap <silent> <c-w>w :Windows<CR>
 nnoremap <silent> <c-w><c-w> :Windows<CR>
-nnoremap <silent> <c-m> :Marks<CR>
+
+" <c-m> is the same as <cr>. This command is rarely used, but often executed
+" unexpectedly when typing in <cr> mistakenly. So here we comment it.
+"
+" nnoremap <silent> <c-m> :Marks<CR>
