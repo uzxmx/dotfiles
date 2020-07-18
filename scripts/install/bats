@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install bats (https://github.com/bats-core/bats-core). Bash Automated Testing System.
+
+set -eo pipefail
+
+which bats &> /dev/null && exit
+
+dir="/tmp/bats"
+if [ ! -d "$dir" ] || ! cd "$dir" && git status &> /dev/null; then
+  mkdir -p "$dir"
+  git clone --depth 1 https://github.com/bats-core/bats-core.git "$dir"
+fi
+
+cd "$dir"
+sudo ./install.sh /usr/local
+rm -rf "$dir"
