@@ -36,7 +36,7 @@ autocmd TermClose * call s:on_term_close_delayed()
 command! GFiles call s:fzf_git_standard()
 command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, { 'options': '--delimiter : --nth 4..' }, <bang>0)
 
-nnoremap <silent> <c-p> :execute system('git rev-parse --is-inside-work-tree') =~ 'true' ? 'GFiles' : 'Files'<CR>
+nnoremap <silent> <c-p> :execute system('ls -d .git') == ".git\n" ? 'GFiles' : 'Files'<CR>
 nnoremap <silent> <c-w>w :Windows<CR>
 nnoremap <silent> <c-w><c-w> :Windows<CR>
 
