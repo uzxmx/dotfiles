@@ -1,0 +1,5 @@
+# This depends on Exuberant Ctags. Ref: https://github.com/tpope/gem-ctags.
+gem-ctags
+
+pry
+solargraph
