@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install util-linux (https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/).
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if ! is_linux; then
+  abort "Unsupported system"
+fi
+
+version="2.36-rc2"
+path_to_save="/tmp/util-linux-$version.tar.xz"
+~/.dotfiles/bin/cget "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-$version.tar.xz" "$path_to_save"
+tar Jxf "$path_to_save" -C /tmp
+cd "/tmp/util-linux-$version"
+./configure
+make
+sudo make install
