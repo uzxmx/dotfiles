@@ -18,3 +18,4 @@ cd "/tmp/util-linux-$version"
 ./configure
 make
 sudo make install
+rm -rf "/tmp/util-linux-$version" "$path_to_save"
