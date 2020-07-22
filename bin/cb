@@ -2,6 +2,8 @@
 #
 # Manage clipboard for different systems.
 
+set -eo pipefail
+
 if [[ "$OSTYPE" =~ ^darwin.* ]]; then
   copy_cmd="pbcopy"
   paste_cmd="pbpaste"
@@ -9,22 +11,25 @@ elif [[ "$(uname -r)" =~ Microsoft$ ]]; then
   copy_cmd="clip.exe"
   paste_cmd="pbpaste.exe"
 else
-  echo 'Unspported system'
-  exit 1
+  copy_cmd="osc52"
 fi
 
 # Copy from stdin when stdin is not a terminal.
 if [[ ! -t 0 ]]; then
-  eval $copy_cmd
-  count=`eval $paste_cmd | wc -c | sed -e 's/ //g'`
-  if [[ $count > 1 ]]; then
-    echo "$count characters are copied."
-  else
-    echo "$count character is copied."
+  eval "$copy_cmd"
+  if [ -n "$paste_cmd" ]; then
+    count="$(eval "$paste_cmd" | wc -c | sed -e 's/ //g')"
+    if [[ $count > 1 ]]; then
+      echo "$count characters are copied."
+    else
+      echo "$count character is copied."
+    fi
+    echo
   fi
-  echo
 fi
 
-echo '===== Tail 5 of clipboard ====='
-eval $paste_cmd | tail -5
-echo '===== End of clipboard ====='
+if [ -n "$paste_cmd" ]; then
+  echo '===== Tail 5 of clipboard ====='
+  eval "$paste_cmd" | tail -5
+  echo '===== End of clipboard ====='
+fi

@@ -7,4 +7,16 @@ if [ ! -t 0 ]; then
 else
   content="$(echo -n "$1" | base64)"
 fi
-echo -en "\e]52;;$content\a"
+
+if [ -t 1 ]; then
+  echo -en "\e]52;;$content\a"
+else
+  # When stdout is not opened on a terminal, we need to find the terminal.
+  if [ -n "$TMUX" ]; then
+    tty="$(tmux display -p "#{pane_tty}")"
+  else
+    # Fallback to `/dev/pts/0`.
+    tty="/dev/pts/0"
+  fi
+  echo -en "\e]52;;$content\a" > "$tty"
+fi
