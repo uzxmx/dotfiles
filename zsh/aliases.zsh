@@ -1,3 +1,4 @@
+alias bi="bundle install"
 alias dc="docker-compose"
 alias e='$EDITOR'
 
