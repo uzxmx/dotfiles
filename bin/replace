@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Replace all occurrences of the first argument with the second in files. By
+default, it generates a backup file with '.bak' appended to the filename for
+each file.
+
+Usage:
+
+  replace [--no-bak] <target> <replacement> <files...>
+
+Options:
+
+  [--no-bak] Do not generate a .bak file
+  [-h] Show help
+
+Note: Files can also be passed through a pipe, with each line as a file.
+
+Examples:
+
+  replace foo bar *.txt
+  find . -name '*.txt' | replace foo bar --no-bak
+EOF
+  exit 1
+}
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --no-bak)
+      nobak="1"
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
+
+[ $# -lt 2 ] && usage
+
+target="$1"
+replacement="$2"
+shift 2
+
+if [ "$#" -eq 0 -a -t 0 ]; then
+  echo 'You need to pass in files or use a pipe.'
+  exit 1
+fi
+
+sed_opts=()
+if [ "$nobak" = "1" ]; then
+  sed_opts+=("-i")
+else
+  sed_opts+=("-i.bak")
+fi
+
+processed=0
+replace_file() {
+  if [ -f "$1" ]; then
+    sed "${sed_opts[@]}" "s/$target/$replacement/g" "$1"
+    processed=$(($processed + 1))
+  fi
+}
+
+for file in "$@"; do
+  replace_file "$file"
+done
+
+if [ ! -t 0 ]; then
+  while read file; do
+    replace_file "$file"
+  done
+fi
+
+echo "Processed count: $processed"
