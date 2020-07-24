@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Change names of files to lower case. A directory whose name will be lowercased
+should be specified before any files under it.
+
+Usage:
+
+  downcase [-y] <files...>
+
+Options:
+
+  [-y] Proceed with yes
+  [-h] Show help
+
+Note: Files can also be passed through a pipe, with each line as a file.
+
+Examples:
+
+  downcase *.txt
+  find . -name '*.txt' | downcase -y
+EOF
+  exit 1
+}
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -y)
+      yes_to_proceed="1"
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
+
+if [ "$#" -eq 0 -a -t 0 ]; then
+  echo 'You need to pass in files or use a pipe.'
+  exit 1
+fi
+
+processed=0
+rename_file() {
+  if [ -e "$1" ]; then
+    dir=$(dirname "$1")
+    expression=$(basename "$1")
+    replacement=$(echo "$expression" | tr A-Z a-z)
+    if [ "$expression" != "$replacement" ]; then
+      (cd "$dir" && rename "$expression" "$replacement" "$(basename "$1")")
+      processed=$(($processed + 1))
+    fi
+  fi
+}
+
+source ~/.dotfiles/scripts/lib/prompt.sh
+
+if [ "$yes_to_proceed" != "1" ]; then
+  if [ ! -t 0 ]; then
+    echo "Please specify '-y' to proceed with yes"
+    exit 1
+  fi
+  reply=$(yesno "Are you sure you want to downcase files? (y/N)" "no")
+  [ "$reply" != "yes" ] && echo 'Cancelled' && exit
+fi
+
+files=()
+process_reversely() {
+  local i=$((${#files[@]} - 1))
+  while [ $i -ge 0 ]; do
+    rename_file "${files[$i]}"
+    i=$(($i - 1))
+  done
+}
+
+for file in "$@"; do
+  files+=("$file")
+done
+process_reversely
+
+if [ ! -t 0 ]; then
+  files=()
+  while read file; do
+    files+=("$file")
+  done
+  process_reversely
+fi
+
+echo "Processed count: $processed"
