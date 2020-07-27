@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for cp utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * tree: <files...> <target-dir>
+      Copy files to a target directory with the intermediate paths kept.
+
+      $> cp tree foo/bar.txt foo/bar/baz.txt /tmp
+
+      The tree of /tmp will be:
+        - /tmp
+             | foo
+                 | bar.txt
+                 | bar
+                     | baz.txt
+
+  * git_modified: <target-dir>
+      Copy modified files in current git repository to a target directory with
+      the intermediate paths kept.
+
+      $> cp git_modified /tmp
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+copy_with_intermediate_paths() {
+  local file="$1"
+  local dest_dir="$2"
+  local dest_file="$dest_dir/$file"
+  mkdir -p "$(dirname "$dest_file")"
+  echo "Copy $file to $dest_file"
+  cp "$file" "$dest_file"
+}
+
+cmd_tree() {
+  local dest_dir="${@: -1}"
+  local file
+  for file in "${@:1:$(($# - 1))}"; do
+    copy_with_intermediate_paths "$file" "$dest_dir"
+  done
+}
+
+cmd_git_modified() {
+  local dest_dir="$1"
+  local file
+  while read file; do
+    copy_with_intermediate_paths "$file" "$dest_dir"
+  done < <(git status | grep 'modified' | awk '{ print $2 }')
+}
+
+cmd="$1"
+case "$1" in
+  tree | git_modified)
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    cp "$@"
+    ;;
+esac
