@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for curl utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * time: <url>
+      show time stats
+
+      $> curl time example.com
+
+  * cors: <test-url> <origin>
+      test cors
+
+      $> curl cors http://example.com http://foo.example.com
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+cmd_time() {
+  curl -w "\
+    \n-------------------------\n\
+       namelookup:  %{time_namelookup}s\n\
+          connect:  %{time_connect}s\n\
+       appconnect:  %{time_appconnect}s\n\
+      pretransfer:  %{time_pretransfer}s\n\
+         redirect:  %{time_redirect}s\n\
+    starttransfer:  %{time_starttransfer}s\n\
+    -------------------------\n\
+            total:  %{time_total}s\n" "$@"
+}
+
+cmd_cors() {
+  url="$1"
+  origin="$2"
+  if [ -z "$url" ]; then
+    echo 'A test url must be specified'
+    exit 1
+  fi
+  if [ -z "$origin" ]; then
+    echo 'An origin url must be specified'
+    exit 1
+  fi
+  curl "$url" -H "Origin: $origin" -XOPTIONS -I
+}
+
+cmd="$1"
+case "$1" in
+  time | cors)
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    curl "$@"
+    ;;
+esac
