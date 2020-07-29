@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for hexdump utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * hex: [text]
+      Display the input (from argument or pipe) in hexadecimal.
+
+      $> hexdump hex text
+
+  * decimal:
+      Display the input (from argument or pipe) in decimal.
+
+      $> hexdump decimal text
+
+  * oct:
+      Display the input (from argument or pipe) in octal.
+
+      $> hexdump oct text
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+execute_hexdump() {
+  local text="$1"
+  shift
+  if [ -n "$text" ]; then
+    echo -n "$text" | hexdump "$@"
+  else
+    hexdump "$@"
+  fi
+}
+
+cmd_hex() {
+  execute_hexdump "$1" -v -e '"0x" 1/1 "%02x" " "'
+}
+
+cmd_decimal() {
+  execute_hexdump "$1" -v -e '"" 1/1 "%d" " "'
+}
+
+cmd_oct() {
+  execute_hexdump "$1" -v -e '"" 1/1 "%o" " "'
+}
+
+case "$1" in
+  hex | decimal | oct)
+    cmd="$1"
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    hexdump "$@"
+    ;;
+  *)
+    # We got a text.
+    if [ -n "$1" ] && [ $# -eq 1 ] && [[ ! "$1" =~ ^- ]]; then
+      cmd_hex "$1"
+    else
+      hexdump "$@"
+    fi
+    ;;
+esac
