@@ -9,13 +9,15 @@ Wrapper for curl utility. Pass in '-' to call the original.
 Provided subcommands include:
 
   * time: <url>
-      show time stats
+      Show time stats
 
       $> curl time example.com
 
   * cors: <test-url> <origin>
-      test cors
+      Test cors
 
+      # Check Access-Control-Allow-Origin and Access-Control-Allow-Methods to
+      # see if cors is allowed.
       $> curl cors http://example.com http://foo.example.com
 
 Global options:
