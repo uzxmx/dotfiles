@@ -278,3 +278,40 @@ Ref: https://invisible-island.net/xterm/ctlseqs/ctlseqs.html
 shuf -n 1 /usr/share/dict/words
 echo "0\n1" | shuf -n 1
 ```
+
+## Use mirror for ubuntu apt-get
+
+```
+sudo sed -i.bak -Ee 's:[0-9a-zA-Z]+\.ubuntu\.com/ubuntu/:mirrors.tuna.tsinghua.edu.cn/ubuntu/:' /etc/apt/sources.list
+sudo apt-get update
+```
+
+## Use mirror for centos yum
+
+```
+sudo sed -i.bak -e 's;^mirrorlist=;#mirrorlist=;' -e 's;^#baseurl=http://mirror\.centos\.org;baseurl=https://mirrors.tuna.tsinghua.edu.cn;' /etc/yum.repos.d/CentOS-Base.repo
+sudo yum makecache
+```
+
+## Mirrors for alpine
+
+```
+sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+```
+
+Other mirrors include:
+
+* mirrors.ustc.edu.cn
+* mirrors.aliyun.com
+
+Ref:
+
+* https://mirrors.alpinelinux.org/
+* https://mirrors.tuna.tsinghua.edu.cn/help/alpine/
+* https://mirrors.ustc.edu.cn/help/alpine.html
+* https://developer.aliyun.com/mirror/alpine
+
+## stty sane
+
+In a terminal, when you encounter some weird problem about input or display, you
+can run `stty sane` to restore terminal settings.

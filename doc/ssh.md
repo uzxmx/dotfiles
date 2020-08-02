@@ -16,13 +16,20 @@ ssh-keygen -E md5 -lf id_rsa
 ssh-keygen -E md5 -lf id_rsa.pub
 ```
 
-## Force ssh client to use password authentication
+## SSH Command
+
+```
+Press `enter` `~` `?` to show help
+Press `enter` `~` `.` to terminate connection
+```
+
+### Force ssh client to use password authentication
 
 ```
 ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no user@host
 ```
 
-## Agent forwarding
+### Agent forwarding
 
 ```
 ssh -A user@host
@@ -30,12 +37,16 @@ ssh -A user@host
 
 If a new ssh agent is started in remote shell's initialization process, then agent forwarding will not work.
 
-## SSH Command
+### Test if a ssh key works for a connection
 
 ```
-Press `enter` `~` `?` to show help
-Press `enter` `~` `.` to terminate connection
+ssh -o IdentitiesOnly=yes -i <pem-file> user@host
 ```
+
+Note that `-o IdentitiesOnly=yes` is important, because it prevents ssh client
+using keys from ssh-agent.
+
+Ref: https://superuser.com/a/436015
 
 ##  Run a command on local machine while on ssh in bash
 

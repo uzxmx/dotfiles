@@ -20,3 +20,8 @@ travis login --github-token YOUR_GITHUB_TOKEN
 # Create secure api_key for github releases
 travis encrypt "$TRAVIS_GITHUB_TOKEN" --add deploy.api_key
 ```
+
+Ref:
+
+* https://docs.travis-ci.com/user/environment-variables/#defining-encrypted-variables-in-travisyml
+* https://docs.travis-ci.com/user/encryption-keys/

@@ -92,6 +92,18 @@ Ref: https://stackoverflow.com/questions/20910112/how-is-return-handled-in-a-fun
 In bash, aliases are not expanded when the shell is not interactive, unless the
 `expand_aliases` shell option is set using `shopt`.
 
+## Capture output from some descriptor into a shell variable
+
+```
+# Capture stderr into a variable, but keep stdout in the console.
+{ err=$(cmd 2>&1 >&3 3>&-); } 3>&1
+```
+
+Ref:
+* https://unix.stackexchange.com/a/474195
+* https://unix.stackexchange.com/questions/430161/redirect-stderr-and-stdout-to-different-variables-without-temporary-files
+* http://tldp.org/LDP/abs/html/io-redirection.html
+
 ## References
 
 * https://tldp.org/LDP/abs/html/index.html

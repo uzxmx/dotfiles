@@ -23,6 +23,12 @@ pg_dump -U user -d database --column-inserts --data-only >dump.sql
 
 # With create database statement.
 pg_dump -U user -d database -C >dump.sql
+
+# Dump with custom format.
+pg_dump -U user -Fc myDB > myDB.dump
+
+# Restore with custom format.
+pg_restore -U user -d myDB myDB.dump
 ```
 
 ## Stat
@@ -44,3 +50,16 @@ WHERE pg_stat_activity.datname = 'db_name';
 
 drop database db_name;
 ```
+
+## Environment variables
+
+* PGHOST behaves the same as the host connection parameter.
+* PGPORT behaves the same as the port connection parameter.
+* PGDATABASE behaves the same as the dbname connection parameter.
+* PGUSER behaves the same as the user connection parameter.
+* PGPASSWORD behaves the same as the password connection parameter. Use of this
+  environment variable is not recommended for security reasons, as some operating
+  systems allow non-root users to see process environment variables via ps;
+  instead consider using the ~/.pgpass file.
+
+Ref: https://www.postgresql.org/docs/current/libpq-envars.html
