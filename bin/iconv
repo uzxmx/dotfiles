@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage_tu() {
+  cat <<-EOF 1>&2
+* tu:
+    Convert input from current locale's encoding to unicode.
+
+    # Output: 0x4e 0x2d
+    $> iconv tu 中 | hd hex
+    $> echo -n 中 | iconv tu | hd hex
+EOF
+}
+
+usage_fu() {
+  cat <<-EOF 1>&2
+* fu:
+    Convert binary input from unicode to current locale's encoding.
+
+    # Null-terminate to silent the error.
+    $> iconv fu "\x4e\x2d\x00"
+    $> echo "\x4e\x2d\x00" | iconv fu
+EOF
+}
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for iconv utility that converts text from one character encoding to
+another. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+$(usage_tu 2>&1)
+
+$(usage_fu 2>&1)
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+cmd_tu() {
+  local remainder=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -h)
+        usage_tu
+        exit
+        ;;
+      *)
+        remainder+=("$1")
+        ;;
+    esac
+    shift
+  done
+  if [ "${#remainder}" -ge 1 ]; then
+    echo -n "${remainder[0]}" | iconv -t unicodebig
+  elif [ ! -t 0 ]; then
+    iconv -t unicodebig
+  else
+    usage_tu
+  fi
+}
+
+cmd_fu() {
+  local remainder=()
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -h)
+        usage_fu
+        exit
+        ;;
+      *)
+        remainder+=("$1")
+        ;;
+    esac
+    shift
+  done
+  if [ "${#remainder}" -ge 1 ]; then
+    echo -n "${remainder[0]}" | iconv -f unicodebig
+  elif [ ! -t 0 ]; then
+    iconv -f unicodebig
+  else
+    usage_fu
+  fi
+}
+
+cmd="$1"
+case "$1" in
+  tu | fu)
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    iconv "$@"
+    ;;
+esac
