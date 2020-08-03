@@ -7,7 +7,7 @@ usage() {
   cat <<-EOF 1>&2
 Run a command until termination condition is met.
 
-Usage: $0 [-e] [-s] [-m MAX COUNT] [-h] [COMMAND] [ARGS ...]
+Usage: run_until [-e] [-s] [-m MAX COUNT] [-h] [COMMAND] [ARGS ...]
 
 [-e]           Stop when some error occurs
 [-s]           Stop when no error occurs
@@ -17,13 +17,13 @@ Usage: $0 [-e] [-s] [-m MAX COUNT] [-h] [COMMAND] [ARGS ...]
 Examples:
 
 # Run 'docker build .' until success.
-$0 -s docker build .
+run_until -s docker build .
 
 # Run 'docker build .' until success with max count 20.
-$0 -s -m 20 docker build .
+run_until -s -m 20 docker build .
 
 # Run benchmark playbook until error occurs with max count 100.
-$0 -e -m 100 ansible-playbook -i hosts benchmark.yml
+run_until -e -m 100 ansible-playbook -i hosts benchmark.yml
 EOF
   exit 1
 }
