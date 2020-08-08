@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
-#
-# List docker image tags.
-#
-# Examples:
-#
-#   docker_tags alpine
-#   docker_tags bitnami/phabricator
 
 set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+List docker image tags.
+
+Options:
+
+  [-h] Show help
+
+Examples:
+
+  $ docker_tags alpine
+  $ docker_tags bitnami/phabricator
+EOF
+  exit 1
+}
 
 # pretty_size() {
 #   local result=$(echo "scale=2; $1/1024/1024" | bc -l)
@@ -22,8 +31,8 @@ set -eo pipefail
 # }
 
 fetch_tags_by_page() {
-  local fullname=$1
-  local page=$2
+  local fullname="$1"
+  local page="$2"
   local tmpfile=$(mktemp)
 
   # Bash implementation is too slow, so we use perl implementation instead.
@@ -87,7 +96,11 @@ EOF
   rm $tmpfile
 }
 
-fullname=$1
+if [ "$1" = "-h" ]; then
+  usage
+fi
+
+fullname="$1"
 if [ -z "$fullname" ]; then
   echo 'An image name is required.'
   exit 1
