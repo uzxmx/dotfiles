@@ -1,12 +1,50 @@
 #!/usr/bin/env bash
-#
-# Search file contents.
-#
-# Usage:
-#   <enter>: Open selected file in curren shell.
-#   ctrl-v: View selected file in tmux panel.
 
 set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0 [starting-directory]
+
+Search file contents.
+
+Shortcuts:
+  <enter>: Open selected file in curren shell.
+  ctrl-v: View selected file in tmux panel.
+
+Options:
+
+  [-t type] The file type to search, e.g. cpp
+  [-h] Show help
+
+Examples:
+
+  # Only search files matching some type.
+  $ $0 -t cpp
+EOF
+  exit 1
+}
+
+rg_options=()
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -t)
+      shift
+      rg_options+=("-t" "$1")
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
 
 target=${1:-.}
 if [ ! -d "$target" ]; then
@@ -25,7 +63,7 @@ export BAT_STYLE="numbers,header"
 call_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
   --prompt '(CTRL-V:vsplit CTRL-Y:yank)> ' \
   --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
-  < <(rg --line-number --hidden . "$target")
+  < <(rg --line-number --hidden "${rg_options[@]}" . "$target")
 
 # Above we didn't pass in any `--expect=`, so the array size is only 1.
 selection=${result[0]}

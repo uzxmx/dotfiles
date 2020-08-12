@@ -1,9 +1,53 @@
 #!/usr/bin/env bash
-#
-# Open the selected file with the default editor. You can also press ctrl-v to
-# create a new file from selected file and edit it.
 
 set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0 [starting-directory]
+
+Use fzf to select a file and open it with the default editor. You can also
+press ctrl-v to create a new file from the selected file and edit it.
+
+Options:
+
+  [-t type] The file type to search, e.g. cpp
+  [-p pattern] The pattern to search
+  [-h] Show help
+
+Examples:
+
+  # Search files by type.
+  $ $0 -t cpp
+
+  # Search files with .cpp extension.
+  $ $0 -p '\.cpp$'
+EOF
+  exit 1
+}
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -t)
+      shift
+      pattern="\.$1$"
+      ;;
+    -p)
+      shift
+      pattern="$1"
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
 
 dir="${1:-.}"
 if [ -n "$dir" -a ! -d "$dir" ]; then
@@ -18,7 +62,7 @@ source ~/.dotfiles/scripts/lib/fzf.sh
 call_fzf files --query="$1" --multi --select-1 --exit-0 \
   --prompt '(CTRL-V:copy CTRL-Y:yank)> ' \
   --expect="ctrl-v" \
-  < <(fd --type f . "$dir")
+  < <(fd --type f "${pattern:-.}" "$dir")
 
 if [ "${files[0]}" = "ctrl-v" ]; then
   src_file="${files[1]}"
