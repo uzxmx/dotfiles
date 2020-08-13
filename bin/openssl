@@ -28,6 +28,10 @@ Provided subcommands include:
 
       $> openssl cert example.com
 
+  * tlsversions: show supported tls versions of remote server
+
+      $> openssl tlsversions example.com
+
 Global options:
 
   [-h] Show help
@@ -59,6 +63,18 @@ case "$1" in
     ;;
   cert)
     openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509
+    ;;
+  tlsversions)
+    versions=(1 1_1 1_2 1_3)
+    for version in "${versions[@]}"; do
+      expected=$(echo "Protocol *: *TLSv$version" | tr _ .)
+      if openssl s_client -tls$version -connect $host:443 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
+        supported=
+      else
+        supported=not
+      fi
+      printf "TLSv%-3s %3s supported\n" "$version" "$supported" | tr _ .
+    done
     ;;
   -)
     shift
