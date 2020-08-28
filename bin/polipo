@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for polipo utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * start/stop/restart:
+      Start/stop/restart polipo.
+
+      $> polipo start
+      $> polipo stop
+      $> polipo restart
+
+  * status:
+      Show the polipo status.
+
+      $> polipo status
+
+  * log:
+      Tail the polipo log.
+
+      $> polipo log
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+pid_file=/var/run/polipo.pid
+
+get_pid() {
+  cat "$pid_file" 2>/dev/null || true
+}
+
+polipo_is_running() {
+  local pid=$(get_pid)
+  if [ -n "$pid" ]; then
+    ps "$pid" &>/dev/null
+  else
+    false
+  fi
+}
+
+cmd_start() {
+  if ! polipo_is_running; then
+    sudo polipo
+  fi
+}
+
+cmd_stop() {
+  if polipo_is_running; then
+    sudo kill -9 "$(get_pid)"
+  fi
+  sudo rm -rf "$pid_file"
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  if polipo_is_running; then
+    echo 'Polipo is running'
+  else
+    echo 'Polipo is NOT running'
+  fi
+}
+
+cmd_log() {
+  if ! polipo_is_running; then
+    echo 'Polipo is NOT running'
+    exit
+  fi
+
+  local log_file=$(sudo polipo -v | grep 'logFile ' | cut -d ' ' -f 3)
+  if [ -z "$log_file" ]; then
+    echo 'Cannot detect polipo log file'
+  else
+    tail -F "$log_file"
+  fi
+}
+
+case "$1" in
+  start | stop | restart | status | log)
+    cmd="$1"
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    sudo polipo "$@"
+    ;;
+esac
