@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Install gdb (https://www.gnu.org/software/gdb/).
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+check_makeinfo() {
+  which makeinfo &> /dev/null && return
+
+  if ! has_yum; then
+    sudo yum install -y texinfo
+  else
+    abort 'Please install `makeinfo` command beforehand.'
+  fi
+}
+
+
+install() {
+  local version="$1"
+  local path_to_save="/tmp/gdb-$version.tar.xz"
+  ~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" $path_to_save
+  tar Jxf "$path_to_save" -C /tmp
+
+  cd /tmp/gdb-$version && mkdir build && cd build \
+    && ../configure \
+    && make && sudo make install
+}
+
+check_makeinfo
+install 9.2
