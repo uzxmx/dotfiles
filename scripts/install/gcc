@@ -30,3 +30,11 @@ sudo make install
 
 # In Centos 7, `cc' is linked to `gcc', so we create a new link as well.
 sudo ln -s /usr/local/bin/gcc /usr/local/bin/cc
+
+# `libstdc++.so` is installed at `/usr/local/lib64`, we need to update the
+# existent `/lib64/libstdc++.so` to use the new one.
+#
+# Find CXXABI versions by `strings /lib64/libstdc++.so.6 | grep CXX`
+#
+# Ref: https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html
+sudo ln -sf /usr/local/lib64/libstdc++.so.6 /lib64/libstdc++.so.6
