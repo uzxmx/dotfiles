@@ -29,7 +29,7 @@ if (-e $exclude) {
   push @command, '--exclude-from', $exclude;
 }
 
-my @ssh_args = ();
+my @ssh_args = ('ssh');
 
 if (my $identity = $s->get_identity()) {
   push @ssh_args, '-i', $identity;
