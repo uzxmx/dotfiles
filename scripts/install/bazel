@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Install bazel (https://docs.bazel.build/versions/3.5.0/install.html).
+
+type -p bazel &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="3.5.0"
+path_to_save="/tmp/bazel-$version-installer.sh"
+if is_mac; then
+  platform="darwin"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "https://github.com/bazelbuild/bazel/releases/download/$version/bazel-$version-installer-$platform-x86_64.sh" "$path_to_save"
+chmod +x "$path_to_save"
+"$path_to_save" --user
+
+rm -rf "$path_to_save"
