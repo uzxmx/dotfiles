@@ -61,9 +61,10 @@ alias va="vagrant"
 alias p="pwd"
 
 # proxyctl
-alias pe='() { source <(~/.dotfiles/scripts/proxyctl enable "$@") }'
-alias pd='() { source <(~/.dotfiles/scripts/proxyctl disable "$@") }'
-alias pi='() { source <(~/.dotfiles/scripts/proxyctl dump "$@") }'
+alias px='() { local result; { result=$(~/.dotfiles/scripts/proxyctl "$@" 3>&1 >&4 4>&-) } 4>&1; [ -n "$result" ] && eval "$result" }'
+alias pe='px enable'
+alias pd='px disable'
+alias pi='px info'
 
 alias sd="s ~/.dotfiles"
 alias sdd="s ~/.dotfiles/doc"

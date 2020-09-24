@@ -7,14 +7,37 @@
 set -e
 
 usage() {
-  echo "Usage: $0 <enable | disable | dump> [-p <http-proxy>]" >&2
+  cat <<-EOF 1>&2
+Utility script to control proxy.
+
+Usage:
+$0 <enable | disable | info> [proxy types...]
+
+Proxy types: http git curl docker all
+
+Examples:
+
+  # Enable http/git/curl proxy.
+  $> pe
+
+  # Enable docker proxy.
+  $> pe docker
+
+  # Enable all proxy types.
+  $> pe all
+
+  # Disable http/git/curl proxy.
+  $> pd
+
+  # Show status of all proxy types.
+  $> pi
+EOF
   exit 1
 }
 
 subcommand="$1"
 case "$1" in
-  enable | disable | dump)
-    subcommand="$1"
+  enable | disable | info)
     shift
     ;;
   *)
@@ -52,71 +75,79 @@ test_proxy() {
   nc -z -w 5 "$host" "$port" &>/dev/null
 }
 
-if [[ "$subcommand" = "enable" ]]; then
-  http_proxy=
-  while getopts 'hp:' opt; do
-    case "$opt" in
-      p)
+while getopts 'hp:' opt; do
+  case "$opt" in
+    p)
+      if [ "$subcommand" = "enable" ]; then
         if test_proxy $OPTARG; then
-          http_proxy=$OPTARG
+          user_http_proxy=$OPTARG
         else
           fatal "HTTP Proxy $OPTARG is unreachable."
         fi
-        ;;
-      *)
+      else
         usage
-        ;;
-    esac
-  done
+      fi
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
 
-  shift $(($OPTIND - 1))
+shift $(($OPTIND - 1))
 
-  if [[ -z "$http_proxy" ]]; then
+if [ "$subcommand" = "enable" ]; then
+  if [[ -z "$user_http_proxy" ]]; then
+    echo 'Choosing a working proxy server...'
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
-      http_proxy="$DEFAULT_HTTP_PROXY"
+      user_http_proxy="$DEFAULT_HTTP_PROXY"
     elif test_proxy localhost:8124; then
       # Port 8124 can be used as a ssh tunnelled port. For example, we can
       # start a ssh tunnel by `ssh user@host -L 0.0.0.0:8124:localhost:8123`.
       # This requires a remote http proxy is listening at 8123 on the remote server.
-      http_proxy='localhost:8124'
+      user_http_proxy='localhost:8124'
     elif test_proxy localhost:8123; then
-      http_proxy='localhost:8123'
+      user_http_proxy='localhost:8123'
     elif [[ -d '/home/vagrant' ]] && test_proxy 10.0.2.2:8124; then
-      http_proxy='10.0.2.2:8124'
+      user_http_proxy='10.0.2.2:8124'
     elif [[ -d '/home/vagrant' ]] && test_proxy 10.0.2.2:8123; then
-      http_proxy='10.0.2.2:8123'
+      user_http_proxy='10.0.2.2:8123'
     else
       fatal "Not found any working HTTP Proxy."
     fi
+    echo 'Done'
   fi
 fi
 
-if [[ -z "$@" ]]; then
+if [ -z "$@" ]; then
   target_http=1
   target_git=1
   target_curl=1
+  if [ "$subcommand" = "info" ]; then
+    target_docker=1
+  fi
 else
   for i in "$@"; do
     case "$i" in
-      http | git | curl | docker)
+      http | git | curl | docker | all)
         eval "target_$i=1"
     esac
   done
 fi
 
 enable_http_proxy() {
-  cat <<EOF
-export http_proxy=http://$http_proxy
-export HTTP_PROXY=http://$http_proxy
-export https_proxy=http://$http_proxy
-export HTTPS_PROXY=http://$http_proxy
+  cat <<EOF >&3
+export http_proxy=http://$user_http_proxy
+export HTTP_PROXY=http://$user_http_proxy
+export https_proxy=http://$user_http_proxy
+export HTTPS_PROXY=http://$user_http_proxy
 EOF
 
   dump_http_proxy
 }
 
 disable_http_proxy() {
-  cat <<EOF
+  cat <<EOF >&3
 unset http_proxy
 unset HTTP_PROXY
 unset https_proxy
@@ -127,18 +158,18 @@ EOF
 }
 
 dump_http_proxy() {
-  cat <<EOF
-echo "http_proxy: \$http_proxy"
-echo "HTTP_PROXY: \$HTTP_PROXY"
-echo "https_proxy: \$https_proxy"
-echo "HTTPS_PROXY: \$HTTPS_PROXY"
+  cat <<EOF >&3
+echo "Current http_proxy: \$http_proxy"
+echo "Current HTTP_PROXY: \$HTTP_PROXY"
+echo "Current https_proxy: \$https_proxy"
+echo "Current HTTPS_PROXY: \$HTTPS_PROXY"
 EOF
 }
 
 enable_git_proxy() {
-  git config --global http.proxy http://$http_proxy
+  git config --global http.proxy http://$user_http_proxy
   # TODO test if this works
-  git config --global https.proxy https://$http_proxy
+  git config --global https.proxy https://$user_http_proxy
   dump_git_proxy
 }
 
@@ -149,9 +180,9 @@ disable_git_proxy() {
 }
 
 dump_git_proxy() {
-  cat <<EOF
-echo "git http.proxy=$(git config --get http.proxy)"
-echo "git https.proxy=$(git config --get https.proxy)"
+  cat <<EOF >&3
+echo "Current Git http.proxy: $(git config --get http.proxy)"
+echo "Current Git https.proxy: $(git config --get https.proxy)"
 EOF
 }
 
@@ -162,9 +193,9 @@ enable_curl_proxy() {
 
   if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
     check_gsed
-    $SED -i -E "s/^proxy ?= ?.*$/proxy = $http_proxy/" ~/.curlrc
+    $SED -i -E "s/^proxy ?= ?.*$/proxy = $user_http_proxy/" ~/.curlrc
   else
-    echo "proxy = $http_proxy" >>~/.curlrc
+    echo "proxy = $user_http_proxy" >>~/.curlrc
   fi
 
   dump_curl_proxy
@@ -181,10 +212,11 @@ disable_curl_proxy() {
 
 dump_curl_proxy() {
   proxy="$(grep -E '^proxy ?= ?.+$' ~/.curlrc || true)"
-  if [[ -n "$proxy" ]]; then
-    echo "echo curl $proxy"
+  echo "echo -n Current Curl proxy:" >&3
+  if [ -n "$proxy" ]; then
+    echo "echo \" $(echo $proxy | awk '{print $3}')\"" >&3
   else
-    echo 'echo no curl proxy'
+    echo 'echo' >&3
   fi
 }
 
@@ -194,13 +226,14 @@ enable_docker_proxy() {
   fi
 
   # See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
+  sudo mkdir -p /etc/systemd/system/docker.service.d
   sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<EOF
 [Service]
-Environment="HTTP_PROXY=http://$http_proxy/"
+Environment="HTTP_PROXY=http://$user_http_proxy/"
 EOF
   sudo tee /etc/systemd/system/docker.service.d/https-proxy.conf >/dev/null <<EOF
 [Service]
-Environment="HTTPS_PROXY=http://$http_proxy/"
+Environment="HTTPS_PROXY=http://$user_http_proxy/"
 EOF
 
   sudo systemctl daemon-reload
@@ -226,26 +259,26 @@ dump_docker_proxy() {
     fatal 'systemctl does not exist.'
   fi
 
-  systemctl show --property=Environment docker
+  echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
 }
 
 case "$subcommand" in
   enable)
-    [[ -n "$target_http" ]] && enable_http_proxy
-    [[ -n "$target_git" ]] && enable_git_proxy
-    [[ -n "$target_curl" ]] && enable_curl_proxy
-    [[ -n "$target_docker" ]] && enable_docker_proxy
+    [ -n "$target_http"   -o -n "$target_all" ] && enable_http_proxy
+    [ -n "$target_git"    -o -n "$target_all" ] && enable_git_proxy
+    [ -n "$target_curl"   -o -n "$target_all" ] && enable_curl_proxy
+    [ -n "$target_docker" -o -n "$target_all" ] && enable_docker_proxy
     ;;
   disable)
-    [[ -n "$target_http" ]] && disable_http_proxy
-    [[ -n "$target_git" ]] && disable_git_proxy
-    [[ -n "$target_curl" ]] && disable_curl_proxy
-    [[ -n "$target_docker" ]] && disable_docker_proxy
+    [ -n "$target_http"   -o -n "$target_all" ] && disable_http_proxy
+    [ -n "$target_git"    -o -n "$target_all" ] && disable_git_proxy
+    [ -n "$target_curl"   -o -n "$target_all" ] && disable_curl_proxy
+    [ -n "$target_docker" -o -n "$target_all" ] && disable_docker_proxy
     ;;
-  dump)
-    [[ -n "$target_http" ]] && dump_http_proxy
-    [[ -n "$target_git" ]] && dump_git_proxy
-    [[ -n "$target_curl" ]] && dump_curl_proxy
-    [[ -n "$target_docker" ]] && dump_docker_proxy
+  info)
+    [ -n "$target_http"   -o -n "$target_all" ] && dump_http_proxy
+    [ -n "$target_git"    -o -n "$target_all" ] && dump_git_proxy
+    [ -n "$target_curl"   -o -n "$target_all" ] && dump_curl_proxy
+    [ -n "$target_docker" -o -n "$target_all" ] && dump_docker_proxy
     ;;
 esac
