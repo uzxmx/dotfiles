@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#
+# Install android (https://developer.android.com/studio#cmdline-tools)
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+if ! is_linux; then
+  abort "Unsupported system"
+fi
+
+# ANDROID_HOME is deprecated.
+# See https://developer.android.com/studio/command-line/variables#envar
+ANDROID_SDK_ROOT=$ANDROID_HOME
+ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-~/android-sdk}
+unset ANDROID_HOME
+
+# The parent directory name of `tools` should be `cmdline-tools`, otherwise,
+# weird thing may happen.
+ANDROID_CMDTOOLS_ROOT=$ANDROID_SDK_ROOT/cmdline-tools
+ANDROID_TOOLS_ROOT=$ANDROID_CMDTOOLS_ROOT/tools
+
+mkdir -p "$ANDROID_SDK_ROOT"
+cd "$ANDROID_SDK_ROOT"
+
+install_cmdtools() {
+  local cmdtools_platform cmdtools_version file
+  if is_linux; then
+    cmdtools_platform="linux"
+  fi
+  cmdtools_version="6609375_latest"
+  file="commandlinetools-$cmdtools_platform-$cmdtools_version.zip"
+  wget "https://dl.google.com/android/repository/$file"
+  mkdir -p "$ANDROID_CMDTOOLS_ROOT"
+  (cd "$ANDROID_CMDTOOLS_ROOT" && unzip "../$file")
+  rm "$file"
+}
+
+if type -p sdkmanager &>/dev/null; then
+  install_cmdtools
+fi
+
+PATH="$ANDROID_TOOLS_ROOT/bin:$PATH"
+
+NDK_VERSION="ndk;21.3.6528147"
+PLATFORM_VERSION="platforms;android-29"
+
+yes | sdkmanager --install "$NDK_VERSION" "$PLATFORM_VERSION"

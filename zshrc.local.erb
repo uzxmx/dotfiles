@@ -43,22 +43,25 @@ PATH=/mnt/e/projects/boxes/bin:$PATH:/mnt/e/VirtualBox
 <% if is_mac -%>
 export ANDROID_STUDIO_HOME="/Applications/Android Studio.app"
 export ANDROID_STUDIO_JAVA_HOME="$ANDROID_STUDIO_HOME/Contents/jre/jdk/Contents/Home"
-export ANDROID_HOME=~/Library/Android/sdk
+export ANDROID_SDK_ROOT=~/Library/Android/sdk
 <% else -%>
+  <%- if is_wsl -%>
 export ANDROID_STUDIO_HOME="/mnt/d/android_studio"
+export ANDROID_SDK_ROOT="/mnt/c/Users/<%= windows_username -%>/AppData/Local/Android/Sdk"
+  <%- else -%>
+export ANDROID_STUDIO_HOME=~/android_studio
+export ANDROID_SDK_ROOT=~/android-sdk
+  <%- end -%>
 export ANDROID_STUDIO_JAVA_HOME="$ANDROID_STUDIO_HOME/jre"
-<% if is_wsl -%>
-export ANDROID_HOME="/mnt/c/Users/<%= windows_username -%>/AppData/Local/Android/Sdk"
-<% end -%>
 <% end -%>
 
 ## Set current build tools version to make them in PATH.
 ## TODO maybe we can set it on the fly when there is only one version available.
 # ANDROID_CURRENT_BUILD_TOOLS_VERSION=
 
-if [ -n "$ANDROID_HOME" ]; then
-  PATH="$ANDROID_HOME/platform-tools:$PATH"
+if [ -n "$ANDROID_SDK_ROOT" ]; then
+  PATH="$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/tools/bin:$ANDROID_SDK_ROOT/tools/bin:$PATH"
   if [ -n "$ANDROID_CURRENT_BUILD_TOOLS_VERSION" ]; then
-    PATH="$ANDROID_HOME/build-tools/$ANDROID_CURRENT_BUILD_TOOLS_VERSION:$PATH"
+    PATH="$ANDROID_SDK_ROOT/build-tools/$ANDROID_CURRENT_BUILD_TOOLS_VERSION:$PATH"
   fi
 fi
