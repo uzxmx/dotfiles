@@ -60,8 +60,9 @@ source ~/.dotfiles/scripts/lib/utils/common.sh
 source ~/.dotfiles/scripts/lib/fzf.sh
 
 call_fzf files --query="$1" --multi --select-1 --exit-0 \
-  --prompt '(CTRL-V:copy CTRL-Y:yank)> ' \
+  --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-R:run)> ' \
   --expect="ctrl-v" \
+  --expect="ctrl-r" \
   < <(fd --type f "${pattern:-.}" "$dir")
 
 if [ "${files[0]}" = "ctrl-v" ]; then
@@ -80,6 +81,15 @@ if [ "${files[0]}" = "ctrl-v" ]; then
   done
   cp "$src_file" "$target_file"
   files=("$target_file")
+elif [ "${files[0]}" = "ctrl-r" ]; then
+  file="${files[1]}"
+  if [ -x "$file" ]; then
+    echo "$file" >&3
+    exit 101
+  else
+    echo "$file is not an executable."
+    exit 1
+  fi
 fi
 
 if [ -n "$files" ]; then

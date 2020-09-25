@@ -4,6 +4,7 @@ alias e='$EDITOR'
 
 alias f="fe"
 alias fbr="~/.dotfiles/scripts/fzf/git-branch"
+alias fe='_capture_source_and_signal ~/.dotfiles/bin/fe "$@"'
 alias fed="fe ~/.dotfiles"
 alias fedb="fe ~/.dotfiles/bin"
 alias fedd="fe ~/.dotfiles/doc"
@@ -61,7 +62,7 @@ alias va="vagrant"
 alias p="pwd"
 
 # proxyctl
-alias px='() { local result; { result=$(~/.dotfiles/scripts/proxyctl "$@" 3>&1 >&4 4>&-) } 4>&1; [ -n "$result" ] && eval "$result" }'
+alias px='_capture_source_and_signal ~/.dotfiles/scripts/proxyctl "$@"'
 alias pe='px enable'
 alias pd='px disable'
 alias pi='px info'
