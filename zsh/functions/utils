@@ -100,6 +100,22 @@ _capture_source_and_signal() {
   fi
 }
 
+# This is a ZLE widget function that allows us to execute the command in the
+# editing buffer by pressing CTRL-S.
+_zle_capture_source_and_signal() {
+  echo
+  setopt shwordsplit
+  local args=(${BUFFER})
+  unsetopt shwordsplit
+  _capture_source_and_signal "${args[@]}"
+  echo
+  echo
+  zle backward-kill-line
+  zle reset-prompt
+}
+zle -N _zle_capture_source_and_signal
+bindkey "^S" _zle_capture_source_and_signal
+
 # Dynamically define a shell function in current context, which calls the
 # wrapper for an executable. The wrapper can exit with specific codes to signal
 # to the function, and data sent to FD 3 is captured by the function.

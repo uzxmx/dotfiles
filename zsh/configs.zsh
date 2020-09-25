@@ -27,7 +27,7 @@ bindkey '^R' history-incremental-search-backward
 bindkey '^W' vi-backward-kill-word
 bindkey "^V" edit-command-line
 
-# TODO bindkey "^S" to search something
+# TODO bindkey
 # ^Y
 # ^F
 # ^Z
