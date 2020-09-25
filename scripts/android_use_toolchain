@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Switch Android NDK toolchain, create symlinks and append them to PATH to
+# reduce keystrokes.
+
+set -eo pipefail
+
+ndk_root=$(find "$ANDROID_SDK_ROOT/ndk" -mindepth 1 -maxdepth 1 -type d | head -1)
+arch=$(cd "$ndk_root/toolchains"; find . -mindepth 1 -maxdepth 1 -type d | sed 's:^./::' | fzf)
+prebuilt_for_cur_host_root="$ndk_root/toolchains/$arch/prebuilt/linux-x86_64"
+
+target_dir="/tmp/$arch"
+rm -rf "$target_dir"
+mkdir -p "$target_dir/bin"
+cd "$target_dir/bin"
+
+for file in "$prebuilt_for_cur_host_root"/bin/*; do
+  ln -s "$file" "$(basename $file | awk -F- '{print $NF}')"
+done
+
+echo "PATH=$target_dir/bin:\$PATH; echo PATH updated" >&3
