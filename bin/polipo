@@ -35,7 +35,8 @@ EOF
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
-pid_file=/var/run/polipo.pid
+pid_file=$(polipo -v | grep 'pidFile ' | cut -d ' ' -f 3)
+pid_file=${pid_file:-/tmp/polipo.pid}
 
 get_pid() {
   cat "$pid_file" 2>/dev/null || true
@@ -52,15 +53,15 @@ polipo_is_running() {
 
 cmd_start() {
   if ! polipo_is_running; then
-    sudo polipo
+    polipo
   fi
 }
 
 cmd_stop() {
   if polipo_is_running; then
-    sudo kill -9 "$(get_pid)"
+    kill -9 "$(get_pid)"
   fi
-  sudo rm -rf "$pid_file"
+  rm -rf "$pid_file"
 }
 
 cmd_restart() {
@@ -82,7 +83,7 @@ cmd_log() {
     exit
   fi
 
-  local log_file=$(sudo polipo -v | grep 'logFile ' | cut -d ' ' -f 3)
+  local log_file=$(polipo -v | grep 'logFile ' | cut -d ' ' -f 3)
   if [ -z "$log_file" ]; then
     echo 'Cannot detect polipo log file'
   else
@@ -104,6 +105,6 @@ case "$1" in
     ;&
     # Fall through
   *)
-    sudo polipo "$@"
+    polipo "$@"
     ;;
 esac

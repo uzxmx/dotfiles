@@ -5,6 +5,6 @@
 proxyAddress = "0.0.0.0"
 daemonise = true
 socksParentProxy = "127.0.0.1:1080"
-logFile = /var/log/polipo/polipo.log
+logFile = /tmp/polipo.log
 logLevel = 0xFF
-pidFile = /var/run/polipo.pid
+pidFile = /tmp/polipo.pid
