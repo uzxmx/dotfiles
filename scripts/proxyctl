@@ -4,7 +4,7 @@
 # for http, git, curl and docker. For http, the change is only in current shell.
 # For others, the change is global.
 
-set -e
+set -eo pipefail
 
 usage() {
   cat <<-EOF 1>&2
@@ -221,45 +221,42 @@ dump_curl_proxy() {
 }
 
 enable_docker_proxy() {
-  if ! type systemctl &>/dev/null; then
-    fatal 'systemctl does not exist.'
-  fi
-
-  # See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
-  sudo mkdir -p /etc/systemd/system/docker.service.d
-  sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<EOF
+  if type systemctl &>/dev/null; then
+    # See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
+    sudo mkdir -p /etc/systemd/system/docker.service.d
+    sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<EOF
 [Service]
 Environment="HTTP_PROXY=http://$user_http_proxy/"
 EOF
-  sudo tee /etc/systemd/system/docker.service.d/https-proxy.conf >/dev/null <<EOF
+    sudo tee /etc/systemd/system/docker.service.d/https-proxy.conf >/dev/null <<EOF
 [Service]
 Environment="HTTPS_PROXY=http://$user_http_proxy/"
 EOF
 
-  sudo systemctl daemon-reload
-  sudo systemctl restart docker
+    sudo systemctl daemon-reload
+    sudo systemctl restart docker
 
-  dump_docker_proxy
+    dump_docker_proxy
+  fi
 }
 
 disable_docker_proxy() {
-  if ! type systemctl &>/dev/null; then
-    fatal 'systemctl does not exist.'
+  if type systemctl &>/dev/null; then
+    sudo rm /etc/systemd/system/docker.service.d/{http,https}-proxy.conf
+    sudo systemctl daemon-reload
+    sudo systemctl restart docker
+
+    dump_docker_proxy
   fi
-
-  sudo rm /etc/systemd/system/docker.service.d/{http,https}-proxy.conf
-  sudo systemctl daemon-reload
-  sudo systemctl restart docker
-
-  dump_docker_proxy
 }
 
 dump_docker_proxy() {
-  if ! type systemctl &>/dev/null; then
-    fatal 'systemctl does not exist.'
+  if type systemctl &>/dev/null; then
+    echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
+  else
+    echo "echo Current Docker proxy: N/A" >&3
   fi
 
-  echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
 }
 
 case "$subcommand" in
@@ -282,3 +279,5 @@ case "$subcommand" in
     [ -n "$target_docker" -o -n "$target_all" ] && dump_docker_proxy
     ;;
 esac
+
+exit 0
