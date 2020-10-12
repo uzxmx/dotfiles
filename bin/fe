@@ -90,6 +90,9 @@ elif [ "${files[0]}" = "ctrl-r" ]; then
     echo "$file is not an executable."
     exit 1
   fi
+elif [ -z "${files[0]}" ]; then
+  echo "No file available"
+  exit
 fi
 
 if [ -n "$files" ]; then
