@@ -2,7 +2,7 @@
 #
 # Install ag (https://github.com/ggreer/the_silver_searcher)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if is_mac; then
   brew_install the_silver_searcher

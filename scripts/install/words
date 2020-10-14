@@ -2,7 +2,7 @@
 #
 # Install words (https://en.wikipedia.org/wiki/Words_(Unix))
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
   sudo yum install -y words

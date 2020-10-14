@@ -4,7 +4,7 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if ! is_linux; then
   abort "Unsupported system"

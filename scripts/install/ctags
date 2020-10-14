@@ -2,7 +2,7 @@
 #
 # Install ctags.
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if is_mac; then
   brew_install ctags --HEAD

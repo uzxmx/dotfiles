@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+
+$(dirname "$BASH_SOURCE")/jq
+
+install_plugin_package java "$1"

@@ -2,6 +2,8 @@
 #
 # This script depends on `prompt.sh`.
 
+. $(dirname "$BASH_SOURCE")/system.sh
+
 # Show output with color.
 #
 # @params:
@@ -58,44 +60,6 @@ split_by() {
   echo "$str" | tr "$separator" "\n"
 }
 
-is_mac() {
-  if [[ "$OSTYPE" =~ ^darwin.* ]]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-is_wsl() {
-  [[ "$(uname -r)" =~ Microsoft$ ]]
-}
-
-is_linux() {
-  [[ "$OSTYPE" =~ ^linux ]]
-}
-
-has_apt() {
-  type -p apt-get &>/dev/null
-}
-
-has_dpkg() {
-  type -p dpkg &>/dev/null
-}
-
-has_yum() {
-  type -p yum &>/dev/null
-}
-
-has_snap() {
-  type -p snap &>/dev/null
-}
-
-brew_install() {
-  if ! type -p brew &>/dev/null; then
-    abort 'You must install `brew` before you can continue'
-  fi
-  brew install "$@"
-}
 
 # Check if executable exists. If not, install it. A script with name `${executable}'
 # should exist in folder ~/.dotfiles/scripts/install.
@@ -177,19 +141,4 @@ create_link() {
     rm "$src_file"
   fi
   ln -s "$target_file" "$src_file"
-}
-
-# Download and install a debian package.
-#
-# @params:
-#   $1: remote url
-download_and_install_debian_package() {
-  if [ -z "$1" ]; then
-    abort 'Remote url is required.'
-  fi
-  name="$(basename "$1")"
-  dest="/tmp/$name"
-  curl -C- -L -o "$dest" "$1"
-  sudo dpkg -i "$dest"
-  rm "$dest"
 }

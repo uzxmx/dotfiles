@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Install network tools.
+#
+# DNS tools:
+# - whois
+# - dig # provided by bind-utils
+#
+# TCP/IP tools:
+# - tcpdump
+# - route # provided by net-tools
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+packages=(
+  whois
+  bind-utils
+  tcpdump
+  net-tools
+)
+
+if has_yum; then
+  sudo yum install -y "${packages[@]}"
+elif has_apt; then
+  sudo apt-get install -y "${packages[@]}"
+fi

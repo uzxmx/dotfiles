@@ -2,7 +2,7 @@
 #
 # Install vagrant (https://www.vagrantup.com/downloads.html)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="2.2.7"
 if has_dpkg; then

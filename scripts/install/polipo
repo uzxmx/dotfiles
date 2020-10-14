@@ -6,7 +6,7 @@ set -eo pipefail
 
 which polipo &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 check_makeinfo() {
   which makeinfo &> /dev/null && return

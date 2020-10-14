@@ -20,7 +20,7 @@ check_enabled() {
 
 type -p docker &> /dev/null && check_group && check_enabled && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
   # https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/

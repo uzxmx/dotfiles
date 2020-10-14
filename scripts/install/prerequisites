@@ -1,17 +1,43 @@
 #!/usr/bin/env bash
-#
-# Install the prerequisites when setting up this repository.
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
-if is_mac; then
-  brew_install unzip
-elif has_yum; then
-  sudo yum install -y unzip
-elif has_apt; then
-  sudo apt-get install -y unzip
-else
-  abort "Unsupported system"
+# Install required repos for centos.
+if has_yum; then
+  sudo yum install -y epel-release
+
+  sudo sed -i.bak -e 's;^metalink=;#metalink=;' \
+    -e 's;^#baseurl=http://download\.fedoraproject\.org/pub;baseurl=https://mirrors.tuna.tsinghua.edu.cn;' \
+    /etc/yum.repos.d/epel.repo \
+    /etc/yum.repos.d/epel-testing.repo
+
+  # TODO this cannot be found.
+  # sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+  #
+  # sudo sed -i.bak -e 's;^baseurl = https://repo\.ius\.io;baseurl = https://mirrors.tuna.tsinghua.edu.cn/ius;' \
+  #   /etc/yum.repos.d/ius.repo
+
+  sudo yum install -y centos-release
+
+  sudo sed -i.bak -e 's;http://vault.centos.org;https://mirrors.tuna.tsinghua.edu.cn/centos-vault;' \
+    /etc/yum.repos.d/CentOS-Vault.repo
+fi
+
+packages=(
+  curl
+  wget
+  git
+  unzip
+  make
+  gcc
+  automake
+  byacc
+  libevent
+  libevent-devel
+)
+
+if has_yum; then
+  sudo yum install -y "${packages[@]}"
 fi

@@ -2,6 +2,6 @@
 #
 # Install yarn (https://yarnpkg.com/getting-started/install)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 npm install -g yarn

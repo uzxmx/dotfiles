@@ -4,7 +4,7 @@
 #
 # TODO check if a version has been installed before continuing.
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="$1"
 if [ -z "$version" ]; then

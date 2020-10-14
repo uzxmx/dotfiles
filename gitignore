@@ -11,8 +11,9 @@ tags
 .tags
 !tags/
 !.tags/
-tmp/**/*
-!tmp/cache/.keep
+/tmp/**/*
+!/tmp/cache/
+!/tmp/cache/.keep
 *.pyc
 .projections.json
 /config/projections.json

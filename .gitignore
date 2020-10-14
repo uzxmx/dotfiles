@@ -1,4 +1,6 @@
+# Copied from /gitignore
 .DS_Store
+.vim
 *.sw[nop]
 .bundle
 .byebug_history
@@ -7,8 +9,13 @@ db/*.sqlite3
 log/*.log
 rerun.txt
 tags
+.tags
 !tags/
-tmp/**/*
-!tmp/cache/.keep
+!.tags/
+/tmp/**/*
+!/tmp/cache/
+!/tmp/cache/.keep
 *.pyc
-config/nvim/coc-settings.json
+.projections.json
+/config/projections.json
+.local

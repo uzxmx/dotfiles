@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+if ! [ $(basename $(dirname "$BASH_SOURCE")) = "bootstrap" -a $(basename $(dirname $(dirname "$BASH_SOURCE"))) = "scripts" ]; then
+  # Download and execute stage0 script.
+  REMOTE_STAGE0_SCRIPT=${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/stage0}
+
+  is_available() {
+    type -p "$1" &> /dev/null
+  }
+
+  if ! is_available curl && ! is_available wget; then
+    if is_available apt-get; then
+      sudo apt-get install -y curl
+    elif is_available yum; then
+      sudo yum install -y curl
+    elif is_available brew; then
+      # TODO For mac, install brew if it is unavailable.
+      brew install curl
+    else
+      echo 'Unsupported system'
+      exit 1
+    fi
+  fi
+
+  if is_available curl; then
+    download_cmd="curl -s $REMOTE_STAGE0_SCRIPT"
+  elif is_available wget; then
+    download_cmd="wget -O- $REMOTE_STAGE0_SCRIPT 2>/dev/null"
+  else
+    # Should never be reachable.
+    echo 'No curl or wget found'
+    exit 1
+  fi
+
+  source <($download_cmd)
+else
+  DOTFILES_ROOT=$(dirname "$BASH_SOURCE")/../..
+  source "$DOTFILES_ROOT/scripts/bootstrap/stage0"
+fi
+
+# Do real setup.
+cd "$DOTFILES_ROOT"
+
+if [ -n "$HTTP_PROXY" ]; then
+  source ./scripts/misc/bash_proxyctl.sh
+  pe -p "$HTTP_PROXY"
+  trap pd EXIT
+fi
+
+./scripts/misc/setup_system_repo_mirror
+
+deps=(
+  prerequisites
+  rcm
+  zsh
+  antibody
+  hstr
+  rlwrap
+  asdf
+  nvim
+  tmux
+  bc
+  socat
+  fzf
+  fd
+  rg
+)
+
+for dep in "${deps[@]}"; do
+  "./scripts/install/$dep"
+
+  case "$dep" in
+    rcm)
+      rcup
+
+      # Fix bad permissions.
+      chmod 600 ~/.ssh/config
+      ;;
+    tmux)
+      ./scripts/setup_tmux
+      ;;
+  esac
+done
+
+# Required by ssh wrapper.
+if ! perl -MJSON::PP -e 1 &>/dev/null; then
+  ./scripts/install/perl
+fi
+
+for dep in cpanm perl_modules; do
+  "./scripts/install/$dep"
+done

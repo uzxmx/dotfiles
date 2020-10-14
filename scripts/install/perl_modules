@@ -2,4 +2,4 @@
 #
 # Install perl modules.
 
-cpanm String::ShellQuote
+~/.dotfiles/bin/cpanm String::ShellQuote

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+GIT_CLONE_WITH_SSH=${GIT_CLONE_WITH_SSH:-1}
+DOTFILES_ROOT=${DOTFILES_ROOT:-~/.dotfiles}
+GIT_CLONE_ARGS=($GIT_CLONE_ARGS)
+
+is_available() {
+  type -p "$1" &> /dev/null
+}
+
+# The only required dependency is `git`.
+if ! is_available git; then
+  if is_available apt-get; then
+    sudo apt-get install -y git
+  elif is_available yum; then
+    sudo yum install -y git
+  elif is_available brew; then
+    # TODO Actually for mac, we should install brew if it is unavailable.
+    brew install git
+  else
+    echo 'Unsupported system'
+    exit 1
+  fi
+fi
+
+if [ ! -d "$DOTFILES_ROOT" ] || ! (cd "$DOTFILES_ROOT" && git status &> /dev/null); then
+  if [ "$GIT_CLONE_WITH_SSH" = "1" ]; then
+    url="git@github.com:uzxmx/dotfiles.git"
+  else
+    url="https://github.com/uzxmx/dotfiles.git"
+  fi
+  git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_ROOT"
+fi

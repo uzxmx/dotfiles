@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+
+# Make sure `erb` is in PATH.
+. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+
+if ! type -p erb &>/dev/null; then
+  abort "erb is required"
+fi
+
+if [ ! -d ~/.vim ]; then
+  abort 'Please make sure directory ~/.vim exists'
+fi
+
+erb -T - $(dirname "$BASH_SOURCE")/../../vim/vimrc.generated.erb >~/.vim/vimrc.generated

@@ -2,7 +2,11 @@
 #
 # Install bc.
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+set -eo pipefail
+
+type -p bc &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
   sudo yum install -y bc

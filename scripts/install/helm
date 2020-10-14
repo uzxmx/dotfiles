@@ -4,7 +4,7 @@
 
 type -p helm &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="3.2.3"
 path_to_save="/tmp/helm-$version.tgz"

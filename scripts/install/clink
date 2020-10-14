@@ -2,7 +2,7 @@
 #
 # Install clink. (https://mridgers.github.io/clink/)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 . $(dirname "$BASH_SOURCE")/../lib/scoop.sh
 
 scoop install clink

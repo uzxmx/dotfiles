@@ -2,7 +2,11 @@
 #
 # Install fzf (https://github.com/junegunn/fzf)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+set -eo pipefail
+
+type -p fzf &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if is_mac; then
   brew_install fzf

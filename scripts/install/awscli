@@ -4,7 +4,7 @@
 
 type -p aws &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 path_to_save="/tmp/awscli.zip"
 if is_linux; then

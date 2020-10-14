@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Set or unset host for raw.githubusercontent.com.
+
+Options:
+
+  [-u] Unset
+  [-h] Show help
+EOF
+  exit 1
+}
+
+# Find the ip at https://site.ip138.com/raw.Githubusercontent.com/
+IP="151.101.76.133"
+
+set_host() {
+  if ! grep " raw.githubusercontent.com$" /etc/hosts &>/dev/null; then
+    echo "$IP raw.githubusercontent.com" | sudo tee -a /etc/hosts >/dev/null
+  fi
+}
+
+unset_host() {
+  sudo sed -i "/ raw.githubusercontent.com$/d" /etc/hosts
+}
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  -u)
+    unset_host
+    ;;
+  *)
+    set_host
+    ;;
+esac

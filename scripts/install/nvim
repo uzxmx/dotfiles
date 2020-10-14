@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Install nvim
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+check_link() {
+  [ ! -d ~/bin ] && mkdir ~/bin
+
+  # Link vi to nvim.
+  local nvim_path="$(which nvim)"
+  is_link ~/bin/vi "$nvim_path" || create_link ~/bin/vi "$nvim_path"
+}
+
+install_plugins() {
+  # See https://github.com/junegunn/vim-plug/issues/225#issuecomment-583541912
+  nvim --headless "+PlugInstall" "+qa!"
+  echo 'Installing plugins finished'
+}
+
+for script in ruby python nodejs; do
+  "$(dirname "$BASH_SOURCE")/$script"
+done
+
+if ! type -p nvim &> /dev/null; then
+  version="v0.3.8"
+
+  install_from_prebuilt() {
+    local path_to_save="/tmp/nvim-$version.tar.gz"
+    local platform
+    if is_linux; then
+      platform="linux64"
+    else
+      abort "Unsupported system"
+    fi
+
+    ~/.dotfiles/bin/cget "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
+
+    tar zxf "$path_to_save" -C /usr --strip-components=1
+    rm -rf "$path_to_save"
+  }
+
+  install_from_source() {
+    dir="/tmp/nvim"
+    git_clone "https://github.com/neovim/neovim" "$dir" -b "$version" --depth 1
+
+    if has_yum; then
+      sudo yum install -y cmake gcc-c++ patch libtool
+    fi
+
+    (cd "$dir"; make CMAKE_BUILD_TYPE=Release; sudo make install; rm -rf "$dir")
+  }
+
+  if [ "${INSTALL_FROM_SOURCE:-1}" = "1" ]; then
+    install_from_source
+  else
+    install_from_prebuilt
+  fi
+fi
+
+"$(dirname "$BASH_SOURCE")/../misc/gen_vimrc"
+"$(dirname "$BASH_SOURCE")/../misc/gen_coc_settings"
+
+check_link
+install_plugins

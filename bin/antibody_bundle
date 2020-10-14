@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 #
 # Download plugins and save zsh settings to ~/.zsh_plugins.sh.
 #
@@ -10,5 +10,5 @@
 # The command 'antibody update' pulls new commits from remote, so if you've specified a branch
 # in plugins.txt, you won't want to run 'antibody update' command.
 
-antibody_purge -s
+~/.dotfiles/bin/antibody_purge -s &>/dev/null
 antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+
+echo 'Check and install ruby dependencies...'
+if has_yum; then
+  sudo yum install -y openssl-devel readline-devel
+fi
+
+mirror_cmd() {
+  local package_url="$1"
+  local checksum="$2"
+
+  echo "${package_url/cache.ruby-lang.org/cache.ruby-china.com}"
+}
+
+export -f mirror_cmd
+export RUBY_BUILD_MIRROR_CMD=mirror_cmd
+
+install_plugin_package ruby "$1"

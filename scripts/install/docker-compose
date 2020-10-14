@@ -6,7 +6,7 @@ set -eo pipefail
 
 which docker-compose &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if is_linux; then
   ~/.dotfiles/bin/cget "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" ~/bin/docker-compose

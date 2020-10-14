@@ -35,10 +35,20 @@ EOF
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
-pid_file="/var/run/v2ray.pid"
+is_mac() {
+  if [[ "$OSTYPE" =~ ^darwin.* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
 
 get_pid() {
-  cat "$pid_file" 2>/dev/null || true
+  if is_mac; then
+    launchctl list | grep v2ray | awk '{print $1}'
+  else
+    cat /var/run/v2ray.pid 2>/dev/null || true
+  fi
 }
 
 v2ray_is_running() {
@@ -52,13 +62,21 @@ v2ray_is_running() {
 
 cmd_start() {
   if ! v2ray_is_running; then
-    sudo service v2ray start
+    if is_mac; then
+      launchctl start com.v2ray.core
+    else
+      sudo service v2ray start
+    fi
   fi
 }
 
 cmd_stop() {
   if v2ray_is_running; then
-    sudo service v2ray stop
+    if is_mac; then
+      launchctl stop com.v2ray.core
+    else
+      sudo service v2ray stop
+    fi
   fi
 }
 
@@ -81,7 +99,11 @@ cmd_log() {
     exit
   fi
 
-  tail -F /var/log/v2ray.log
+  if is_mac; then
+    tail -F /tmp/v2ray.log
+  else
+    tail -F /var/log/v2ray.log
+  fi
 }
 
 case "$1" in

@@ -4,7 +4,7 @@
 
 type -p hub &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="2.14.2"
 path_to_save="/tmp/hub-$version.tgz"

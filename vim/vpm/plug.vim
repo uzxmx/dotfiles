@@ -34,7 +34,7 @@ Plug 'uzxmx/vim-table-mode', { 'branch': 'feature/insert-table-columns',  'for':
 Plug 'tpope/vim-endwise'
 Plug 'alvan/vim-closetag'
 Plug 'jiangmiao/auto-pairs'
-Plug 'dyng/ctrlsf.vim'
+Plug 'dyng/ctrlsf.vim', { 'commit': 'a7a446a' }
 Plug 'mileszs/ack.vim'
 Plug 'henrik/vim-indexed-search' " google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
 Plug 'SirVer/ultisnips'

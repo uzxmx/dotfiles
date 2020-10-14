@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+# Download and execute stage0 script.
+REMOTE_STAGE0_SCRIPT=${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/stage0}
+
+is_available() {
+  type -p "$1" &> /dev/null
+}
+
+if ! is_available curl && ! is_available wget; then
+  if is_available apt-get; then
+    sudo apt-get install -y curl
+  elif is_available yum; then
+    sudo yum install -y curl
+  elif is_available brew; then
+    # TODO For mac, install brew if it is unavailable.
+    brew install curl
+  else
+    echo 'Unsupported system'
+    exit 1
+  fi
+fi
+
+if is_available curl; then
+  download_cmd="curl -s $REMOTE_STAGE0_SCRIPT"
+elif is_available wget; then
+  download_cmd="wget -O- $REMOTE_STAGE0_SCRIPT 2>/dev/null"
+else
+  # Should never be reachable.
+  echo 'No curl or wget found'
+  exit 1
+fi
+
+source <($download_cmd)
+
+# Do real setup.
+cd "$DOTFILES_ROOT"
+
+./scripts/install/polipo

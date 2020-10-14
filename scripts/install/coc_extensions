@@ -2,7 +2,7 @@
 #
 # Install coc.nvim extensions. (https://github.com/neoclide/coc.nvim/wiki/Install-coc.nvim#automation-script)
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 cd ~/.config/coc/extensions
 npm install --global-style --ignore-scripts --no-bin-links --no-package-lock --only=prod

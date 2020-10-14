@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if ! type asdf &>/dev/null; then
+  if [ -f ~/.asdf/asdf.sh ]; then
+    source ~/.asdf/asdf.sh
+  fi
+fi
+
 plugin_installed() {
   asdf plugin-list | grep "$1" &>/dev/null
 }
@@ -9,18 +15,28 @@ parse_package_version() {
 }
 
 install_plugin_package() {
-  plugin="$1"
+  local plugin="$1"
+  local package_version="$2"
   if ! plugin_installed "$plugin"; then
-    if [ "$plugin" = "java" ]; then
-      asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
-    else
-      asdf plugin-add "$plugin"
-    fi
+    case "$plugin" in
+      ruby)
+        asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-ruby.git
+        ;;
+      java)
+        asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
+        ;;
+      *)
+        asdf plugin-add "$plugin"
+        ;;
+    esac
   fi
 
   if [ "$plugin" = "nodejs" -a ! -e ~/.asdf/shims/node ]; then
     ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
   fi
 
-  asdf install "$plugin" "$(parse_package_version $plugin)"
+  if [ -z "$package_version" ]; then
+    package_version="$(parse_package_version $plugin)"
+  fi
+  asdf install "$plugin" "$package_version"
 }

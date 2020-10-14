@@ -104,6 +104,17 @@ Ref:
 * https://unix.stackexchange.com/questions/430161/redirect-stderr-and-stdout-to-different-variables-without-temporary-files
 * http://tldp.org/LDP/abs/html/io-redirection.html
 
+## Use additional file descriptors
+
+```
+tmp=$(mktemp)
+exec 4> "$tmp"
+echo foo >&4
+exec 4>&-
+cat "$tmp"
+rm "$tmp"
+```
+
 ## References
 
 * https://tldp.org/LDP/abs/html/index.html

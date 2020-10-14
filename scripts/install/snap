@@ -4,7 +4,7 @@
 
 type -p snap &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
   sudo yum install snapd

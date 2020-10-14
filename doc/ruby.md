@@ -20,3 +20,19 @@ SPEC_OPTS='--no-fail-fast' bundle exec rspec
 ```
 
 Ref: https://relishapp.com/rspec/rspec-core/v/3-7/docs/configuration/read-command-line-configuration-options-from-files
+
+## Pass in compiler options when installing a gem
+
+For example, on Mac 10.15.6, installing puma 4.3.5 fails with:
+
+```
+puma_http11.c:203:22: error: implicitly declaring library function 'isspace' with type 'int (int)' [-Werror,-Wimplicit-function-declaration]
+```
+
+We can resolve this issue by:
+
+```
+gem install puma:4.3.5 -- --with-cflags="-Wno-error=implicit-function-declaration"
+```
+
+Ref: https://github.com/puma/puma/issues/2304

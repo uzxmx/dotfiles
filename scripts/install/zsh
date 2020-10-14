@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+#
+# Install zsh (https://github.com/ohmyzsh/ohmyzsh/wiki/Installing-ZSH)
+
+set -eo pipefail
+
+check_current_shell() {
+  echo 'Checking if current shell is zsh'
+  local zsh_path=$(which zsh)
+  if [ ! "$SHELL" = "$zsh_path" ]; then
+    if ! grep "$zsh_path" /etc/shells &>/dev/null; then
+      echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+    fi
+    echo "${PASSWORD:-vagrant}" | chsh -s "$zsh_path"
+    echo "Current shell is changed to zsh"
+  else
+    echo "Current shell is already zsh"
+  fi
+}
+
+type -p zsh &> /dev/null && check_current_shell && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if has_yum; then
+  sudo yum install -y ncurses-devel
+fi
+
+version="5.8"
+path_to_save="/tmp/zsh-$version.tar.xz"
+~/.dotfiles/bin/cget "https://nchc.dl.sourceforge.net/project/zsh/zsh/$version/zsh-$version.tar.xz" "$path_to_save"
+
+cd /tmp
+tar Jxf "$path_to_save"
+
+cd "zsh-$version"
+./configure --without-tcsetpgrp
+make
+sudo make install
+
+rm -rf "$path_to_save" "zsh-$version"
+
+check_current_shell
+
+if is_mac; then
+  platform=osx
+elif is_wsl; then
+  platform=wsl
+fi
+
+if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
+  if [ -f ~/.zshrc.platform ]; then
+    if [ $? != 0 -o "$(readlink ~/.zshrc.platform)" != "$(ls -d ~)/.zshrc.$platform" ]; then
+      warn "Failed to link ~/.zshrc.platform to ~/.zshrc.$platform, please check ~/.zshrc.platform"
+    fi
+  else
+    ln -s ~/.zshrc.$platform ~/.zshrc.platform
+  fi
+fi

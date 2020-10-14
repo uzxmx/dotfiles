@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/system.sh
+
+if has_apt; then
+  sudo sed -i.bak -Ee 's:[0-9a-zA-Z\.]+\.ubuntu\.com/ubuntu/:mirrors.tuna.tsinghua.edu.cn/ubuntu/:' \
+    /etc/apt/sources.list
+  sudo apt-get update
+elif has_yum; then
+  sudo sed -i.bak -e 's;^mirrorlist=;#mirrorlist=;' \
+    -e 's;^#baseurl=http://mirror\.centos\.org;baseurl=https://mirrors.tuna.tsinghua.edu.cn;' \
+    /etc/yum.repos.d/CentOS-Base.repo
+  sudo yum makecache
+fi

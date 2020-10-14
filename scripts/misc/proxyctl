@@ -11,13 +11,13 @@ usage() {
 Utility script to control proxy.
 
 Usage:
-$0 <enable | disable | info> [proxy types...]
+$0 <enable | disable | info> [proxy types...] [-p proxy_server]
 
-Proxy types: http git curl docker all
+Proxy types: http git curl docker yum all
 
 Examples:
 
-  # Enable http/git/curl proxy.
+  # Enable http/git/curl/yum proxy.
   $> pe
 
   # Enable docker proxy.
@@ -26,7 +26,7 @@ Examples:
   # Enable all proxy types.
   $> pe all
 
-  # Disable http/git/curl proxy.
+  # Disable http/git/curl/yum proxy.
   $> pd
 
   # Show status of all proxy types.
@@ -68,6 +68,10 @@ check_gsed() {
 }
 
 test_proxy() {
+  if ! type -p nc &>/dev/null; then
+    $(dirname "$BASH_SOURCE")/../install/netcat
+  fi
+
   local ary host port
   ary=($(echo "$1" | tr ":" "\n"))
   host=${ary[0]}
@@ -123,13 +127,14 @@ if [ -z "$@" ]; then
   target_http=1
   target_git=1
   target_curl=1
+  target_yum=1
   if [ "$subcommand" = "info" ]; then
     target_docker=1
   fi
 else
   for i in "$@"; do
     case "$i" in
-      http | git | curl | docker | all)
+      http | git | curl | docker | yum | all)
         eval "target_$i=1"
     esac
   done
@@ -256,7 +261,43 @@ dump_docker_proxy() {
   else
     echo "echo Current Docker proxy: N/A" >&3
   fi
+}
 
+enable_yum_proxy() {
+  if type -p yum &>/dev/null; then
+    check_gsed
+    if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
+      sudo $SED -i -E "s/^proxy=.*$/proxy=http:\\/\\/$user_http_proxy/" /etc/yum.conf
+    else
+      # This assumes `[main]` exists in /etc/yum.conf
+      sudo $SED -i -E "/^\\[main\\]$/a proxy=http:\\/\\/$user_http_proxy" /etc/yum.conf
+    fi
+
+    dump_yum_proxy
+  fi
+}
+
+disable_yum_proxy() {
+  if type -p yum &>/dev/null; then
+    if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
+      check_gsed
+      sudo $SED -i -E '/^proxy=.*$/d' /etc/yum.conf
+    fi
+
+    dump_yum_proxy
+  fi
+}
+
+dump_yum_proxy() {
+  if type -p yum &>/dev/null; then
+    proxy="$(grep -E '^proxy=.+$' /etc/yum.conf || true)"
+    echo "echo -n Current YUM proxy:" >&3
+    if [ -n "$proxy" ]; then
+      echo "echo \" $(echo $proxy | awk -F= '{print $2}')\"" >&3
+    else
+      echo 'echo' >&3
+    fi
+  fi
 }
 
 case "$subcommand" in
@@ -265,18 +306,21 @@ case "$subcommand" in
     [ -n "$target_git"    -o -n "$target_all" ] && enable_git_proxy
     [ -n "$target_curl"   -o -n "$target_all" ] && enable_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && enable_docker_proxy
+    [ -n "$target_yum"    -o -n "$target_all" ] && enable_yum_proxy
     ;;
   disable)
     [ -n "$target_http"   -o -n "$target_all" ] && disable_http_proxy
     [ -n "$target_git"    -o -n "$target_all" ] && disable_git_proxy
     [ -n "$target_curl"   -o -n "$target_all" ] && disable_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && disable_docker_proxy
+    [ -n "$target_yum"    -o -n "$target_all" ] && disable_yum_proxy
     ;;
   info)
     [ -n "$target_http"   -o -n "$target_all" ] && dump_http_proxy
     [ -n "$target_git"    -o -n "$target_all" ] && dump_git_proxy
     [ -n "$target_curl"   -o -n "$target_all" ] && dump_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && dump_docker_proxy
+    [ -n "$target_yum"    -o -n "$target_all" ] && dump_yum_proxy
     ;;
 esac
 

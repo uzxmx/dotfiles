@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+type -p js-beautify &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if type -p npm &>/dev/null; then
+  # vim-autoformat depends on js-beautify.
+  npm install -g js-beautify
+else
+  abort "npm is required"
+fi
