@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+which v2ray >/dev/null 2>&1 || exit 0
+
+NAME=v2ray
+
+. /lib/lsb/init-functions
+
+start() {
+  start-stop-daemon --start --quiet --oknodo --pidfile /var/run/v2ray.pid -m --exec /usr/local/bin/v2ray -- -c /usr/local/etc/v2ray/config.json >/var/log/v2ray.log 2>&1 &
+}
+
+stop() {
+  start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/v2ray.pid --remove-pidfile
+}
+
+case "$1" in
+  start)
+    start
+    echo "$NAME started."
+    ;;
+  stop)
+    stop
+    echo "$NAME stopped."
+    ;;
+  status)
+    status_of_proc -p /var/run/v2ray.pid v2ray v2ray
+    ;;
+  restart|force-reload)
+    stop
+    start
+    echo "$NAME restarted."
+    ;;
+  *)
+    N=/etc/init.d/$NAME
+    echo "Usage: $N {start|stop|restart|force-reload}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

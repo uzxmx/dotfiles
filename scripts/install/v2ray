@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Install v2ray (https://www.v2fly.org/en_US/)
+
+set -eo pipefail
+
+test -x /usr/local/bin/v2ray && exit
+
+. $(dirname "$BASH_SOURCE")/../utils.sh
+
+version="v4.31.0"
+path_to_save="/tmp/v2ray-$version.zip"
+if is_mac; then
+  platform="macos"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "https://github.com/v2fly/v2ray-core/releases/download/$version/v2ray-$platform-64.zip" "$path_to_save"
+
+dir="/tmp/v2ray-$version"
+mkdir -p "$dir"
+(cd "$dir" && unzip "$path_to_save" && sudo cp v2ray v2ctl /usr/local/bin)
+rm -rf "$dir" "$path_to_save"
+
+if is_linux; then
+  if has_systemd; then
+    sudo cp $(dirname "$BASH_SOURCE")/../../v2ray/v2ray.service /etc/systemd/system
+  else
+    sudo cp $(dirname "$BASH_SOURCE")/../../v2ray/sysvinit /etc/init.d/v2ray
+  fi
+fi

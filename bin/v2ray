@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for v2ray utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * start/stop/restart:
+      Start/stop/restart v2ray.
+
+      $> v2ray start
+      $> v2ray stop
+      $> v2ray restart
+
+  * status:
+      Show the v2ray status.
+
+      $> v2ray status
+
+  * log:
+      Tail the v2ray log.
+
+      $> v2ray log
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+pid_file="/var/run/v2ray.pid"
+
+get_pid() {
+  cat "$pid_file" 2>/dev/null || true
+}
+
+v2ray_is_running() {
+  local pid=$(get_pid)
+  if [ -n "$pid" ]; then
+    ps "$pid" &>/dev/null
+  else
+    false
+  fi
+}
+
+cmd_start() {
+  if ! v2ray_is_running; then
+    sudo service v2ray start
+  fi
+}
+
+cmd_stop() {
+  if v2ray_is_running; then
+    sudo service v2ray stop
+  fi
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  if v2ray_is_running; then
+    echo 'v2ray is running'
+  else
+    echo 'v2ray is NOT running'
+  fi
+}
+
+cmd_log() {
+  if ! v2ray_is_running; then
+    echo 'v2ray is NOT running'
+    exit
+  fi
+
+  tail -F /var/log/v2ray.log
+}
+
+case "$1" in
+  start | stop | restart | status | log)
+    cmd="$1"
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    v2ray "$@"
+    ;;
+esac
