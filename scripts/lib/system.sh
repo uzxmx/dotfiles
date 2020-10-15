@@ -34,6 +34,10 @@ has_snap() {
   type -p snap &>/dev/null
 }
 
+has_systemd() {
+  pidof systemd &>/dev/null
+}
+
 brew_install() {
   if ! type -p brew &>/dev/null; then
     abort 'You must install `brew` before you can continue'
