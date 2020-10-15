@@ -16,7 +16,7 @@
 
   "inbounds": [
     {
-      "port": 8123,
+      "port": 8125,
       "listen": "0.0.0.0",
       "tag": "http-inbound",
       "protocol": "http"
@@ -49,7 +49,11 @@
         "type": "field",
         "domain": [
           "domain:github.com",
-          "domain:amazonaws.com"
+          "domain:githubusercontent.com",
+          "domain:amazonaws.com",
+          "nchc.dl.sourceforge.net",
+          "domain:luarocks.org",
+          "download.opensuse.org"
         ],
         "outboundTag": "shadowsocks-outbound"
       }
