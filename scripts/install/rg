@@ -13,6 +13,9 @@ if is_mac; then
 elif has_yum; then
   sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
   sudo yum install -y ripgrep
+elif has_dpkg; then
+  version=12.1.1
+  download_and_install_debian_package "https://github.com/BurntSushi/ripgrep/releases/download/$version/ripgrep_${version}_amd64.deb"
 else
   abort "Unsupported system"
 fi

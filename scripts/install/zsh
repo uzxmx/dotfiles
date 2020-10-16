@@ -7,11 +7,15 @@ set -eo pipefail
 check_current_shell() {
   echo 'Checking if current shell is zsh'
   local zsh_path=$(which zsh)
-  if [ ! "$SHELL" = "$zsh_path" ]; then
+  if [ ! "$(perl -e '@x=getpwuid($<); print $x[8]')" = "$zsh_path" ]; then
     if ! grep "$zsh_path" /etc/shells &>/dev/null; then
       echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
     fi
-    echo "${PASSWORD:-vagrant}" | chsh -s "$zsh_path"
+    if [ "$USER" = "vagrant" ]; then
+      echo "${PASSWORD:-vagrant}" | chsh -s "$zsh_path"
+    else
+      chsh -s "$zsh_path"
+    fi
     echo "Current shell is changed to zsh"
   else
     echo "Current shell is already zsh"

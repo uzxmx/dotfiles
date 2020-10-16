@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+
+if [ -z "$USER" ]; then
+  abort '$USER is empty.'
+fi
+
+content="$USER ALL=(ALL) NOPASSWD: ALL"
+if ! sudo grep "^$content\$" /etc/sudoers &>/dev/null; then
+  echo "$content" | sudo tee -a /etc/sudoers >/dev/null
+fi

@@ -34,10 +34,10 @@ packages=(
   gcc
   automake
   byacc
-  libevent
-  libevent-devel
 )
 
 if has_yum; then
-  sudo yum install -y "${packages[@]}"
+  sudo yum install -y "${packages[@]}" libevent libevent-devel
+elif has_apt; then
+  sudo apt-get install -y "${packages[@]}" libevent-dev
 fi

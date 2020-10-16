@@ -48,6 +48,8 @@ if ! type -p nvim &> /dev/null; then
 
     if has_yum; then
       sudo yum install -y cmake gcc-c++ patch libtool
+    elif has_apt; then
+      sudo apt-get install -y cmake libtool-bin
     fi
 
     (cd "$dir"; make CMAKE_BUILD_TYPE=Release; sudo make install; rm -rf "$dir")
