@@ -76,11 +76,14 @@ case "$1" in
       printf "TLSv%-3s %3s supported\n" "$version" "$supported" | tr _ .
     done
     ;;
+  -h)
+    usage
+    ;;
   -)
     shift
-    openssl "$@"
-    ;;
+    ;&
+    # Fall through
   *)
-    usage
+    openssl "$@"
     ;;
 esac
