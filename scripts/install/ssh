@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Install OpenSSH with minimum required version.
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/utils/version.sh
+
+minimum_required_version="7.9p1"
+
+type -p ssh &> /dev/null && ! version_lt_not_constrained "$(ssh -V 2>&1 | awk '{print $1}' | sed 's/OpenSSH_//')" "$minimum_required_version" && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="$minimum_required_version"
+path_to_save="/tmp/openssh-$version.tar.xz"
+~/.dotfiles/bin/cget "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$version.tar.gz" "$path_to_save"
+
+cd /tmp && tar zxf "$path_to_save"
+
+dir="/tmp/openssh-$version"
+cd "$dir"
+./configure
+make
+sudo make install
+
+rm -rf "$dir" "$path_to_save"
