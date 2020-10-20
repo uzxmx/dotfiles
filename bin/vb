@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Utility for managing VirtualBox vms.
+
+Provided subcommands include:
+
+  * start: start a vm
+
+      $> vb start <vm_name>
+
+  * show: show a vm
+
+      $> vb show <vm_name>
+
+  * ssh: ssh into a vm
+
+      $> vb ssh <vm_name>
+
+  * stop: power off a vm
+
+      $> vb stop <vm_name>
+
+  * set_mem: Change memory of a vm (unit is gigabyte)
+
+      $> vb set_mem <vm_name> 16
+
+  * enable_bridge: enable bridged network for a vm, which operates on the 2nd nic.
+
+      $> vb enable_bridge <vm_name>
+
+  * disable_bridge: disable bridged network for a vm, which operates on the 2nd nic.
+
+      $> vb disable_bridge <vm_name>
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+VBOXMANAGE=
+if type -p VBoxManage &>/dev/null; then
+  VBOXMANAGE=VBoxManage
+elif type -p VBoxManage.exe &>/dev/null; then
+  VBOXMANAGE=VBoxManage.exe
+else
+  echo 'Cannot find `VBoxManage` in PATH.'
+  exit 1
+fi
+
+select_vm() {
+  if [ -n "$1" ]; then
+    echo "$1"
+  else
+    "$VBOXMANAGE" list vms | awk '{print $1}' | sed 's/^"\(.*\)"$/\1/' | fzf
+  fi
+}
+
+select_bridge_device() {
+  local name status
+  while read name; do
+    read status
+    if [ "$(echo $status | tr -d '\r')" = "Up" ]; then
+      echo "$name"
+      return
+    fi
+  done < <("$VBOXMANAGE" list bridgedifs | grep -E "^Name:|^Status:" |  sed -E 's/^(Name|Status):\s*//')
+}
+
+startvm() {
+  "$VBOXMANAGE" startvm "$1"
+}
+
+showvminfo() {
+  "$VBOXMANAGE" showvminfo --machinereadable "$1"
+}
+
+is_running() {
+  [ "$(showvminfo "$1" | grep "^VMState=" | sed "s/^VMState=\"\(.*\)\"/\\1/" | tr -d '\r')" = "running" ]
+}
+
+cmd="$1"
+shift || true
+case "$cmd" in
+  start)
+    vm="$(select_vm "$1")"
+    startvm "$vm"
+    ;;
+  show)
+    vm="$(select_vm "$1")"
+    showvminfo "$vm"
+    ;;
+  ssh)
+    vm="$(select_vm "$1")"
+    user="$(rlwrap -S "User(vagrant): " -o cat)"
+    if ! is_running "$vm"; then
+      echo start
+      startvm "$vm"
+      # TODO It seems we don't have a good way to detect when vm is booted up.
+      echo 'VM is starting. Please execute ssh command when it is started.'
+      exit
+    fi
+    ip="$("$VBOXMANAGE" guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{print $2}')"
+    ssh "${user:-vagrant}@$ip"
+    ;;
+  stop)
+    vm="$(select_vm "$1")"
+    "$VBOXMANAGE" controlvm "$vm" poweroff
+    ;;
+  set_mem)
+    if [ "$#" -gt 1 ]; then
+      vm="$1"
+      size="$2"
+    elif [ "$#" -eq 1 ]; then
+      vm="$(select_vm)"
+      size="$1"
+    else
+      echo "Memory size if required"
+      exit 1
+    fi
+    "$VBOXMANAGE" modifyvm "$vm" --memory $(($size * 1024))
+    ;;
+  enable_bridge)
+    vm="$(select_vm "$1")"
+    device="$(select_bridge_device)"
+    "$VBOXMANAGE" modifyvm "$vm" --nic2 bridged --bridgeadapter1 "$device"
+    ;;
+  disable_bridge)
+    vm="$(select_vm "$1")"
+    "$VBOXMANAGE" modifyvm "$vm" --nic2 none
+    ;;
+  *)
+    usage
+    ;;
+esac
