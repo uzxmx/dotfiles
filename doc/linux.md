@@ -315,3 +315,8 @@ Ref:
 
 In a terminal, when you encounter some weird problem about input or display, you
 can run `stty sane` to restore terminal settings.
+
+## Cross toolchain
+
+* http://crosstool-ng.github.io/docs/
+* https://releases.linaro.org/components/toolchain/binaries/
