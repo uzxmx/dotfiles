@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Install arm cross toolchain (https://releases.linaro.org/components/toolchain/binaries).
+#
+# When used with qemu, here is an example:
+#
+#   qemu-arm -L /opt/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi/arm-linux-gnueabi/libc a.out
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+path_to_save="/tmp/gcc-4.9.4-arm-linux-gnueabi.tar.xz"
+~/.dotfiles/bin/cget "https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/arm-linux-gnueabi/gcc-linaro-4.9.4-2017.01-x86_64_arm-linux-gnueabi.tar.xz" "$path_to_save"
+
+[ -d /opt ] || sudo mkdir -p /opt
+sudo tar Jxf "$path_to_save" -C /opt
+rm "$path_to_save"

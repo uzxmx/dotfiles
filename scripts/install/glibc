@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 #
-# Install a glibc version.
+# Install a glibc version. Find the version at http://mirrors.ustc.edu.cn/gnu/libc/
 #
 # TODO check if a version has been installed before continuing.
+
+set -eo pipefail
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
@@ -18,9 +20,9 @@ fi
 install() {
   local version="$1"
   local path_to_save="/tmp/glibc-$version.tar.gz"
-  ~/.dotfiles/bin/cget "http://mirrors.ustc.edu.cn/gnu/libc/glibc-$version.tar.gz" $path_to_save
-  tar zxf $path_to_save -C /tmp
-  cd /tmp/glibc-$version && mkdir build && cd build \
+  $(dirname "$BASH_SOURCE")/../download/glibc "$version" "$path_to_save"
+  tar zxf "$path_to_save" -C /tmp
+  cd "/tmp/glibc-$version" && mkdir build && cd build \
     && ../configure --prefix=/usr \
     && make && sudo make install
 }
