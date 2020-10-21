@@ -37,8 +37,8 @@ endfunction
 
 augroup coc_group
     au!
-    au FileType java,go,typescript,kotlin nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
-    au FileType java,go,typescript,kotlin nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+    au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    au FileType java,go,typescript,kotlin,swift nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
     au User CocStatusChange call s:onCocStatusChange()
 
     au BufWritePre *.go :call CocAction('format')

@@ -29,7 +29,25 @@ Press `enter` `~` `.` to terminate connection
 ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no user@host
 ```
 
-### Agent forwarding
+> Make sure `/etc/ssh/sshd_config` is configured with `PasswordAuthentication yes`, otherwise
+the connection will be closed.
+
+## keyboard-interactive authentication
+
+If you want to use keyboard-interactive authentication, you may need to configure `/etc/ssh/sshd_config`:
+
+```
+PasswordAuthentication no
+ChallengeResponseAuthentication yes
+```
+
+Then execute:
+
+```
+ssh -o PreferredAuthentications=keyboard-interactive user@host
+```
+
+## Agent forwarding
 
 ```
 ssh -A user@host
@@ -68,3 +86,21 @@ We can create a server on local machine which executes commands from remote mach
 Question: Is the tunnel secure?
 
 https://github.com/ptenteromano/remote-shell-OS
+
+## Useful links
+
+https://superuser.com/questions/421997/what-is-a-ssh-key-fingerprint-and-how-is-it-generated
+https://security.stackexchange.com/questions/41380/are-duplicate-ssh-server-host-keys-a-problem
+
+## How to run sshd on WSL Ubuntu?
+
+```
+service ssh status
+service ssh start
+
+# Use below command to debug.
+sudo /usr/sbin/sshd -d
+
+# Make sure three types (rsa, ecdsa, ed25519) of keys exist in /etc/ssh/.
+sudo ssh-kengen -t <type> -f /etc/ssh/ssh_host_<type>_key
+```

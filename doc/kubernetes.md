@@ -82,6 +82,16 @@ kubectl run pgclient --image=postgres:11-alpine --restart=Never -- sleep infinit
 kubectl run mysqlclient --image=mysql:5 --restart=Never --overrides='{ "spec": { "nodeSelector": { "kubernetes.io/hostname": "hostname" }, "tolerations": [{ "effect": "NoSchedule", "key": "foo", "value": "bar" }] } }' -- sleep infinity
 ```
 
+## Delete persistent volume with retain reclaim policy
+
+```
+# Vanilla way
+kubectl patch pv $(kubectl get pv | grep <pattern> | awk '{print $1}') -p '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}'
+
+# Using xargs
+kubectl get pv | grep <pattern> | awk '{print $1}' | xargs -I{} kubectl patch pv {} -p '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}'
+```
+
 # Helm
 
 ## deleting a default key

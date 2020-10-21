@@ -37,6 +37,30 @@ GET http://$ES_URL/_cat
 /_cat/snapshots/{repository}
 ```
 
+### analyze
+
+```
+curl -X GET "localhost:9200/_analyze?pretty" -H 'Content-Type: application/json' -d'
+{
+  "analyzer" : "ik_max_word",
+  "text" : "测试文本"
+}
+'
+```
+
+### aliases
+
+```
+curl -X POST "localhost:9200/_aliases?pretty" -H 'Content-Type: application/json' -d'
+{
+    "actions" : [
+        { "add":  { "index": "test_2", "alias": "test" } },
+        { "remove_index": { "index": "test" } }
+    ]
+}
+'
+```
+
 #### Common parameters
 
 * v(verbose): Show column headers
@@ -73,6 +97,15 @@ curl http://$ES_URL/_xpack
 ```
 
 ## How to resolve unassigned shards?
+
+Use below methods to get more information.
+
+```
+curl $ES_URL/_cat/shards
+curl $ES_URL/_cat/shards?h=index,shard,prirep,state,unassigned.reason
+curl $ES_URL/_cluster/allocation/explain?pretty
+curl $ES_URL/_cat/recovery
+```
 
 ### Solution 1
 
@@ -131,3 +164,19 @@ If the index is unimportant, then we can delete it so all shards will be deleted
 ```
 curl -XDELETE http://$ES_URL/index_name
 ```
+
+## plugin requires additional permissions
+
+Add `--batch` flag to `elasticsearch-plugin`
+
+Ref: https://github.com/elastic/cloud-on-k8s/issues/2220#issuecomment-562595782
+
+## References
+
+https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-allocation-explain.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/cat-recovery.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/restart-cluster.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-reroute.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/add-elasticsearch-nodes.html
+https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html#_node_data_path_settings
+https://www.elastic.co/guide/en/elasticsearch/reference/current/allocation-filtering.html
