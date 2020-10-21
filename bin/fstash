@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+#
+
+set -e
+
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0
+
+Utility to deal with git stashes. Use fzf to select a stash and operate on
+the selection. Supported operations include:
+
+* Enter-key: show the stash content
+* Ctrl-b: check the stash out as a branch
+* Ctrl-d: show a diff of the stash against current HEAD
+* Ctrl-o: pop the stash
+* Ctrl-r: drop the stash
+
+Options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
+
+source ~/.dotfiles/scripts/lib/utils/common.sh
+source ~/.dotfiles/scripts/lib/fzf.sh
+
+query=
+while true; do
+  unset result
+  call_fzf result --ansi --no-sort --query="$query" --print-query \
+    --prompt '(CTRL-B:checkout CTRL-D:diff CTRL-O:pop CTRL-R:drop)> ' \
+    --expect="ctrl-b,ctrl-d,ctrl-o,ctrl-r" \
+    < <(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")
+
+  [ -z "$result" ] && break
+
+  if [ "${#result[@]}" -eq 2 ]; then
+    key="${result[0]}"
+    selection="${result[1]}"
+  else
+    key=""
+    selection="${result[0]}"
+  fi
+
+  ref=$(echo "$selection" | awk '{print $1}')
+  sha=$(echo "$selection" | awk '{print $2}')
+
+  case "$key" in
+    ctrl-b)
+      git stash branch "stash-$sha" "$sha"
+      break
+      ;;
+    ctrl-d)
+      git diff --color=always "$sha" | less -r
+      ;;
+    ctrl-o)
+      git stash pop "$ref"
+      break
+      ;;
+    ctrl-r)
+      git stash drop "$ref"
+      break
+      ;;
+    *)
+      query="$key"
+      git stash show --color=always -p "$sha" | less -r
+      ;;
+  esac
+done
