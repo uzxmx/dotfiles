@@ -53,11 +53,15 @@ else
   exit 1
 fi
 
+listvms() {
+  "$VBOXMANAGE" list vms | awk '{print $1}' | sed 's/^"\(.*\)"$/\1/'
+}
+
 select_vm() {
   if [ -n "$1" ]; then
     echo "$1"
   else
-    "$VBOXMANAGE" list vms | awk '{print $1}' | sed 's/^"\(.*\)"$/\1/' | fzf
+    listvms | fzf
   fi
 }
 
@@ -74,6 +78,10 @@ select_bridge_device() {
 
 startvm() {
   "$VBOXMANAGE" startvm "$1"
+}
+
+stopvm() {
+  "$VBOXMANAGE" controlvm "$1" poweroff
 }
 
 showvminfo() {
@@ -110,7 +118,15 @@ case "$cmd" in
     ;;
   stop)
     vm="$(select_vm "$1")"
-    "$VBOXMANAGE" controlvm "$vm" poweroff
+    stopvm "$vm"
+    ;;
+  stop_all)
+    while read vm; do
+      if is_running "$vm"; then
+        stopvm "$vm"
+        echo $vm is stopped.
+      fi
+    done < <(listvms)
     ;;
   set_mem)
     if [ "$#" -gt 1 ]; then
