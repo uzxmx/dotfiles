@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install vscode
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+check_link() {
+  if is_mac; then
+    [ ! -e ~/bin/vscode ] && ln -s "/Applications/Visual Studio Code.app/Contents/MacOS/Electron" ~/bin/vscode
+  fi
+}
+
+check_link
+
+# TODO check and install vscode
