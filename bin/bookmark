@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+my $file = glob("~/.bookmarkrc");
+unless (-e $file) {
+  print "~/.bookmarkrc does't exist\n";
+  exit 1;
+}
+
+open(FILE, "<", $file) or die $!;
+
+my $urls = {};
+while(my $line = <FILE>) {
+  chomp($line);
+  my ($description, $url) = split("=", $line, 2);
+  $description =~ s/^\s+|\s+$//g;
+  $url =~ s/^\s+|\s+$//g;
+  $urls->{$description} = $url;
+}
+close(FILE);
+
+open2 my $out, my $in, "fzf" or die $!;
+
+print $in "$_\n" for keys(%$urls);
+close($in);
+my $selected = <$out>;
+close($out);
+
+if ($selected) {
+  chomp($selected);
+  exec "open", $urls->{$selected} or die $!;
+}
