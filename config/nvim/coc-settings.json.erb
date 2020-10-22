@@ -1,11 +1,24 @@
 {
+  // "coc.preferences.noselect": true,
   "solargraph.commandPath": "<%= File.join(Dir.home, '.asdf/shims/solargraph') %>",
   "solargraph.checkGemVersion": false,
+  // "diagnostic.enableMessage": "jump",
+  // "diagnostic.messageTarget": "float",
+  // "java.jdt.ls.vmargs": "-javaagent:<%= File.join(Dir.home, 'lombok/lombok.jar') %>",
+  // "snippets.ultisnips.enable": false,
   "languageserver": {
     "golang": {
       "command": "gopls",
       "rootPatterns": ["go.mod"],
-      "filetypes": ["go"]
+      "filetypes": ["go"],
+      "initializationOptions": {
+        "usePlaceholders": true
+      }
+    },
+    "kotlin": {
+      // "command": "kotlin-language-server",
+      "port": 18091,
+      "filetypes": ["kotlin"]
     }
   }
 }
