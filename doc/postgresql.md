@@ -1,3 +1,59 @@
+# PostgreSQL
+
+## Glossary
+
+### Database
+
+A database consists of multiple schemas.
+
+### Schema
+
+A schema acts like a namespace. It consists multiple tables.
+
+## Commands
+
+Ref: https://www.postgresql.org/docs/current/app-psql.html
+
+### Operations on databases
+
+```
+# List databases
+\l
+
+# Connect to a database
+\c some_database
+# Show current connected database
+\c
+
+# List schemas
+\dn
+# Including invisible
+\dn *
+
+# List relations
+\d
+
+# List tables
+\dt
+# Including invisible
+\dt *
+\dt *.*
+
+# List views
+\dv
+# Including invisible
+\dv *
+\dv *.*
+```
+
+### Show the value of a run-time parameter
+
+```
+\h show
+show search_path;
+show all;
+```
+
 ## List installed pl languages
 
 Method 1:
