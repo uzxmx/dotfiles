@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote server.
+#
+# Note: if shared ssh connection is not configured, it may ask for password for
+# serveral times.
+#
+# Usage: $0 user@host
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+
+if [ "$#" -eq 0 ]; then
+  abort 'At least a destination is required'
+fi
+
+remainder=()
+destination=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -*)
+      remainder+=("$1")
+      ;;
+    *)
+      if [ -z "$destination" ]; then
+        destination="$1"
+      else
+        remainder+=("$1")
+      fi
+      ;;
+  esac
+  shift
+done
+
+mykey=
+found=
+while read key; do
+  if [ -z "$mykey" ]; then
+    mykey="$(ssh-keygen -lf ~/.ssh/id_rsa.pub | awk '{print $1, $2}')"
+  fi
+  if [ "$mykey" = "$(echo $key | ssh-keygen -lf - | awk '{print $1, $2}')" ]; then
+    found=1
+    break
+  fi
+done < <(ssh "$destination" "${remainder[@]}" "test -f ~/.ssh/authorized_keys || touch ~/.ssh/authorized_keys; cat ~/.ssh/authorized_keys")
+
+if [ "$found" != "1" ]; then
+  # TODO Here `scp` doesn't support the same options as `ssh`.
+  scp ~/.ssh/id_rsa.pub "$destination:/tmp/id_rsa.pub"
+  ssh "$destination" "${remainder[@]}" "cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys && rm /tmp/id_rsa.pub"
+fi
