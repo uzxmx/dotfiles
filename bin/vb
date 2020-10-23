@@ -95,6 +95,14 @@ is_running() {
 cmd="$1"
 shift || true
 case "$cmd" in
+  status)
+    vm="$(select_vm "$1")"
+    if is_running "$vm"; then
+      echo $vm is running
+    else
+      echo $vm is NOT running
+    fi
+    ;;
   start)
     vm="$(select_vm "$1")"
     startvm "$vm"
