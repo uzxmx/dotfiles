@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script lists process id of each docker container.
 # More info see https://stackoverflow.com/questions/31265993/docker-networking-namespace-not-visible-in-ip-netns-list.
