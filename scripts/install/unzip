@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install unzip
+
+set -eo pipefail
+
+type -p unzip &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if has_apt; then
+  sudo apt-get install -y unzip
+elif has_yum; then
+  sudo yum install -y unzip
+else
+  abort "Unsupported system"
+fi

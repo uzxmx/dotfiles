@@ -22,6 +22,7 @@ fi
 
 dir="/tmp/v2ray-$version"
 mkdir -p "$dir"
+check_and_install_executable unzip
 (cd "$dir" && unzip "$path_to_save" && sudo cp v2ray v2ctl /usr/local/bin)
 rm -rf "$dir" "$path_to_save"
 
