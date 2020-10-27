@@ -15,10 +15,10 @@ PATH="$(new_path_exclude ~/.dotfiles/bin)"
 
 if type -p ip &>/dev/null; then
   result="$(ip -o addr | grep ': eth[[:digit:]] \+inet \|: en.\+ \+inet ')"
-  if [ "$(echo "$result" | wc -l)" -gt 1 ]; then
+  if [ -e /home/vagrant -a "$(echo "$result" | wc -l)" -gt 1 ]; then
     line="$(echo "$result" | head -2 | tail -1)"
   else
-    line="$result"
+    line="$(echo "$result" | head -1)"
   fi
   echo "$line" | awk '{print $4}' | awk -F/ '{print $1}'
 else
