@@ -1,15 +1,26 @@
 #!/usr/bin/env bash
 #
 # Get the IP that shows in tmux status bar.
+#
+# For vagrant boxes, we want to show the IP which is accessible from the host.
+# And we assume the second nic has such IP when it is available.
+#
+# Ubuntu may not name the nic with the `eth0`, `eth1` format. See
+# https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/
 
 set -eo pipefail
 
-# For vagrant boxes, we want to show the IP which is accessible from the host.
-# And we assume the second nic has such IP when it is available.
-if [ -e /home/vagrant ] && ifconfig eth1 &>/dev/null; then
-  nic=eth1
-else
-  nic=eth0
-fi
+source ~/.dotfiles/scripts/lib/path.sh
+PATH="$(new_path_exclude ~/.dotfiles/bin)"
 
-ifconfig "$nic" | grep "inet " | awk '{print $2}'
+if type -p ip &>/dev/null; then
+  result="$(ip -o addr | grep ': eth[[:digit:]] \+inet \|: en.\+ \+inet ')"
+  if [ "$(echo "$result" | wc -l)" -gt 1 ]; then
+    line="$(echo "$result" | head -2 | tail -1)"
+  else
+    line="$result"
+  fi
+  echo "$line" | awk '{print $4}' | awk -F/ '{print $1}'
+else
+  hostname
+fi
