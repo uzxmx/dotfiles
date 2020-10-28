@@ -15,12 +15,12 @@ sub check_ssh_hosts_file {
 }
 
 sub select_host {
-  my $file = glob("~/.ssh_hosts");
+  my $file = glob('~/.ssh_hosts');
   unless (-e $file) {
     print_and_exit([basename($0)], 100);
   }
 
-  open(FILE, "<", $file) or die $!;
+  open(FILE, '<', $file) or die $!;
 
   my $file_content = do { local $/; <FILE> };
   close(FILE);
@@ -29,7 +29,7 @@ sub select_host {
   my $text = '';
   $text .= "$_->{label}\n" for @$json;
 
-  open2 my $out, my $in, "fzf --expect=ctrl-e" or die $!;
+  open2 my $out, my $in, 'fzf --expect=ctrl-e' or die $!;
 
   print $in "$_->{label}\n" for @$json;
   close($in);
@@ -106,7 +106,7 @@ sub run {
   # Don't remove ~/.dotfiles from PATH, because we may rely on other
   # executables in that path, unless we've changed to use absolute paths.
   #
-  # ::remove_path_from_env(glob("~/.dotfiles/bin"));
+  # ::remove_path_from_env(glob('~/.dotfiles/bin'));
 
   # Let the caller execute for us.
   #

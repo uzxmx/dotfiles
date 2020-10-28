@@ -1,0 +1,55 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename;
+
+require glob('~/.dotfiles/scripts/perl/wrapper.pl');
+require glob('~/.dotfiles/scripts/perl/prompt.pl');
+
+run_original_if_required(1);
+
+sub usage {
+  print <<EOF
+Wrapper for vagrant utility. The original will be directly called when the
+wrapper cannot handle the arguments or '-' is passed.
+
+Provided subcommands include:
+
+  * ssh: when there are multiple vms, use fzf to select one.
+
+Global options:
+
+  [-h] Show help
+EOF
+}
+
+sub ssh {
+  require glob('~/.dotfiles/scripts/perl/fzf.pl');
+
+  my @vms = ();
+  push @vms, substr($_, 18) for glob('.vagrant/machines/*');
+
+  my $vm;
+  if (scalar(@vms) > 1) {
+    my @result = fzf_select(['--prompt=Select VM: '], \@vms);
+    $vm = $result[0];
+  } else {
+    $vm = $vms[0];
+  }
+  exec basename($0), 'ssh', $vm or die $!;
+}
+
+if (scalar(@ARGV)) {
+  my $arg = $ARGV[0];
+  if ($arg eq 'ssh') {
+    ssh();
+  } elsif ($arg eq '-h') {
+    usage();
+  } else {
+    run_original();
+  }
+} else {
+  usage();
+}

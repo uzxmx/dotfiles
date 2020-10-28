@@ -58,7 +58,13 @@ alias migrate="bundle exec rake db:migrate"
 alias ncz="nc -z -v"
 alias vi_tiny="vi -u NONE"
 alias v='$VISUAL'
-alias va="vagrant"
+alias vad="va destroy"
+alias vadf="va destroy -f"
+alias vah="va halt"
+alias vau="va up"
+alias var="va reload"
+alias vas="va ssh"
+alias vass="va status"
 alias p="pwd"
 
 # proxyctl
