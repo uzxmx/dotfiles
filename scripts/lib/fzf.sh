@@ -37,20 +37,16 @@ _call_program_with_array_output() {
   local value
   if [ -n "$BASH" ]; then
     while read -r value; do
-      if [ -n "$value" ]; then
-        # Quote the value so it can be reused as input.
-        eval $name+="($(_bash_quote "$value"))"
-      fi
+      # Quote the value so it can be reused as input.
+      eval $name+="($(_bash_quote "$value"))"
     done < <(cat | $program "$@")
   else
     # For zsh, when we use process substitution to call fzf, and the calling
     # context is from zshrc (not from a zsh script), fzf looks like stuck and
     # doesn't show selection list. So we work around it by using pipe.
     cat | $program "$@" | while read -r value; do
-      if [ -n "$value" ]; then
-        # Quote the value so it can be reused as input.
-        eval $name+="(${value:q})"
-      fi
+      # Quote the value so it can be reused as input.
+      eval $name+="(${value:q})"
     done
   fi
 }

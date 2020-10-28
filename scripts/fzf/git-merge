@@ -9,9 +9,10 @@ set -eo pipefail
 
 select_branch
 
-if [ -n "$result" ]; then
+selection="${result[0]}"
+if [ -n "$selection" ]; then
   reply=$(yesno "Do you want to push after merging? (Y/n)" "yes")
-  git merge $result
+  git merge "$selection"
   if [ "$reply" = "yes" ]; then
     git push
   fi

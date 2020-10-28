@@ -49,15 +49,11 @@ while true; do
     --expect="ctrl-b,ctrl-d,ctrl-o,ctrl-r" \
     < <(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")
 
-  [ -z "$result" ] && break
+  [ -z "${result[*]}" ] && break
 
-  if [ "${#result[@]}" -eq 2 ]; then
-    key="${result[0]}"
-    selection="${result[1]}"
-  else
-    key=""
-    selection="${result[0]}"
-  fi
+  query="${result[0]}"
+  key="${result[1]}"
+  selection="${result[2]}"
 
   ref=$(echo "$selection" | awk '{print $1}')
   sha=$(echo "$selection" | awk '{print $2}')
@@ -78,8 +74,7 @@ while true; do
       git stash drop "$ref"
       break
       ;;
-    *)
-      query="$key"
+    "")
       git stash show --color=always -p "$sha" | less -r
       ;;
   esac

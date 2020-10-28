@@ -59,47 +59,78 @@ shift || true
 source ~/.dotfiles/scripts/lib/utils/common.sh
 source ~/.dotfiles/scripts/lib/fzf.sh
 
-call_fzf files --query="$1" --multi --select-1 --exit-0 \
-  --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-R:run)> ' \
-  --expect="ctrl-v" \
-  --expect="ctrl-r" \
-  < <(fd --type f "${pattern:-.}" "$dir")
+no_ignore=
+query="$1"
+while true; do
+  unset result
 
-if [ "${files[0]}" = "ctrl-v" ]; then
-  src_file="${files[1]}"
-  if [ -z "$src_file" ]; then
-    echo 'A source file is required when creating a new file.'
-    exit 1
+  fd_opts=(--type f)
+  if [ -n "$no_ignore" ]; then
+    fd_opts+=(-I)
   fi
-  while true; do
-    target_file=$(rlwrap -S "Target file: " -P "$src_file" -o cat)
-    if [ -e "$target_file" ]; then
-      echo "File '$target_file' already exists"
-    else
+
+  call_fzf result --query="$query" --print-query --multi --select-1 --exit-0 \
+    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-R:run CTRL-I:toggle-ignore)> ' \
+    --expect="ctrl-v,ctrl-r,ctrl-i" \
+    < <(fd "${fd_opts[@]}" "${pattern:-.}" "$dir")
+
+  [ -z "${result[*]}" ] && break
+
+  query="${result[0]}"
+  key="${result[1]}"
+  result=("${result[@]:2}")
+  case "$key" in
+    ctrl-v)
+      src_file="${result[0]}"
+      if [ -z "$src_file" ]; then
+        echo 'A source file is required when creating a new file.'
+        exit 1
+      fi
+      while true; do
+        target_file=$(rlwrap -S "Target file: " -P "$src_file" -o cat)
+        if [ -e "$target_file" ]; then
+          echo "File '$target_file' already exists"
+        else
+          break
+        fi
+      done
+      cp "$src_file" "$target_file"
+      result=("$target_file")
       break
-    fi
-  done
-  cp "$src_file" "$target_file"
-  files=("$target_file")
-elif [ "${files[0]}" = "ctrl-r" ]; then
-  file="${files[1]}"
-  if [ -x "$file" ]; then
-    echo "$file" >&3
-    exit 101
-  else
-    echo "$file is not an executable."
-    exit 1
-  fi
-elif [ -z "${files[0]}" ]; then
-  echo "No file available"
-  exit
-fi
+      ;;
+    ctrl-r)
+      file="${result[0]}"
+      if [ -x "$file" ]; then
+        echo "$file" >&3
+        exit 101
+      else
+        echo "$file is not an executable."
+        exit 1
+      fi
+      break
+      ;;
+    ctrl-i)
+      if [ -z "$no_ignore" ]; then
+        no_ignore=1
+      else
+        no_ignore=
+      fi
+      ;;
+    "")
+      if [ "${#result[@]}" -eq 0 ]; then
+        echo "No file available"
+        exit
+      fi
+      break
+      ;;
+  esac
+done
 
-if [ -n "$files" ]; then
+if [ "${#result[@]}" -ne 0 ]; then
   editor=${EDITOR:-vim}
   if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
     # Invoke `Rooter` command to change to correct root directory.
     args="+Rooter"
   fi
-  $editor $args ${files[@]}
+  $editor $args "${result[@]}"
 fi
