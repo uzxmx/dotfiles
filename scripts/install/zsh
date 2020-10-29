@@ -28,6 +28,8 @@ type -p zsh &> /dev/null && check_current_shell && exit
 
 if has_yum; then
   sudo yum install -y ncurses-devel
+elif has_apt; then
+  sudo apt-get install -y libncurses5-dev
 fi
 
 version="5.8"
