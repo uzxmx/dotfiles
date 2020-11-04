@@ -43,6 +43,12 @@ fi
 # Do real setup.
 cd "$DOTFILES_ROOT"
 
+source ./scripts/lib/utils.sh
+
+if is_vagrant; then
+  ./scripts/misc/set_sudo_nopasswd
+fi
+
 if [ -n "$PROXY" ]; then
   source ./scripts/misc/bash_proxyctl.sh
   pe -p "$PROXY"

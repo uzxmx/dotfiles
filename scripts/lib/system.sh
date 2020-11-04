@@ -18,6 +18,10 @@ is_linux() {
   [[ "$OSTYPE" =~ ^linux ]]
 }
 
+is_vagrant() {
+  [ -d /home/vagrant ]
+}
+
 has_apt() {
   type -p apt-get &>/dev/null
 }
