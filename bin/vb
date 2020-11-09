@@ -24,6 +24,10 @@ Provided subcommands include:
 
       $> vb stop <vm_name>
 
+  * set_cpus: Set the number of cpu
+
+      $> vb set_cpus <vm_name> 4
+
   * set_mem: Change memory of a vm (unit is gigabyte)
 
       $> vb set_mem <vm_name> 16
@@ -122,7 +126,7 @@ case "$cmd" in
       exit
     fi
     ip="$("$VBOXMANAGE" guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{print $2}')"
-    ssh "${user:-vagrant}@$ip"
+    ssh -A "${user:-vagrant}@$ip"
     ;;
   stop)
     vm="$(select_vm "$1")"
@@ -136,6 +140,19 @@ case "$cmd" in
       fi
     done < <(listvms)
     ;;
+  set_cpus)
+    if [ "$#" -gt 1 ]; then
+      vm="$1"
+      num="$2"
+    elif [ "$#" -eq 1 ]; then
+      vm="$(select_vm)"
+      num="$1"
+    else
+      echo "The number of CPU is required"
+      exit 1
+    fi
+    "$VBOXMANAGE" modifyvm "$vm" --cpus "$num"
+    ;;
   set_mem)
     if [ "$#" -gt 1 ]; then
       vm="$1"
@@ -144,7 +161,7 @@ case "$cmd" in
       vm="$(select_vm)"
       size="$1"
     else
-      echo "Memory size if required"
+      echo "Memory size is required"
       exit 1
     fi
     "$VBOXMANAGE" modifyvm "$vm" --memory $(($size * 1024))
