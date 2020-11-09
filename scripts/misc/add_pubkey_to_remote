@@ -1,24 +1,28 @@
 #!/usr/bin/env bash
-#
-# Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote server.
-#
-# Note: if shared ssh connection is not configured, it may ask for password for
-# serveral times.
-#
-# Usage: $0 user@host
 
 set -eo pipefail
 
 . $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
-if [ "$#" -eq 0 ]; then
-  abort 'At least a destination is required'
-fi
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0 user@host
+
+Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote server.
+
+Note: if shared ssh connection is not configured, it may ask for password for
+serveral times.
+EOF
+  exit 1
+}
 
 remainder=()
 destination=
 while [ $# -gt 0 ]; do
   case "$1" in
+    -h)
+      usage
+      ;;
     -*)
       remainder+=("$1")
       ;;
@@ -32,6 +36,10 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ -z "$destination" ]; then
+  usage
+fi
 
 mykey=
 found=
