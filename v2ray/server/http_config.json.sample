@@ -1,0 +1,58 @@
+// vim: ft=json
+// Config file of V2Ray. This file follows standard JSON format, with comments support.
+// Uncomment entries below to satisfy your needs. Also read our manual for more detail at
+// https://github.com/v2ray/manual/tree/master/zh_cn
+{
+  "log": {
+    // By default, V2Ray writes access log to stdout.
+    // "access": "/path/to/access/log/file",
+
+    // By default, V2Ray write error log to stdout.
+    // "error": "/path/to/error/log/file",
+
+    // Log level, one of "debug", "info", "warning", "error", "none"
+    "loglevel": "warning"
+  },
+
+  "inbounds": [
+    {
+      "port": 32443,
+      "listen": "0.0.0.0",
+      "tag": "http-inbound",
+      "protocol": "http",
+      "settings": {
+        "accounts": [
+          {
+            "user": "USER",
+            "password": "PASSWORD"
+          }
+        ]
+      },
+      "streamSettings": {
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "usage": "encipherment",
+              "certificate": [
+                "-----BEGIN CERTIFICATE-----",
+                "-----END CERTIFICATE-----"
+              ],
+              "key": [
+                "-----BEGIN RSA PRIVATE KEY-----",
+                "-----END RSA PRIVATE KEY-----"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
+}

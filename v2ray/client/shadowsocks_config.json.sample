@@ -1,0 +1,67 @@
+// vim: ft=json
+// Config file of V2Ray. This file follows standard JSON format, with comments support.
+// Uncomment entries below to satisfy your needs. Also read our manual for more detail at
+// https://github.com/v2ray/manual/tree/master/zh_cn
+{
+  "log": {
+    // By default, V2Ray writes access log to stdout.
+    // "access": "/path/to/access/log/file",
+
+    // By default, V2Ray write error log to stdout.
+    // "error": "/path/to/error/log/file",
+
+    // Log level, one of "debug", "info", "warning", "error", "none"
+    "loglevel": "warning"
+  },
+
+  "inbounds": [
+    {
+      "port": 8125,
+      "listen": "0.0.0.0",
+      "tag": "http-inbound",
+      "protocol": "http"
+    },
+    {
+      "port": 1080,
+      "listen": "0.0.0.0",
+      "tag": "socks-inbound",
+      "protocol": "socks"
+    }
+  ],
+
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "shadowsocks",
+      "settings": {
+        "servers": [{
+          "address": "SERVER_IP",
+          "port": SERVER_PORT,
+          "method": "aes-256-gcm",
+          "password": "PASSWORD"
+        }]
+      },
+      "tag": "shadowsocks-outbound"
+    }
+  ],
+
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules":[
+      {
+        "type": "field",
+        "domain": [
+        ],
+        "outboundTag": "shadowsocks-outbound"
+      },
+      {
+        "type": "field",
+        "inboundTag": "socks-inbound",
+        "outboundTag": "shadowsocks-outbound"
+      }
+    ]
+  }
+}

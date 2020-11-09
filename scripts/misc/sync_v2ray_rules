@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+#
+# Synchronize ~/.dotfiles/v2ray/client/rules.txt.ofc with /usr/local/etc/v2ray/config.json.
+
+set -eo pipefail
+
+configfile="/usr/local/etc/v2ray/config.json"
+tmpfile1=$(mktemp)
+tmpfile2=$(mktemp)
+
+handle_exit() {
+  if [ -e "$tmpfile1" ]; then
+    rm "$tmpfile1"
+  fi
+  if [ -e "$tmpfile2" ]; then
+    rm "$tmpfile2"
+  fi
+}
+trap handle_exit EXIT
+
+awk '
+BEGIN {
+  first_line_printed = 0
+}
+
+{
+  if ($0 ~ /^#/ || $0 ~ /^[[:space:]]*$/) {
+    next
+  }
+  if (first_line_printed) {
+    printf ",\n\"%s\"", $0
+  } else {
+    printf "\"%s\"", $0
+    first_line_printed = 1
+  }
+}
+
+END {
+  if (first_line_printed) {
+    printf "\n"
+  }
+}
+' "$1" >"$tmpfile1"
+
+awk "
+BEGIN {
+  start_found = 0
+  end_found = 0
+}
+
+{
+  if (start_found) {
+    if (end_found) {
+      print \$0
+    } else if (\$0 ~ /^[[:space:]]*\\],\$/) {
+      end_found = 1
+      print \$0
+    }
+  } else {
+    if (\$0 ~ /^[[:space:]]*\"domain\": \\[\$/) {
+      start_found = 1
+      print \$0
+      system(\"cat \\\"$tmpfile1\\\"\")
+    } else {
+      print \$0
+    }
+  }
+}
+" "$configfile" >"$tmpfile2"
+
+if [ -w "$configfile" ]; then
+  TEE=(tee)
+else
+  TEE=(sudo tee)
+fi
+cat "$tmpfile2" | "${TEE[@]}" /dev/null >"$configfile"
+
+v2ray restart
+echo 'Synchronized'

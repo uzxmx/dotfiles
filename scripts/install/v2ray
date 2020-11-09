@@ -26,11 +26,7 @@ check_and_install_executable unzip
 (cd "$dir" && unzip "$path_to_save" && sudo cp v2ray v2ctl /usr/local/bin)
 rm -rf "$dir" "$path_to_save"
 
-if is_mac; then
-  mkdir -p ~/Library/LaunchDaemons
-  cp $(dirname "$BASH_SOURCE")/../../v2ray/com.v2ray.core.plist ~/Library/LaunchDaemons
-  launchctl load ~/Library/LaunchDaemons/com.v2ray.core.plist
-else
+if is_linux; then
   if has_systemd; then
     sudo cp $(dirname "$BASH_SOURCE")/../../v2ray/v2ray.service /etc/systemd/system
   else

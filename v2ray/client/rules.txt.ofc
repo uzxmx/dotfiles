@@ -1,0 +1,12 @@
+# on-file-change: ~/.dotfiles/scripts/misc/sync_v2ray_rules __FILE__
+
+domain:github.com
+domain:githubusercontent.com
+domain:amazonaws.com
+nchc.dl.sourceforge.net
+domain:luarocks.org
+download.opensuse.org
+git.qemu.org
+domain:googlesource.com
+chrome-infra-packages.appspot.com
+www.googleapis.com

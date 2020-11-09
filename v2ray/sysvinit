@@ -3,19 +3,28 @@
 set -e
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-which v2ray >/dev/null 2>&1 || exit 0
-
 NAME=v2ray
+if ! v2ray_path=$(which v2ray); then
+  echo v2ray not found
+  exit
+fi
+config_path=/usr/local/etc/v2ray/config.json
+pid_path=/var/run/v2ray.pid
+log_path=/var/log/v2ray.log
 
 . /lib/lsb/init-functions
 
 start() {
-  start-stop-daemon --start --quiet --oknodo --pidfile /var/run/v2ray.pid -m --exec /usr/local/bin/v2ray -- -c /usr/local/etc/v2ray/config.json >/var/log/v2ray.log 2>&1 &
+  local result
+  if ! result=$("$v2ray_path" -test -c "$config_path"); then
+    echo "$result"
+    exit
+  fi
+  start-stop-daemon --start --quiet --oknodo --pidfile "$pid_path" -m --exec "$v2ray_path" -- -c "$config_path" >"$log_path" 2>&1 &
 }
 
 stop() {
-  start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/v2ray.pid --remove-pidfile
+  start-stop-daemon --stop --quiet --oknodo --pidfile "$pid_path" --remove-pidfile
 }
 
 case "$1" in
@@ -28,7 +37,7 @@ case "$1" in
     echo "$NAME stopped."
     ;;
   status)
-    status_of_proc -p /var/run/v2ray.pid v2ray v2ray
+    status_of_proc -p "$pid_path" v2ray v2ray
     ;;
   restart|force-reload)
     stop

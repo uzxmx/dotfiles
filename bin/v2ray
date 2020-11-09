@@ -63,6 +63,9 @@ v2ray_is_running() {
 cmd_start() {
   if ! v2ray_is_running; then
     if is_mac; then
+      if ! launchctl list | grep com.v2ray.core &>/dev/null; then
+        launchctl load ~/.dotfiles/v2ray/com.v2ray.core.plist
+      fi
       launchctl start com.v2ray.core
     else
       sudo service v2ray start
