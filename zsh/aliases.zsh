@@ -76,13 +76,14 @@ alias pi='px info'
 alias sd="s ~/.dotfiles"
 alias sdd="s ~/.dotfiles/doc"
 
-alias ta="~/.dotfiles/scripts/tmuxctl attach"
-alias td="~/.dotfiles/scripts/tmuxctl detach"
+alias ta="~/.dotfiles/scripts/misc/tmuxctl attach"
+alias td="~/.dotfiles/scripts/misc/tmuxctl detach"
 alias tl="ta"
-alias tn="~/.dotfiles/scripts/tmuxctl new"
+alias tn="~/.dotfiles/scripts/misc/tmuxctl new"
 alias ts="ta"
 
 alias wb="wget www.baidu.com -O- >/dev/null"
+alias wg="wget www.google.com -O- >/dev/null"
 alias zl="vi ~/.zshrc.local"
 
 case $OSTYPE in
