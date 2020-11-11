@@ -93,6 +93,7 @@ cmd_status() {
     echo 'v2ray is running'
   else
     echo 'v2ray is NOT running'
+    exit 1
   fi
 }
 

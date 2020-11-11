@@ -119,7 +119,6 @@ case "$cmd" in
     vm="$(select_vm "$1")"
     user="$(rlwrap -S "User(vagrant): " -o cat)"
     if ! is_running "$vm"; then
-      echo start
       startvm "$vm"
       # TODO It seems we don't have a good way to detect when vm is booted up.
       echo 'VM is starting. Please execute ssh command when it is started.'

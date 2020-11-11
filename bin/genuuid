@@ -14,7 +14,7 @@ EOF
 
 while getopts "hd" opt; do
   case "$opt" in
-    e)
+    d)
       keepdash=1
       ;;
     *)
