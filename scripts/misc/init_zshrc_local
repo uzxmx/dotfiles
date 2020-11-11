@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. $(dirname "$BASH_SOURCE")/utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
 while getopts 'f' opt; do
   case "$opt" in

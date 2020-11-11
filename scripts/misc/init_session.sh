@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. $(dirname "$BASH_SOURCE")/utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
 PROG="$0"
 
@@ -18,7 +18,9 @@ if is_wsl; then
     sudo service ssh start
   fi
 
-  if ! nc -z localhost 8123; then
-    sudo polipo
-  fi
+  # if ! nc -z localhost 8123; then
+  #   sudo polipo
+  # fi
 fi
+
+v2ray status &>/dev/null || v2ray start &>/dev/null

@@ -2,7 +2,7 @@
 #
 # Initialize workspace. Can be run many times without harm.
 
-. $(dirname "$BASH_SOURCE")/utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
 mkdir -p ~/.dotfiles/.local
 mkdir -p ~/projects

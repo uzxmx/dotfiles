@@ -60,7 +60,6 @@ split_by() {
   echo "$str" | tr "$separator" "\n"
 }
 
-
 # Check if executable exists. If not, install it. A script with name `${executable}'
 # should exist in folder ~/.dotfiles/scripts/install.
 #
