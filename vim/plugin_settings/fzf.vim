@@ -26,11 +26,13 @@ function! s:on_term_close() abort
   endif
 endfunction
 
-function! s:on_term_close_delayed() abort
-  call timer_start(5, { -> s:on_term_close() })
-endfunction
+if has('nvim')
+  function! s:on_term_close_delayed() abort
+    call timer_start(5, { -> s:on_term_close() })
+  endfunction
 
-autocmd TermClose * call s:on_term_close_delayed()
+  autocmd TermClose * call s:on_term_close_delayed()
+endif
 
 " TODO support :GFiles? / :GF? / :GFiles!
 command! GFiles call s:fzf_git_standard()
