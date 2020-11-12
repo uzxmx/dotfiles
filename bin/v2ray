@@ -25,6 +25,11 @@ Provided subcommands include:
 
       $> v2ray log
 
+  * config:
+      Edit the v2ray config.
+
+      $> v2ray config
+
 Global options:
 
   [-h] Show help
@@ -110,8 +115,26 @@ cmd_log() {
   fi
 }
 
+cmd_config() {
+  local configfile="/usr/local/etc/v2ray/config.json"
+  if [ ! -e "$configfile" ]; then
+    echo 'Config file does not exist.'
+    exit
+  fi
+  if [ ! -w "$configfile" ]; then
+    echo 'Config file is not writeable.'
+    exit
+  fi
+
+  local old_md5="$(md5sum "$configfile" | awk '{print $1}')"
+  "${EDITOR:-vi}" "$configfile"
+  if [ ! "$old_md5" = "$(md5sum "$configfile" | awk '{print $1}')" ]; then
+    cmd_restart
+  fi
+}
+
 case "$1" in
-  start | stop | restart | status | log)
+  start | stop | restart | status | log | config)
     cmd="$1"
     shift
     "cmd_$cmd" "$@"
