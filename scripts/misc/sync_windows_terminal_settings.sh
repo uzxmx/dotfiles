@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 #
-# Synchronize ~/.dotfiles/windows_terminal/settings.json with C:\Users\%USERNAME%\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
+# Synchronize windows terminal settings file.
 
 set -eo pipefail
 
-. $(dirname "$0")/utils.sh
+. $(dirname "$0")/../lib/utils.sh
+
+srcfile=
 
 username="$(cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//')"
 if [ "$USE_WINDOWS_TERMINAL_DEV_BUILD" = "1" ]; then
@@ -16,11 +18,12 @@ if [ ! -d "$dir" ]; then
   abort "Directory '$dir' doesn't exist."
 fi
 
+srcfile="${1:-$HOME/.dotfiles/windows/terminal_settings.json.ofc}"
 file="$dir/settings.json"
 cat >"$file" <<EOF
-// Automatically generated from ~/.dotfiles/windows_terminal/settings.json. DO NOT EDIT.
+// Automatically generated from $srcfile. DO NOT EDIT.
 //
 EOF
-cat ~/.dotfiles/windows_terminal/settings.json >>"$file"
+cat "$srcfile" >>"$file"
 
 echo 'Successful.'

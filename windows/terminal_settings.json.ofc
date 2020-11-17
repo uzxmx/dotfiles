@@ -1,3 +1,6 @@
+// vim: ft=json
+// on-file-change: ~/.dotfiles/scripts/misc/sync_windows_terminal_settings.sh __FILE__
+
 // Use vim to edit this file, so that it can be copied to the correct location on saving.
 //
 // To view the default settings, hold "alt" while clicking on the "Settings" button.
@@ -16,8 +19,12 @@
         "commandline": "wsl.exe -u root -- /bin/login -f uzxmx",
         "hidden": false,
         "icon": "ms-appx:///ProfileIcons/{61c54bbd-c2c6-5271-96e7-009a87ff44bf}.png",
-        "colorScheme": "Solarized Dark",
-        "cursorShape": "bar"
+        "colorScheme": "Solarized Dark"
+      },
+      {
+        "guid": "{bc31776d-40b2-43c2-81e9-7718f775303a}",
+        "name": "Command Prompt",
+        "commandline": "cmd.exe /K \"%USERPROFILE%\\.profile.bat\""
       }
     ]
   },
