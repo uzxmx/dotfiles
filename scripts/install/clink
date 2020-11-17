@@ -3,7 +3,8 @@
 # Install clink. (https://mridgers.github.io/clink/)
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
-. $(dirname "$BASH_SOURCE")/../lib/scoop.sh
 
-scoop install clink
+scoop="$(dirname "$BASH_SOURCE")/../../bin/scoop"
+
+"$scoop" install clink
 cmd.exe /c clink autorun install

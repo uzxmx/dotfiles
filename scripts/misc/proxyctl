@@ -6,6 +6,8 @@
 
 set -eo pipefail
 
+. $(dirname "$BASH_SOURCE")/../lib/system.sh
+
 usage() {
   cat <<-EOF 1>&2
 Utility script to control proxy.
@@ -13,11 +15,11 @@ Utility script to control proxy.
 Usage:
 $0 <enable | disable | info> [proxy types...] [-p proxy_server]
 
-Proxy types: http git curl docker yum all
+Proxy types: http git curl docker yum scoop all
 
 Examples:
 
-  # Enable http/git/curl/yum proxy.
+  # Enable http/git/curl/yum/scoop proxy.
   $> pe
 
   # Enable docker proxy.
@@ -26,7 +28,7 @@ Examples:
   # Enable all proxy types.
   $> pe all
 
-  # Disable http/git/curl/yum proxy.
+  # Disable http/git/curl/yum/scoop proxy.
   $> pd
 
   # Show status of all proxy types.
@@ -106,6 +108,8 @@ if [ "$subcommand" = "enable" ]; then
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       user_http_proxy="$DEFAULT_HTTP_PROXY"
     elif test_proxy localhost:8123; then
+      # Port 8123 is used as the v2ray http proxy port, where all trafic will
+      # go to a same outbound (no whitelist).
       user_http_proxy='localhost:8123'
     elif test_proxy localhost:8124; then
       # Port 8124 can be used as a ssh tunnelled port. For example, we can
@@ -113,7 +117,7 @@ if [ "$subcommand" = "enable" ]; then
       # This requires a remote http proxy is listening at 8123 on the remote server.
       user_http_proxy='localhost:8124'
     elif test_proxy localhost:8125; then
-      # Port 8125 is used as the v2ray http proxy port, which supports routing.
+      # Port 8125 is used as the v2ray http proxy port, which supports whitelist.
       user_http_proxy='localhost:8125'
     elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8123; then
       user_http_proxy='10.0.2.2:8123'
@@ -133,13 +137,14 @@ if [ -z "$@" ]; then
   target_git=1
   target_curl=1
   target_yum=1
+  target_scoop=1
   if [ "$subcommand" = "info" ]; then
     target_docker=1
   fi
 else
   for i in "$@"; do
     case "$i" in
-      http | git | curl | docker | yum | all)
+      http | git | curl | docker | yum | scoop | all)
         eval "target_$i=1"
     esac
   done
@@ -231,7 +236,7 @@ dump_curl_proxy() {
 }
 
 enable_docker_proxy() {
-  if type systemctl &>/dev/null; then
+  if has_systemd; then
     # See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
     sudo mkdir -p /etc/systemd/system/docker.service.d
     sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<EOF
@@ -251,7 +256,7 @@ EOF
 }
 
 disable_docker_proxy() {
-  if type systemctl &>/dev/null; then
+  if has_systemd; then
     sudo rm /etc/systemd/system/docker.service.d/{http,https}-proxy.conf
     sudo systemctl daemon-reload
     sudo systemctl restart docker
@@ -261,7 +266,7 @@ disable_docker_proxy() {
 }
 
 dump_docker_proxy() {
-  if type systemctl &>/dev/null; then
+  if has_systemd; then
     echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
   else
     echo "echo Current Docker proxy: N/A" >&3
@@ -305,6 +310,32 @@ dump_yum_proxy() {
   fi
 }
 
+enable_scoop_proxy() {
+  if is_wsl; then
+    scoop config proxy "$user_http_proxy" >/dev/null
+    dump_scoop_proxy
+  fi
+}
+
+disable_scoop_proxy() {
+  if is_wsl; then
+    scoop config rm proxy
+    dump_scoop_proxy
+  fi
+}
+
+dump_scoop_proxy() {
+  if is_wsl; then
+    proxy="$(scoop config proxy)"
+    echo "echo -n Current Scoop proxy:" >&3
+    if [ -n "$proxy" ] && ! echo "$proxy" | grep not &>/dev/null; then
+      echo "echo \" $proxy\"" >&3
+    else
+      echo 'echo' >&3
+    fi
+  fi
+}
+
 case "$subcommand" in
   enable)
     [ -n "$target_http"   -o -n "$target_all" ] && enable_http_proxy
@@ -312,6 +343,7 @@ case "$subcommand" in
     [ -n "$target_curl"   -o -n "$target_all" ] && enable_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && enable_docker_proxy
     [ -n "$target_yum"    -o -n "$target_all" ] && enable_yum_proxy
+    [ -n "$target_scoop"  -o -n "$target_all" ] && enable_scoop_proxy
     ;;
   disable)
     [ -n "$target_http"   -o -n "$target_all" ] && disable_http_proxy
@@ -319,6 +351,7 @@ case "$subcommand" in
     [ -n "$target_curl"   -o -n "$target_all" ] && disable_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && disable_docker_proxy
     [ -n "$target_yum"    -o -n "$target_all" ] && disable_yum_proxy
+    [ -n "$target_scoop"  -o -n "$target_all" ] && disable_scoop_proxy
     ;;
   info)
     [ -n "$target_http"   -o -n "$target_all" ] && dump_http_proxy
@@ -326,6 +359,7 @@ case "$subcommand" in
     [ -n "$target_curl"   -o -n "$target_all" ] && dump_curl_proxy
     [ -n "$target_docker" -o -n "$target_all" ] && dump_docker_proxy
     [ -n "$target_yum"    -o -n "$target_all" ] && dump_yum_proxy
+    [ -n "$target_scoop"  -o -n "$target_all" ] && dump_scoop_proxy
     ;;
 esac
 
