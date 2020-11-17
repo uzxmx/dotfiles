@@ -16,7 +16,7 @@
 
   "inbounds": [
     {
-      "port": 32443,
+      "port": SERVER_PORT,
       "listen": "0.0.0.0",
       "tag": "http-inbound",
       "protocol": "http",
