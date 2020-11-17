@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for hub utility. Pass in '-' to call the original.
+
+Provided subcommands include:
+
+  * create: <name>
+      Create a github repo.
+
+      $> hub create
+
+      # Create a repo named as foo.
+      $> hub create foo
+
+  * clone: <name>
+      Clone a github repo.
+
+      $> hub clone
+
+      # Clone a repo named as foo.
+      $> hub clone foo
+
+Global options:
+
+  [-h] Show help
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+cmd_create() {
+  local name="$1"
+  if [ -z "$name" ]; then
+    name="$(basename "$(pwd)")"
+  fi
+  name="$(rlwrap -S "Repo name: " -P "$name" -o cat)"
+  if [ -z "$name" ]; then
+    echo 'Repo name is required.'
+    exit 1
+  fi
+  local description="$(rlwrap -S "Description (Optional): " -o cat)"
+  hub create -d "$description" "$name"
+}
+
+cmd_clone() {
+  local name="$1"
+  if [ -z "$name" ]; then
+    name="$(rlwrap -S "Repo name to clone: " -o cat)"
+    if [ -z "$name" ]; then
+      echo 'Repo name is required.'
+      exit 1
+    fi
+  fi
+
+  hub clone "$name"
+}
+
+case "$1" in
+  create | clone)
+    cmd="$1"
+    shift
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    hub "$@"
+    ;;
+esac
