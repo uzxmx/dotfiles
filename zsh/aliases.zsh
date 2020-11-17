@@ -61,6 +61,7 @@ alias v='$VISUAL'
 alias vad="va destroy"
 alias vadf="va destroy -f"
 alias vah="va halt"
+alias vap="va provision"
 alias vau="va up"
 alias var="va reload"
 alias vas="va ssh"
