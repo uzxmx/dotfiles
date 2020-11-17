@@ -14,10 +14,16 @@ Provided subcommands include:
       $> curl time example.com
 
   * cors: <test-url> <origin>
-      Test cors
+      Test if the remote resource specified by <test-url> allows the browser to
+      visit from the <origin>.
 
-      # Check Access-Control-Allow-Origin and Access-Control-Allow-Methods to
-      # see if cors is allowed.
+      CORS is checked by using OPTIONS method. When it is allowed, the HTTP
+      header 'Access-Control-Allow-Origin' and 'Access-Control-Allow-Methods'
+      will be present.
+
+      The <test-url> may be a non-existent remote resource, and it still returns
+      '200 OK' when CORS is allowed.
+
       $> curl cors http://example.com http://foo.example.com
 
 Global options:
@@ -54,7 +60,23 @@ cmd_cors() {
     echo 'An origin url must be specified'
     exit 1
   fi
-  curl "$url" -H "Origin: $origin" -XOPTIONS -I
+
+  source ~/.dotfiles/scripts/lib/utils/common.sh
+  source ~/.dotfiles/scripts/lib/io.sh
+  source ~/.dotfiles/scripts/lib/utils/trim.sh
+
+  local output
+  io_run_capture_and_display output curl "$url" -H "Origin: $origin" -XOPTIONS -I -s
+
+  echo -e "----\n"
+
+  local allowed_origin=$(str_trim "$(echo "$output" | grep Access-Control-Allow-Origin | awk -F: '{print $2}')")
+  if [ "$allowed_origin" = "$origin"  ]; then
+    echo -n 'CORS is allowed with such methods: '
+    str_trim "$(echo "$output" | grep Access-Control-Allow-Methods | awk -F: '{print $2}')"
+  else
+    echo 'CORS is NOT allowed.'
+  fi
 }
 
 cmd="$1"
