@@ -1,3 +1,5 @@
+<!-- vim: set ft=xml noexpandtab: -->
+<!-- When this file changes, restart iTerm2 to make the change effective -->
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -1176,7 +1178,7 @@
 			<key>Idle Code</key>
 			<integer>0</integer>
 			<key>Initial Text</key>
-			<string> ~/.dotfiles/scripts/on_new_session.sh</string>
+			<string> ~/.dotfiles/scripts/misc/on_new_session.sh</string>
 			<key>Jobs to Ignore</key>
 			<array>
 				<string>rlogin</string>
