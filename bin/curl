@@ -4,31 +4,11 @@ set -eo pipefail
 
 usage() {
   cat <<-EOF 1>&2
-Wrapper for curl utility. Pass in '-' to call the original.
+Wrapper for curl utility.
 
-Provided subcommands include:
-
-  * time: <url>
-      Show time stats
-
-      $> curl time example.com
-
-  * cors: <test-url> <origin>
-      Test if the remote resource specified by <test-url> allows the browser to
-      visit from the <origin>.
-
-      CORS is checked by using OPTIONS method. When it is allowed, the HTTP
-      header 'Access-Control-Allow-Origin' and 'Access-Control-Allow-Methods'
-      will be present.
-
-      The <test-url> may be a non-existent remote resource, and it still returns
-      '200 OK' when CORS is allowed.
-
-      $> curl cors http://example.com http://foo.example.com
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  time - show time stats
+  cors - check if CORS is allowed
 EOF
   exit 1
 }
@@ -36,7 +16,21 @@ EOF
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
+usage_time() {
+  cat <<-EOF 1>&2
+Usage: curl time <url>
+
+Show time stats.
+
+Example:
+  $> curl time example.com
+EOF
+  exit 1
+}
+
 cmd_time() {
+  [ -z "$1" ] && usage_time
+
   curl -w "\
     \n-------------------------\n\
        namelookup:  %{time_namelookup}s\n\
@@ -49,16 +43,31 @@ cmd_time() {
             total:  %{time_total}s\n" "$@"
 }
 
+usage_cors() {
+  cat <<-EOF 1>&2
+Usage: curl cors <test-url> <origin>
+
+Test if the remote resource specified by <test-url> allows the browser to
+visit from the <origin>.
+
+CORS is checked by using OPTIONS method. When it is allowed, the HTTP
+header 'Access-Control-Allow-Origin' and 'Access-Control-Allow-Methods'
+will be present.
+
+The <test-url> may be a non-existent remote resource, and it still returns
+'200 OK' when CORS is allowed.
+
+Example:
+  $> curl cors http://example.com http://foo.example.com
+EOF
+  exit 1
+}
+
 cmd_cors() {
-  url="$1"
-  origin="$2"
-  if [ -z "$url" ]; then
-    echo 'A test url must be specified'
-    exit 1
-  fi
-  if [ -z "$origin" ]; then
-    echo 'An origin url must be specified'
-    exit 1
+  local url="$1"
+  local origin="$2"
+  if [ -z "$url" -o -z "$origin" ]; then
+    usage_cors
   fi
 
   source ~/.dotfiles/scripts/lib/utils/common.sh
@@ -83,6 +92,11 @@ cmd="$1"
 case "$1" in
   time | cors)
     shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
     "cmd_$cmd" "$@"
     ;;
   -h)
