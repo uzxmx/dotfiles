@@ -96,6 +96,24 @@ is_running() {
   [ "$(showvminfo "$1" | grep "^VMState=" | sed "s/^VMState=\"\(.*\)\"/\\1/" | tr -d '\r')" = "running" ]
 }
 
+select_vm_and_check_running() {
+  local vm="$(select_vm "$1")"
+  [ -z "$vm" ] && exit 1
+  if ! is_running "$vm"; then
+    startvm "$vm"
+    # TODO It seems we don't have a good way to detect when vm is booted up.
+    echo 'VM is starting. Please execute your command again when it is started.'
+    exit 1
+  fi
+  echo "$vm"
+}
+
+get_ssh_target() {
+  local user="$(rlwrap -S "User(vagrant): " -o cat)"
+  local ip="$("$VBOXMANAGE" guestproperty get "$1" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{print $2}')"
+  echo "${user:-vagrant}@$ip"
+}
+
 cmd="$1"
 shift || true
 case "$cmd" in
@@ -116,16 +134,8 @@ case "$cmd" in
     showvminfo "$vm"
     ;;
   ssh)
-    vm="$(select_vm "$1")"
-    user="$(rlwrap -S "User(vagrant): " -o cat)"
-    if ! is_running "$vm"; then
-      startvm "$vm"
-      # TODO It seems we don't have a good way to detect when vm is booted up.
-      echo 'VM is starting. Please execute ssh command when it is started.'
-      exit
-    fi
-    ip="$("$VBOXMANAGE" guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{print $2}')"
-    ssh -A "${user:-vagrant}@$ip"
+    vm="$(select_vm_and_check_running "$1")"
+    ssh -A "$(get_ssh_target "$vm")"
     ;;
   stop)
     vm="$(select_vm "$1")"
