@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# This script helps you to select a grub menuentry and set it default.
+
+set -eo pipefail
+
+generated_grub_file="/boot/grub2/grub.cfg"
+
+add_setting() {
+  local name="$1"
+  local value="$2"
+  local grub_file="/etc/default/grub"
+  if sudo grep "$name=" "$grub_file" &>/dev/null; then
+    sudo sed -i.bak "s/^$name=.*\$/$name=$value/" "$grub_file"
+  else
+    echo -e "\n$name=$value" | sudo tee -a "$grub_file" >/dev/null
+  fi
+}
+
+menuentry_id=$(sudo grep '^menuentry' "$generated_grub_file" | sed "s/^.*\\$menuentry_id_option \\+'\\(.*\\)'.*/\\1/" | fzf)
+
+if [ -n "$menuentry_id" ]; then
+  add_setting GRUB_DEFAULT "$menuentry_id"
+  sudo grub2-mkconfig -o "$generated_grub_file"
+  echo "Grub default menuentry has been updated to $menuentry_id"
+fi
