@@ -79,10 +79,10 @@ cmd_cors() {
 
   echo -e "----\n"
 
-  local allowed_origin=$(str_trim "$(echo "$output" | grep Access-Control-Allow-Origin | awk -F: '{print $2}')")
+  local allowed_origin=$(str_trim "$(echo "$output" | grep -i Access-Control-Allow-Origin | sed 's/^access-control-allow-origin:[[:space:]]*//i')")
   if [ "$allowed_origin" = "$origin"  ]; then
     echo -n 'CORS is allowed with such methods: '
-    str_trim "$(echo "$output" | grep Access-Control-Allow-Methods | awk -F: '{print $2}')"
+    str_trim "$(echo "$output" | grep -i Access-Control-Allow-Methods | sed 's/^access-control-allow-methods:[[:space:]]*//i')"
   else
     echo 'CORS is NOT allowed.'
   fi
