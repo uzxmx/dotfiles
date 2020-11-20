@@ -1,19 +1,5 @@
 # vim: ft=zsh
 
-# No arguments: `git status .`
-# With arguments: acts like `git`
-g() {
-  if [ $# -gt 0 ]; then
-    git "$@"
-  else
-    git status .
-  fi
-}
-
-gi() {
-  curl -s "https://www.gitignore.io/api/$*"
-}
-
 # ftag - checkout git tag
 ftag() {
   local tags tag

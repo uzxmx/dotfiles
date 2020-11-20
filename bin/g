@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for git utility.
+
+Subcommands:
+  ignore - output .gitignore contents for some topic
+  fzf - search a command by its description and execute
+EOF
+  exit 1
+}
+
+
+FZF_COMMANDS="Change the last commit message (the commit has not been pushed)\tgit commit --amend
+"
+
+cmd_ignore() {
+  # See https://docs.gitignore.io/install/command-line
+  curl -sL "https://www.toptal.com/developers/gitignore/api/$@"
+}
+
+cmd="$1"
+case "$1" in
+  "")
+    git status .
+    ;;
+  fzf)
+    source ~/.dotfiles/scripts/lib/cmd_fzf.sh
+    ;&
+    # Fall through
+  ignore)
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    git "$@"
+    ;;
+esac
