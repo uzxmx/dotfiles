@@ -121,7 +121,7 @@ x() {
 a() {
   local script
   if [ $# -lt 2 ]; then
-    script=$(~/.dotfiles/scripts/asdf_common_workflow.sh "$@")
+    script=$(~/.dotfiles/scripts/misc/asdf_common_workflow.sh "$@")
     if [ $? -eq 0 -a -n "$script" ]; then
       eval "$script"
     fi
