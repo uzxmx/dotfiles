@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Install wireshark (https://gitlab.com/wireshark/wireshark/-/tree/master)
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_wsl; then
+  "$(dirname "$BASH_SOURCE")/../../bin/scoop" install wireshark
+else
+  abort 'Unsupported system'
+fi
