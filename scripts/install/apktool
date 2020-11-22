@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Install apktool (https://ibotpeaches.github.io/Apktool/install/)
+
+set -eo pipefail
+
+type -p apktool &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="2.4.1"
+if is_mac; then
+  wrapper_url="https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/osx/apktool"
+elif is_linux; then
+  wrapper_url="https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool"
+else
+  abort "Unsupported system"
+fi
+
+~/.dotfiles/bin/cget "$wrapper_url" /tmp/apktool
+~/.dotfiles/bin/cget "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_$version.jar" /tmp/apktool.jar
+
+chmod a+x /tmp/apktool /tmp/apktool.jar
+sudo mv /tmp/apktool /tmp/apktool.jar /usr/local/bin
