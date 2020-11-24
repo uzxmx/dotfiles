@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Install dex2jar (https://github.com/pxb1988/dex2jar)
+
+set -eo pipefail
+
+[ -f /usr/local/dex2jar/d2j-dex2jar.sh ] && exit
+
+~/.dotfiles/bin/cget "https://github.com/pxb1988/dex2jar/files/1867564/dex-tools-2.1-SNAPSHOT.zip" /tmp/dex2jar.zip
+
+cd /usr/local && sudo unzip /tmp/dex2jar && sudo mv dex-tools-2.1-SNAPSHOT dex2jar
+rm /tmp/dex2jar.zip

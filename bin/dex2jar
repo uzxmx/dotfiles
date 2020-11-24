@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Convert dex to jar.
+
+set -eo pipefail
+
+/usr/local/dex2jar/d2j-dex2jar.sh "$@"
