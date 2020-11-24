@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Install CFR (https://github.com/leibnitz27/cfr)
+
+set -eo pipefail
+
+[ -f /usr/local/cfr/cfr.jar ] && exit
+
+version="0.150"
+~/.dotfiles/bin/cget "https://github.com/leibnitz27/cfr/releases/download/$version/cfr-$version.jar" /tmp/cfr.jar
+sudo mkdir -p /usr/local/cfr
+sudo mv /tmp/cfr.jar /usr/local/cfr

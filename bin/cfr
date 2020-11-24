@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Java class decompiler.
+
+set -eo pipefail
+
+java -jar /usr/local/cfr/cfr.jar "$@"
