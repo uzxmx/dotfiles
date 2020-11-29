@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-. $(dirname "$0")/lib/ssh.sh
+. $(dirname "$0")/../lib/ssh.sh
 
 ssh_add_identities
 
