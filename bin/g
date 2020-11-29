@@ -13,7 +13,6 @@ EOF
   exit 1
 }
 
-
 FZF_COMMANDS="Change the last commit message (the commit has not been pushed)\tgit commit --amend
 "
 
