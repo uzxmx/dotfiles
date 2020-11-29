@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Select a command and run it. No argument is required.
+EOF
+  exit 1
+}
+
+gen() {
+  local dst_dir="$(pwd)"
+  local ask_filename=0
+  local edit=0
+  local executable=0
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      # Target directory
+      -d)
+        shift
+        dst_dir="$1"
+        shift
+        ;;
+      # Ask user to input the file name
+      -p)
+        shift
+        ask_filename=1
+        ;;
+      # Open destination file with EDITOR
+      -e)
+        shift
+        edit=1
+        ;;
+      # Change to executable
+      -x)
+        shift
+        executable=1
+        ;;
+      *)
+        break
+        ;;
+    esac
+  done
+
+  local root="$HOME/.templates"
+  if [ ! -e "$root" ]; then
+    git clone https://github.com/uzxmx/templates "$root" --depth 1
+  fi
+  local src_root="$root/src"
+  local name="$src_root/$1"
+  if [ -d "$name" ]; then
+    echo 'Directory'
+  else
+    local pattern="$name.tpl(.sh|.erb)?"
+    local file="$(find -E "$src_root" -regex "$pattern" | head -1)"
+    if [ -z "$file" ]; then
+      echo No template file with pattern \'$pattern\' found. \
+        To resolve this issue, you can try to update the templates repository.
+      exit 1
+    fi
+    local filename
+    if [ "$ask_filename" = "1" ]; then
+      while true; do
+        filename="$(rlwrap -S "File name: $dst_dir/" -o cat)"
+        if [ -n "$filename" ]; then
+          if [ -e "$dst_dir/$filename" ]; then
+            echo "File '$dst_dir/$filename' already exists"
+          else
+            break
+          fi
+        fi
+      done
+    else
+      filename="$1"
+    fi
+    local dst="$dst_dir/$filename"
+    if [ -e "$dst" ]; then
+      source ~/.dotfiles/scripts/lib/prompt.sh
+      if [ ! "$(yesno "File $dst already exists, overwrite it? (y/N)" "no")" = "yes" ]; then
+        echo Cancelled
+        exit
+      fi
+    fi
+    if [ "$file" = "$name.tpl" ]; then
+      cp "$file" "$dst"
+    else
+      tmpfile="$(mktemp)"
+      handle_exit() {
+        if [ -e "$tmpfile" ]; then
+          rm "$tmpfile"
+        fi
+      }
+      trap handle_exit EXIT
+      case "$file" in
+        $name.tpl.sh)
+          eval "echo \"$(cat "$file")\"" >"$tmpfile"
+          ;;
+        $name.tpl.erb)
+          erb "$file" >"$tmpfile"
+          ;;
+      esac
+      cp "$tmpfile" "$dst"
+    fi
+
+    [ "$executable" = "1" ] && chmod a+x "$dst"
+
+    if [ "$edit" = "1" ]; then
+      "${EDITOR:-vim}" "$dst"
+    else
+      echo "File $dst generated."
+    fi
+  fi
+}
+
+FZF_COMMANDS="Gen: bin wrapper or plain old executable\tgen -d \"$HOME/.dotfiles/bin\" -p -e -x bin_wrapper
+Gen: MIT license\tgen LICENSE
+Gen: README.md or Markdown template\tgen -e README.md
+Gen: Vagrantfile\tgen -e Vagrantfile
+"
+
+if [ "$#" -gt 0 ]; then
+  usage
+fi
+
+source ~/.dotfiles/scripts/lib/cmd_fzf.sh
+cmd_fzf

@@ -74,6 +74,9 @@ alias pe='px enable'
 alias pd='px disable'
 alias pi='px info'
 
+# We do this because `r` is a zsh built-in command.
+alias r="~/.dotfiles/bin/r"
+
 alias sd="s ~/.dotfiles"
 alias sdd="s ~/.dotfiles/doc"
 
