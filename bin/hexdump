@@ -4,28 +4,13 @@ set -eo pipefail
 
 usage() {
   cat <<-EOF 1>&2
-Wrapper for hexdump utility. Pass in '-' to call the original.
+Wrapper for hexdump utility.
 
-Provided subcommands include:
-
-  * hex: [text]
-      Display the input (from argument or pipe) in hexadecimal.
-
-      $> hexdump hex text
-
-  * decimal:
-      Display the input (from argument or pipe) in decimal.
-
-      $> hexdump decimal text
-
-  * oct:
-      Display the input (from argument or pipe) in octal.
-
-      $> hexdump oct text
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  hex - display the input in hexadecimal by ascii
+  decimal - display the input in decimal by ascii
+  oct - display the input in octal by ascii
+  bin - display the input integer in binary
 EOF
   exit 1
 }
@@ -43,22 +28,82 @@ execute_hexdump() {
   fi
 }
 
+usage_hex() {
+  cat <<-EOF 1>&2
+Usage: hexdump hex <text>
+
+Display the input (from argument or pipe) in hexadecimal by ascii.
+
+Example:
+  $> hexdump hex text
+EOF
+  exit 1
+}
+
 cmd_hex() {
   execute_hexdump "$1" -v -e '"0x" 1/1 "%02x" " "'
+}
+
+usage_decimal() {
+  cat <<-EOF 1>&2
+Usage: hexdump decimal <text>
+
+Display the input (from argument or pipe) in decimal by ascii.
+
+Example:
+  $> hexdump decimal text
+EOF
+  exit 1
 }
 
 cmd_decimal() {
   execute_hexdump "$1" -v -e '"" 1/1 "%d" " "'
 }
 
+usage_oct() {
+  cat <<-EOF 1>&2
+Usage: hexdump oct <text>
+
+Display the input (from argument or pipe) in octal by ascii.
+
+Example:
+  $> hexdump oct text
+EOF
+  exit 1
+}
+
 cmd_oct() {
   execute_hexdump "$1" -v -e '"" 1/1 "%o" " "'
 }
 
+usage_bin() {
+  cat <<-EOF 1>&2
+Usage: hexdump bin <integer>
+
+Display the input integer (from argument or pipe) in binary.
+
+Example:
+  $> hexdump bin 255
+EOF
+  exit 1
+}
+
+cmd_bin() {
+  [ "$#" -eq 0 ] && usage_bin
+  for i in "$@"; do
+    perl -e "printf \"%b\n\", $i"
+  done
+}
+
 case "$1" in
-  hex | decimal | oct)
+  hex | decimal | oct | bin)
     cmd="$1"
     shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
     "cmd_$cmd" "$@"
     ;;
   -h)
