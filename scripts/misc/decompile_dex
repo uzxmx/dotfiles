@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+for dexfile in "$@"; do
+  # The output jar is named with `.dex` substituted by `.jar`. If the input
+  # file doesn't end with `.dex`, append `.jar` to the name.
+  jarfile="$(echo "$dexfile" | sed 's/.dex$/.jar/')"
+  if [ "$jarfile" = "$dexfile" ]; then
+    jarfile="$jarfile.jar"
+  fi
+  dex2jar "$dexfile" -o "$jarfile"
+
+  # The outputdir is named with `.jar` removed. If it still exists, append `.d`
+  # to the name.
+  outputdir="$(echo "$jarfile" | sed 's/.jar$//')"
+  if [ -e "$outputdir" ]; then
+    outputdir="$outputdir.d"
+  fi
+  cfr "$jarfile" --outputdir "$outputdir"
+done
