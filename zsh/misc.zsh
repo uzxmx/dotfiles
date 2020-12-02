@@ -2,20 +2,25 @@
 command_not_found_handler() {
   local name="$1"
   echo "Oops, command '$name' not found."
-  echo -n "Would you like me to try to install it? (Y/n)"
-  local input
-  read input
-  if ! [ -z "$input" -o "$input" = "Y" -o "$input" = "y" ]; then
-    echo Cancelled.
-    exit
-  fi
+
+  ask() {
+    echo -n "Would you like me to install it for you? (Y/n)"
+    local input
+    read input
+    if ! [ -z "$input" -o "$input" = "Y" -o "$input" = "y" ]; then
+      echo Cancelled.
+      exit
+    fi
+  }
 
   case "$name" in
     dig | whois | tcpdump | route)
+      ask
       ~/.dotfiles/scripts/install/network_tools
       ;;
     *)
-      echo "Cannot install it automatically, please do it by yourself."
+      echo "Sorry, I couldn't help to install it, please do it by yourself."
+      echo "Please also consider whether to update 'command_not_found_handler' so I could do it for you later."
       exit 1
       ;;
   esac
