@@ -27,6 +27,7 @@ source ~/.zsh/configs.zsh
 source ~/.zsh/aliases.zsh
 source ~/.zsh/completions.zsh
 source ~/.zsh/library.zsh
+source ~/.zsh/misc.zsh
 
 # Load custom functions
 for function in ~/.zsh/functions/*; do
