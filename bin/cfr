@@ -1,7 +1,37 @@
 #!/usr/bin/env bash
-#
-# Java class decompiler.
 
 set -eo pipefail
 
-java -jar /usr/local/cfr/cfr.jar "$@"
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for cfr utility - a Java class decompiler.
+
+If you encounter 'java.lang.OutOfMemoryError: Java heap space', you can try to
+increase the initial heap size and the maximum heap size of JVM by using
+'JAVA_XMS' and 'JAVA_XMX' shell variables. For example:
+
+  $> export JAVA_XMS=1g JAVA_XMX=4g
+EOF
+  exit 1
+}
+
+jvm_options=()
+if [ -n "$JAVA_XMS" ]; then
+  jvm_options+=("-Xms$JAVA_XMS")
+fi
+if [ -n "$JAVA_XMX" ]; then
+  jvm_options+=("-Xmx$JAVA_XMX")
+fi
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    java "${jvm_options[@]}" -jar /usr/local/cfr/cfr.jar "$@"
+    ;;
+esac
