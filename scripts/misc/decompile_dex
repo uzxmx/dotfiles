@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+set -eo pipefail
+
+if [ "$#" -eq 0 -o "$1" = "-h" ]; then
+  echo "Usage: $0 <dexfile>.."
+  exit 1
+fi
+
 for dexfile in "$@"; do
   # The output jar is named with `.dex` substituted by `.jar`. If the input
   # file doesn't end with `.dex`, append `.jar` to the name.
