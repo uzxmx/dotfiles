@@ -70,8 +70,8 @@ while true; do
   fi
 
   call_fzf result --query="$query" --print-query --multi --select-1 --exit-0 \
-    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-R:run CTRL-I:toggle-ignore)> ' \
-    --expect="ctrl-v,ctrl-r,ctrl-i" \
+    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore)> ' \
+    --expect="ctrl-v,ctrl-e,ctrl-i" \
     < <(fd "${fd_opts[@]}" "${pattern:-.}" "$dir")
 
   [ -z "${result[*]}" ] && break
@@ -98,15 +98,9 @@ while true; do
       result=("$target_file")
       break
       ;;
-    ctrl-r)
-      file="${result[0]}"
-      if [ -x "$file" ]; then
-        echo "$file" >&3
-        exit 101
-      else
-        echo "$file is not an executable."
-        exit 1
-      fi
+    ctrl-e)
+      echo "${result[0]}" >&3
+      exit 101
       break
       ;;
     ctrl-i)
