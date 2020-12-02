@@ -4,20 +4,16 @@ set -eo pipefail
 
 usage() {
   cat <<-EOF 1>&2
-Wrapper for rm utility. Pass in '-' to call the original.
+Wrapper for rm utility. When used with pipe operator, it will identify each
+line as a file and remove it.
 
-Provided subcommands include:
+When the filename is in a special form, e.g. '-h', you can remove it by:
 
-  * by_inum: <inum>
-      Remove a file by inode number. This command can be used when the filename
-      contains special characters.  You can use 'ls -li' to find the inode of
-      the file.
+  $> rm -- -h
+  $> rm ./-h
 
-      $> rm by_inum 11273502
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  by_inum - remove a file by inode number
 EOF
   exit 1
 }
@@ -25,14 +21,33 @@ EOF
 source ~/.dotfiles/scripts/lib/path.sh
 PATH=$(new_path_exclude ~/.dotfiles/bin)
 
+usage_by_inum() {
+  cat <<-EOF 1>&2
+Usage: rm by_inum <inum>
+
+Remove a file by inode number. This command can be used when the filename
+contains special characters. You can use 'ls -li' to find the inode of
+the file.
+
+Example:
+  $> rm by_inum 11273502
+EOF
+  exit 1
+}
+
 cmd_by_inum() {
   find . -maxdepth 1 -inum "$1" -exec rm -i {} \;
 }
 
-cmd="$1"
 case "$1" in
   by_inum)
+    cmd="$1"
     shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
     "cmd_$cmd" "$@"
     ;;
   -h)
@@ -43,6 +58,20 @@ case "$1" in
     ;&
     # Fall through
   *)
-    rm "$@"
+    extra_args=()
+    if [ ! -t 0 ]; then
+      while read input; do
+        extra_args+=("$input")
+      done
+      if [ "${#extra_args[@]}" -gt 0 ]; then
+        source ~/.dotfiles/scripts/lib/prompt.sh
+        echo -e "These files will be removed:\n${extra_args[@]}"
+        if [ ! "$(yesno "Continue? (y/N)" "no")" = "yes" ]; then
+          echo Cancelled
+          exit
+        fi
+      fi
+    fi
+    rm "$@" "${extra_args[@]}"
     ;;
 esac

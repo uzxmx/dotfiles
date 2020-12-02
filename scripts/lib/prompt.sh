@@ -15,7 +15,12 @@
 #     ...
 #   fi
 yesno() {
-  local reply=$(rlwrap -S "$1" head -1)
+  local reply
+  if [ -t 0 ]; then
+    reply=$(rlwrap -S "$1" head -1)
+  else
+    reply=$(rlwrap -S "$1" head -1 </dev/tty)
+  fi
   reply=$(echo "${reply:-$2}" | tr "A-Z" "a-z" )
   if $(echo "$reply" | grep -E "^y|yes$" &>/dev/null); then
     echo 'yes'
