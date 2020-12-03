@@ -114,6 +114,7 @@ gen() {
 }
 
 FZF_COMMANDS="Bin wrapper or plain old executable\tgen -d \"$HOME/.dotfiles/bin\" -p -e -x bin_wrapper
+Installation script\tgen -d \"$HOME/.dotfiles/scripts/install\" -p -e -x install
 MIT license\tgen LICENSE
 README.md or Markdown template\tgen -e README.md
 Vagrantfile\tgen -e Vagrantfile
