@@ -1,6 +1,6 @@
 python 3.8.0
 ruby 2.7.1
 nodejs 12.13.0
-java adopt-openjdk-11.0.7+10
+java adopt-openjdk-11.0.9+11_openj9-0.23.0
 maven 3.6.3
 golang 1.14.1

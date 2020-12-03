@@ -113,7 +113,7 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 
 # Use `asdf where java` to find the JAVA_HOME
-export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.7+10
+export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.9+11_openj9-0.23.0
 
 export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
