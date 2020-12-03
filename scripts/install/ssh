@@ -13,7 +13,7 @@ type -p ssh &> /dev/null && ! version_lt_not_constrained "$(ssh -V 2>&1 | awk '{
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="$minimum_required_version"
-path_to_save="/tmp/openssh-$version.tar.xz"
+path_to_save="/tmp/openssh-$version.tar.gz"
 ~/.dotfiles/bin/cget "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$version.tar.gz" "$path_to_save"
 
 cd /tmp && tar zxf "$path_to_save"
