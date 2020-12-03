@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Install xmllint (http://www.xmlsoft.org/downloads.html).
+
+set -eo pipefail
+
+if type -p xmllint &> /dev/null; then
+  # Check if xmllint can add a newline for each match. If not supported, we install a new version.
+  count=$(echo "<div>foo</div><div>bar</div>" | xmllint --html --xpath "//div/text()" - 2>/dev/null | wc -l)
+  [ "$count" -eq 2 ] && exit
+fi
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+dir="/tmp/libxml2"
+git_clone https://gitlab.gnome.org/GNOME/libxml2.git "$dir" -b v2.9.10 --depth 1
+
+cd "$dir"
+sh ./autogen.sh
+./configure --without-python
+make
+sudo make install
+rm -rf "$dir"
