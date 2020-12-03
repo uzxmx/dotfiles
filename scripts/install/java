@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+#
+# If you encounter such error:
+#
+#   sha256sum: WARNING: 1 computed checksum did NOT match
+#
+# most probably it's because TUNA only mirrors the latest JDK version for each
+# variant. To resolve this issue, please visit
+# https://mirrors.tuna.tsinghua.edu.cn/AdoptOpenJDK to find a version and
+# execute `asdf list-all java` to get a matched version name, use it to replace
+# the Java version in '.tool-versions'.
 
 set -eo pipefail
 
