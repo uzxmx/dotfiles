@@ -4,7 +4,62 @@
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
-cd ~/.config/coc/extensions
-npm install --global-style --ignore-scripts --no-bin-links --no-package-lock --only=prod
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0 <extension>
+Install coc extensions.
 
-# TODO Install jdt.ls for coc-java
+Supported extensions include:
+
+  * ultisnips
+  * java
+  * python
+  * clangd
+  * omnisharp
+  * sourcekit
+  * tsserver
+EOF
+  exit 1
+}
+
+rootdir="$HOME/.config/coc/extensions"
+
+mkdir -p "$rootdir"
+cd "$rootdir"
+
+npm_install() {
+  npm install --global-style --ignore-scripts --no-bin-links --no-package-lock --only=prod "$@"
+}
+
+case "$1" in
+  ultisnips)
+    npm_install coc-ultisnips@1.2.3
+    ;;
+  java)
+    npm_install coc-java@1.5.3
+    serverdir="coc-java-data/server"
+    dstpath="/tmp/jdtls.tar.gz"
+    mkdir -p "$serverdir"
+    ~/.dotfiles/bin/cget "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz" "$dstpath"
+    tar zxf "$dstpath" -C "$serverdir"
+    rm "$dstpath"
+    ;;
+  python)
+    npm_install coc-python@1.2.13
+    ;;
+  clangd)
+    npm_install coc-clangd@0.4.7
+    ;;
+  omnisharp)
+    npm_install coc-omnisharp@0.0.26
+    ;;
+  sourcekit)
+    npm_install coc-sourcekit@0.0.2
+    ;;
+  tsserver)
+    npm_install coc-sourcekit@1.5.1
+    ;;
+  *)
+    usage
+    ;;
+esac
