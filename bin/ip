@@ -1,9 +1,119 @@
 #!/usr/bin/env bash
 
-source ~/.dotfiles/scripts/lib/path.sh
+set -eo pipefail
 
-if [[ $# = 0 ]]; then
-  ifconfig en0 | grep 'inet ' | awk '{print $2}' | cb
-else
-  PATH=$(new_path_exclude ~/.dotfiles/bin) ip "$@"
-fi
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for ip utility.
+
+Subcommands:
+  my - get the external IP of the current machine
+  geo - get the geo info of an IP
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+usage_my() {
+  cat <<-EOF 1>&2
+Usage: ip my
+
+Get the external IP of the current machine. We use below APIs to query:
+
+  * https://www.ip138.com
+  * https://major.io/icanhazip-com-faq/
+
+We may also use 'https://ipinfo.io/ip' to query.
+
+Note: when visiting different sites, the external IP address may change. To
+get all possible results, we first visit a site hosted in China, then a site
+abroad, and compare them.
+
+Example:
+  $> ip my
+EOF
+  exit 1
+}
+
+cmd_my() {
+  # See https://www.ip138.com
+  local ip1=$(curl --silent 'https://202020.ip138.com/' \
+    -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36' | \
+    xmllint --html --xpath "/html/head/title/text()" - 2>/dev/null | awk -F '：' '{print $2}')
+
+  local ip2=$(curl --silent https://ipv4.icanhazip.com/)
+
+  if [ -n "$ip1" -a -n "$ip2" -a ! "$ip1" = "$ip2" ]; then
+    echo Got two different IP addresses:
+    echo $ip1
+    echo $ip2
+    exit
+  fi
+
+  local ip
+  if [ -n "$ip1" ]; then
+    ip="$ip1"
+  fi
+  if [ -n "$ip2" ]; then
+    ip="$ip2"
+  fi
+
+  echo "$ip" | tee >(~/.dotfiles/bin/cb >/dev/null)
+}
+
+usage_geo() {
+  cat <<-EOF 1>&2
+Usage: ip geo <ip>
+
+Get the geo info of an IP.
+
+Example:
+  $> ip geo 8.8.8.8
+EOF
+  exit 1
+}
+
+cmd_geo() {
+  [ -z "$1" ] && usage_geo
+
+  # Note: we get our external IP geo info when query is empty.
+  local result="$(curl -s "http://api.geoiplookup.net/?query=$1")"
+  if [ -n "$result" ]; then
+    local isp="$(echo "$result" | xmllint --html --xpath "//result/isp/text()" - 2>/dev/null)"
+    local city="$(echo "$result" | xmllint --html --xpath "//result/city/text()" - 2>/dev/null)"
+    local country_name="$(echo "$result" | xmllint --html --xpath "//result/countryname/text()" - 2>/dev/null)"
+    echo "$isp - $city - $country_name"
+  else
+    local json="$(curl -s https://ipvigilante.com/$1)"
+    local address=($(echo $json | jq -r '.data.continent_name, .data.country_name, (.data.subdivision_1_name | select(. != null)), (.data.subdivision_2_name | select(. != null)), .data.city_name'))
+    local location="($(echo $json | jq -r '.data.longitude'),$(echo $json | jq -r '.data.latitude'))"
+    local IFS=","
+    echo "${address[*]} $location"
+  fi
+}
+
+case "$1" in
+  my | geo)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    ip "$@"
+    ;;
+esac
