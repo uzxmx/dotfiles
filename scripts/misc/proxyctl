@@ -10,16 +10,27 @@ set -eo pipefail
 
 usage() {
   cat <<-EOF 1>&2
-Utility script to control proxy.
-
 Usage:
 $0 <enable | disable | info> [proxy types...] [-p proxy_server]
 
-Proxy types: http git curl docker yum scoop all
+Utility script to control proxy. If the machine is a vagrant box, you may use
+10.0.2.2 to access the host.
+
+Supported proxy types include:
+  * http
+  * git
+  * curl
+  * docker
+  * yum
+  * scoop
+  * all
+
+For enable and disable subcommands, when proxy types are not specified, the
+defaults are http/git/curl/yum/scoop. For info subcommand, the defaults are all
+types.
 
 Examples:
-
-  # Enable http/git/curl/yum/scoop proxy.
+  # Enable proxy of default types.
   $> pe
 
   # Enable docker proxy.
@@ -28,7 +39,7 @@ Examples:
   # Enable all proxy types.
   $> pe all
 
-  # Disable http/git/curl/yum/scoop proxy.
+  # Disable proxy of default types.
   $> pd
 
   # Show status of all proxy types.
