@@ -213,7 +213,7 @@ EOF
 }
 
 enable_curl_proxy() {
-  if [[ ! -f ~/.curlrc ]]; then
+  if [ ! -f ~/.curlrc ]; then
     touch ~/.curlrc
   fi
 
@@ -237,7 +237,7 @@ disable_curl_proxy() {
 }
 
 dump_curl_proxy() {
-  proxy="$(grep -E '^proxy ?= ?.+$' ~/.curlrc || true)"
+  local proxy="$(grep -E '^proxy ?= ?.+$' ~/.curlrc 2>/dev/null || true)"
   echo "echo -n Current Curl proxy:" >&3
   if [ -n "$proxy" ]; then
     echo "echo \" $(echo $proxy | awk '{print $3}')\"" >&3
