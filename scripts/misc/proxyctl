@@ -330,7 +330,7 @@ enable_scoop_proxy() {
 
 disable_scoop_proxy() {
   if is_wsl; then
-    scoop config rm proxy
+    scoop config rm proxy &>/dev/null
     dump_scoop_proxy
   fi
 }

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+source $(dirname "$BASH_SOURCE")/../lib/utils/capture_source_and_signal.sh
+
+eval "
+  px() {
+    capture_source_and_signal "$(dirname "$BASH_SOURCE")/proxyctl" \"\$@\"
+  }
+"
+
+pe() {
+  px enable "$@"
+}
+
+pd() {
+  px disable "$@"
+}
+
+pi() {
+  px info "$@"
+}
