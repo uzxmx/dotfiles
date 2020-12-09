@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Install ant (https://ant.apache.org/bindownload.cgi).
+
+set -eo pipefail
+
+type -p ant &> /dev/null && exit
+
+target_dir="$HOME/ant"
+if [ -d "$target_dir" ]; then
+  echo "ant may have been installed at $target_dir. If not, please remove that directory and run again."
+  exit
+fi
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+# The default version may not exist on the remote. In that case, you can check
+# which version is available at
+# https://mirrors.tuna.tsinghua.edu.cn/apache/ant/binaries.
+version="${1:-1.10.9}"
+path_to_save="/tmp/ant-$version.tar.gz"
+
+~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/apache/ant/binaries/apache-ant-$version-bin.tar.gz" "$path_to_save"
+
+cd /tmp && tar zxf "$path_to_save" && mv apache-ant-$version "$target_dir"
+rm -rf "$path_to_save"
+
+echo "ant is installed successfully at $target_dir. You may need to add $target_dir/bin to PATH environment variable."
