@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Install libusbmuxd (https://github.com/libimobiledevice/libusbmuxd).
+
+set -eo pipefail
+
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+pkg-config --exists "libusbmuxd-2.0 >= 2.0.2" && exit
+
+$(dirname "$BASH_SOURCE")/../install/libplist
+
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+. $(dirname "$BASH_SOURCE")/../lib/git.sh
+
+dir="/tmp/libusbmuxd"
+git_clone "https://github.com/libimobiledevice/libusbmuxd.git" "$dir" --depth 1 -b 2.0.2
+
+if has_apt; then
+  sudo apt-get install -y \
+    build-essential \
+    checkinstall \
+    git \
+    autoconf \
+    automake \
+    libtool-bin
+fi
+
+cd "$dir"
+./autogen.sh
+make
+sudo make install
+
+rm -rf "$dir"
