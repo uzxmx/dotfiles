@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for pkg-config utility.
+
+Subcommands:
+  print_search_path - print the search path
+EOF
+  exit 1
+}
+
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+usage_print_search_path() {
+  cat <<-EOF 1>&2
+Usage: pkg-config print_search_path
+
+Print the search path.
+EOF
+  exit 1
+}
+
+cmd_print_search_path() {
+  pkg-config --variable pc_path pkg-config
+}
+
+case "$1" in
+  print_search_path)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    pkg-config "$@"
+    ;;
+esac
