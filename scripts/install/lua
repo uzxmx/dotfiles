@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install lua (https://www.lua.org/download.html).
+
+set -eo pipefail
+
+type -p lua &>/dev/null && exit
+
+version="5.4.2"
+path_to_save="/tmp/lua-$version.tar.gz"
+~/.dotfiles/bin/cget "http://www.lua.org/ftp/lua-$version.tar.gz" "$path_to_save"
+
+dir="/tmp/lua-$version"
+tar zxf "$path_to_save" -C "$(dirname "$dir")"
+
+cd "$dir"
+make all
+sudo make install
+
+rm -rf "$path_to_save" "$dir"
