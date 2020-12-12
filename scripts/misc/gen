@@ -14,7 +14,8 @@ gen() {
   local ask_filename=0
   local edit=0
   local executable=0
-  local extname=
+  local extname
+  local dst
   while [ "$#" -gt 0 ]; do
     case "$1" in
       # Target directory
@@ -46,6 +47,11 @@ gen() {
           extname=".$extname"
         fi
         ;;
+      # Absolute path to the generated file
+      -f)
+        dst="$2"
+        shift 2
+        ;;
       *)
         break
         ;;
@@ -68,32 +74,44 @@ gen() {
       echo No template file found. To resolve this issue, you can try to update the templates repository.
       exit 1
     fi
+
     local filename
-    if [ "$ask_filename" = "1" ]; then
-      while true; do
-        filename="$(rlwrap -S "File name: $dst_dir/" -o cat)"
-        if [ -n "$extname" ] && [[ ! "$filename" =~ "$extname"$ ]]; then
-          filename="$filename$extname"
-        fi
-        if [ -n "$filename" ]; then
-          if [ -e "$dst_dir/$filename" ]; then
-            echo "File '$dst_dir/$filename' already exists"
-          else
-            break
+    if [ -z "$dst" ]; then
+      if [ "$ask_filename" = "1" ]; then
+        while true; do
+          filename="$(rlwrap -S "File name: $dst_dir/" -o cat)"
+          if [ -n "$extname" ] && [[ ! "$filename" =~ "$extname"$ ]]; then
+            filename="$filename$extname"
           fi
-        fi
-      done
+          if [ -n "$filename" ]; then
+            if [ -e "$dst_dir/$filename" ]; then
+              echo "File '$dst_dir/$filename' already exists"
+            else
+              break
+            fi
+          fi
+        done
+      else
+        filename="$1"
+      fi
+      dst="$dst_dir/$filename"
     else
-      filename="$1"
+      filename="$(basename "$dst")"
     fi
-    local dst="$dst_dir/$filename"
+
     if [ -e "$dst" ]; then
-      source ~/.dotfiles/scripts/lib/prompt.sh
-      if [ ! "$(yesno "File $dst already exists, overwrite it? (y/N)" "no")" = "yes" ]; then
+      local reply
+      echo -n "File $dst already exists, overwrite it or generate a temporary file? (y/N/g)"
+      read reply
+      if [ "$reply" = "g" ]; then
+        dst="$(mktemp)"
+        filename="$(basename "$dst")"
+      elif [ ! "$reply" = "y" ]; then
         echo Cancelled
         exit
       fi
     fi
+
     if [ "$file" = "$name.tpl" ]; then
       cp "$file" "$dst"
     else
@@ -133,6 +151,7 @@ MIT license\tgen LICENSE
 README.md or Markdown template\tgen -e README.md
 Vagrantfile\tgen -e Vagrantfile
 Mac OSX User daemon/agent plist file\tgen -d \"$HOME/Library/LaunchAgents\" -p -e --ext plist launchd.plist
+SSH hosts for wrapper utility \tgen -e -f \"$HOME/.ssh_hosts\" ssh_hosts
 "
 
 source ~/.dotfiles/scripts/lib/cmd_fzf.sh

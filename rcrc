@@ -1,2 +1,2 @@
-EXCLUDES="bin/* scripts/* doc/* samples/* iterm2/* zsh/plugins.txt README*.md LICENSE Gemfile* vimium windows/* ssh_hosts.tpl v2ray/*"
+EXCLUDES="bin/* scripts/* doc/* samples/* iterm2/* zsh/plugins.txt README*.md LICENSE Gemfile* vimium windows/* v2ray/*"
 DOTFILES_DIRS="$HOME/.dotfiles-local $HOME/.dotfiles"
