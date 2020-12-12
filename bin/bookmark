@@ -4,6 +4,19 @@ use strict;
 use warnings;
 use IPC::Open2;
 
+if (defined($ARGV[0]) and $ARGV[0] eq "-h") {
+  print <<EOF;
+Usage: bookmark
+
+Open web page by bookmark. Bookmarks should be specified in ~/.bookmarkrc with
+below format per line. The bookmark description and url should be separated by
+`=`.
+
+<bookmark description> = <url>
+EOF
+  exit;
+}
+
 my $file = glob("~/.bookmarkrc");
 unless (-e $file) {
   print "~/.bookmarkrc does't exist\n";
