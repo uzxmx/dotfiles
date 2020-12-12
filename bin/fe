@@ -66,7 +66,7 @@ while true; do
 
   fd_opts=(--type f)
   if [ -n "$no_ignore" ]; then
-    fd_opts+=(-I)
+    fd_opts+=(-I -H)
   fi
 
   call_fzf result --query="$query" --print-query --multi --select-1 --exit-0 \
