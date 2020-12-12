@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for pod utility.
+
+Subcommands:
+  install - add --verbose option
+EOF
+  exit 1
+}
+
+# Delete below snippet if you don't want a wrapper.
+source ~/.dotfiles/scripts/lib/path.sh
+PATH=$(new_path_exclude ~/.dotfiles/bin)
+
+usage_install() {
+  pod install --help
+  exit 1
+}
+
+cmd_install() {
+  pod install --verbose "$@"
+}
+
+case "$1" in
+  install)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    pod "$@"
+    ;;
+esac
