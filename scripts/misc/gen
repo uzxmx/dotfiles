@@ -2,12 +2,19 @@
 
 set -eo pipefail
 
-case "$1" in
-  -q)
-    query="$2"
-    shift 2
-    ;;
-esac
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0 [--no-editor] [-q <query>] [<template>]
+
+Generate files from a template. When no template is given, it will use fzf to
+let user select one.
+
+Options:
+  -q <query> Fzf query string
+  --no-editor Do not open generated file with an editor
+EOF
+  exit 1
+}
 
 gen() {
   local dst_dir="$(pwd)"
@@ -32,7 +39,9 @@ gen() {
       # Open destination file with EDITOR
       -e)
         shift
-        edit=1
+        if [ ! "$no_editor" = "1" ]; then
+          edit=1
+        fi
         ;;
       # Change to executable
       -x)
@@ -145,13 +154,71 @@ gen() {
   fi
 }
 
-FZF_COMMANDS="Bin wrapper or plain old executable\tgen -d \"$HOME/.dotfiles/bin\" -p -e -x bin_wrapper
-Installation script\tgen -d \"$HOME/.dotfiles/scripts/install\" -p -e -x install
-MIT license\tgen LICENSE
-README.md or Markdown template\tgen -e README.md
-Vagrantfile\tgen -e Vagrantfile
-Mac OSX User daemon/agent plist file\tgen -d \"$HOME/Library/LaunchAgents\" -p -e --ext plist launchd.plist
-SSH hosts for wrapper utility \tgen -e -f \"$HOME/.ssh_hosts\" ssh_hosts
+gen_bin_wrapper() {
+  gen -d "$HOME/.dotfiles/bin" -p -e -x bin_wrapper
+}
+
+gen_install() {
+  gen -d "$HOME/.dotfiles/scripts/install" -p -e -x install
+}
+
+gen_license() {
+  gen LICENSE
+}
+
+gen_readme() {
+  gen -e README.md
+}
+
+gen_vagrantfile() {
+  gen -e Vagrantfile
+}
+
+gen_launched() {
+  gen -d "$HOME/Library/LaunchAgents" -p -e --ext plist launchd.plist
+}
+
+gen_ssh_hosts() {
+  gen -e -f "$HOME/.ssh_hosts" ssh_hosts
+}
+
+gen_mvn_settings() {
+  gen -e -f "$HOME/.m2/settings.xml" mvn_settings.xml
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -q)
+      query="$2"
+      shift
+      ;;
+    --no-editor)
+      no_editor=1
+      ;;
+    bin_wrapper | install | license | readme | vagrantfile | launchd | ssh_hosts |\
+      mvn_settings)
+      template="$1"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+if [ -n "$template" ]; then
+  "gen_$template"
+  exit
+fi
+
+FZF_COMMANDS="Bin wrapper or plain old executable\tgen_bin_wrapper
+Installation script\tgen_install
+MIT license\tgen_license
+README.md or Markdown template\tgen_readme
+Vagrantfile\tgen_vagrantfile
+Mac OSX User daemon/agent plist file\tgen_launched
+SSH hosts for wrapper utility\tgen_ssh_hosts
+Maven settings\tgen_mvn_settings
 "
 
 source ~/.dotfiles/scripts/lib/cmd_fzf.sh
