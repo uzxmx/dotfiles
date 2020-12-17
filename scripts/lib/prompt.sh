@@ -28,3 +28,19 @@ yesno() {
     echo 'no'
   fi
 }
+
+# Prompt for a string. It will not stop until the input is present.
+#
+# @params:
+#   $1: the variable to assign the input to.
+#   $2: the description shown to the user.
+#   $3: the default value, optional.
+#
+# @example
+#   local name
+#   ask_for_input name "Name: "
+ask_for_input() {
+  while [ -z "$(eval "echo \$$1")" ]; do
+    eval "$1=\"$(rlwrap -S "$2" -P "$3" -o cat)\""
+  done
+}
