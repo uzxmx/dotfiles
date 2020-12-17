@@ -2,12 +2,15 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(dirname "$BASH_SOURCE")/.."
+
 usage() {
   cat <<-EOF 1>&2
 Wrapper for git utility.
 
 Subcommands:
   ignore - output .gitignore contents for some topic
+  cm - enhanced commit
   fzf - search a command by its description and execute
 EOF
   exit 1
@@ -21,16 +24,34 @@ cmd_ignore() {
   curl -sL "https://www.toptal.com/developers/gitignore/api/$@"
 }
 
+usage_cm() {
+  cat <<-EOF 1>&2
+Usage: g cm [<message>]
+EOF
+  exit 1
+}
+
+cmd_cm() {
+  local args=()
+  if [ -n "$1" ]; then
+    args+=(-m "$1")
+  fi
+  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  local date
+  ask_for_input date "Commit date: " "$(date "+%Y-%m-%d %H:%M:%S")"
+  git commit -s --date "$date" "${args[@]}"
+}
+
 cmd="$1"
 case "$1" in
   "")
     git status .
     ;;
   fzf)
-    source ~/.dotfiles/scripts/lib/cmd_fzf.sh
+    source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
     ;&
     # Fall through
-  ignore)
+  ignore | cm)
     shift
     case "$1" in
       -h)
