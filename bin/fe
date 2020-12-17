@@ -70,8 +70,8 @@ while true; do
   fi
 
   call_fzf result --query="$query" --print-query --multi --select-1 --exit-0 \
-    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore)> ' \
-    --expect="ctrl-v,ctrl-e,ctrl-i" \
+    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-D:cd)> ' \
+    --expect="ctrl-v,ctrl-e,ctrl-i,ctrl-d" \
     < <(fd "${fd_opts[@]}" "${pattern:-.}" "$dir")
 
   [ -z "${result[*]}" ] && break
@@ -110,9 +110,13 @@ while true; do
         no_ignore=
       fi
       ;;
-    "")
+    ctrl-d | "")
       if [ "${#result[@]}" -eq 0 ]; then
         echo "No file available"
+        exit
+      fi
+      if [ "$key" = "ctrl-d" ]; then
+        echo "cd $(dirname "${result[0]}")" >&3
         exit
       fi
       break
