@@ -15,6 +15,7 @@ Shortcuts:
 Options:
 
   [-t type] The file type to search, e.g. cpp
+  [--binary] Resort to grep searching binary files
   [-h] Show help
 
 Examples:
@@ -33,6 +34,9 @@ while [ $# -gt 0 ]; do
     -t)
       shift
       rg_options+=("-t" "$1")
+      ;;
+    --binary)
+      search_binary=1
       ;;
     -*)
       usage
@@ -55,6 +59,13 @@ fi
 source ~/.dotfiles/scripts/lib/utils/common.sh
 source ~/.dotfiles/scripts/lib/fzf.sh
 
+# rg doesn't support --binary well. So we resort to grep.
+if [ "$search_binary" = "1" ]; then
+  cmd=(grep --line-number --binary-files=text . -R .)
+else
+  cmd=(rg --line-number --hidden "${rg_options[@]}" . "$target")
+fi
+
 # Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
 # Ref:
 #   https://github.com/junegunn/fzf#executing-external-programs
@@ -63,7 +74,7 @@ export BAT_STYLE="numbers,header"
 call_fzf result --delimiter=: --nth=3.. --preview '~/.vim/plugged/fzf.vim/bin/preview.sh {1}:{2}' \
   --prompt '(CTRL-V:vsplit CTRL-Y:yank)> ' \
   --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
-  < <(rg --line-number --hidden "${rg_options[@]}" . "$target")
+  < <("${cmd[@]}")
 
 # Above we didn't pass in any `--expect=`, so the array size is only 1.
 selection=${result[0]}
