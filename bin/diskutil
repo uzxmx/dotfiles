@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for diskutil utility.
+
+Subcommands:
+  e, eject - eject a disk which is selected by fzf
+  ntfs_rw - mount NTFS read-write
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+select_disk() {
+  local disks="$(diskutil list | grep /dev/disk | grep external | awk '{print $1}' | sed 's:/dev/::')"
+  [ -z "$disks" ] && echo 'No external disks found.' && exit
+
+  echo "$disks" | fzf --prompt "Select an external disk> "
+}
+
+usage_eject() {
+  cat <<-EOF 1>&2
+Usage: diskutil eject
+
+Eject a disk which is selected by fzf
+EOF
+  exit 1
+}
+
+cmd_eject() {
+  local disk="$(select_disk)"
+  [ -z "$disk" ] && exit
+  diskutil eject "$disk"
+}
+
+alias_cmd e eject
+
+usage_ntfs_rw() {
+  cat <<-EOF 1>&2
+Usage: diskutil ntfs_rw [-d | -p]
+
+Mount disk partitions as a read-write NTFS filesystem. By default it mount all
+partions of a physical disk. Root is required.
+
+Options:
+  -d mount all partitions of a physical disk
+  -p only mount a partion
+  -f eject or umount without prompt before mounting
+  --default-mount-point use default mount point whenever possible
+  -q imply -f and --default-mount-point
+EOF
+  exit 1
+}
+
+is_mounted() {
+  mount | awk '{print $1}' | grep "^$1$" &>/dev/null
+}
+
+get_mount_point() {
+  df | grep "^$1 " | awk '{print $NF}'
+}
+
+cmd_ntfs_rw() {
+  local mount_disk=1
+  local force=
+  local use_default_mount_point=
+  local partitions
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -d)
+        mount_disk=1
+        ;;
+      -p)
+        mount_disk=
+        ;;
+      -f)
+        force=1
+        ;;
+      --default-mount-point)
+        use_default_mount_point=1
+        ;;
+      -q)
+        force=1
+        use_default_mount_point=1
+        ;;
+      *)
+        usage_ntfs_rw
+        ;;
+    esac
+    shift
+  done
+
+  source "$dotfiles_dir/scripts/lib/prompt.sh"
+
+  disk="$(select_disk)"
+  [ -z "$disk" ] && exit
+
+  if [ -z "$mount_disk" ]; then
+    partitions=("$(find /dev -name "$disk*" -maxdepth 1 ! -path "/dev/$disk" | fzf --prompt "Select a partition> ")")
+  else
+    partitions=($(find /dev -name "$disk*" -maxdepth 1 ! -path "/dev/$disk"))
+  fi
+
+  if [ "$mount_disk" = "1" -a "$force" = "1" ]; then
+    hdiutil eject /dev/disk2
+  fi
+
+  local partition
+  for partition in "${partitions[@]}"; do
+    if is_mounted "$partition"; then
+      if [ -z "$force" ]; then
+        echo "$partition has been mounted at $(get_mount_point "$partition")."
+        [ "$(yesno "Still want to mount it to another place? (y/N)" "no")" = "no" ] && exit 1
+      fi
+      sudo umount "$partition"
+    fi
+
+    local default_mount_point="/tmp/mounts/$(echo $partition | sed 's:/dev/::')"
+    if [ -d "$default_mount_point" ] && [ "$(ls -a "$default_mount_point" | wc -l)" -gt 2 ]; then
+      default_mount_point=
+    fi
+
+    if [ -z "$use_default_mount_point" -o -z "$default_mount_point" ]; then
+      ask_for_input mount_point "Mount point for $partition: " "$default_mount_point"
+    else
+      mount_point="$default_mount_point"
+    fi
+
+    if [ -d "$mount_point" ] && [ "$(ls -a "$mount_point" | wc -l)" -gt 2 ]; then
+      echo "Mount point $mount_point is not empty."
+    fi
+
+    mkdir -p "$mount_point"
+    sudo ntfs-3g "$partition" "$mount_point"
+    echo "$partition has been successfully mounted at $mount_point"
+  done
+}
+
+case "$1" in
+  e | eject | ntfs_rw)
+    source "$dotfiles_dir/scripts/lib/system.sh"
+    is_mac || (echo 'Only Mac OSX is supported.' && exit 1)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ;&
+    # Fall through
+  *)
+    diskutil "$@"
+    ;;
+esac
