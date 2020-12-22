@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
   cat <<-EOF 1>&2
 Select a command and run it. No argument is required.
@@ -16,18 +18,19 @@ run_with_arguments() {
   "$1" "${args[@]}"
 }
 
-FZF_COMMANDS="Benchmark zsh startup time\t$HOME/.dotfiles/scripts/misc/benchmark_zsh_startup_time
-Benchmark vim startup time\t$HOME/.dotfiles/scripts/misc/benchmark_vim_startup_time
-Decompile dex files to java sources\trun_with_arguments $HOME/.dotfiles/scripts/misc/decompile_dex
+FZF_COMMANDS="Benchmark zsh startup time\t$dotfiles_dir/scripts/misc/benchmark_zsh_startup_time
+Benchmark vim startup time\t$dotfiles_dir/scripts/misc/benchmark_vim_startup_time
+Decompile dex files to java sources\trun_with_arguments $dotfiles_dir/scripts/misc/decompile_dex
+Mac OSX mount NTFS read-write\t$dotfiles_dir/bin/diskutil ntfs_rw -q
 "
 
 if [ "$#" -gt 0 ]; then
   usage
 fi
 
-source ~/.dotfiles/scripts/lib/utils/common.sh
-source ~/.dotfiles/scripts/lib/fzf.sh
-source ~/.dotfiles/scripts/lib/cmd_fzf.sh
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
+source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
 
 cmd_fzf_expect result "ctrl-g,ctrl-i,ctrl-d,ctrl-s" \
   --prompt "(CTRL-G:gen CTRl-I:install CTRL-D:edit-dotfiles CTRL-S:search-dotfiles)> "
@@ -36,19 +39,19 @@ query="${result[0]}"
 key="${result[1]}"
 case "$key" in
   ctrl-i)
-    cd ~/.dotfiles/scripts/install
+    cd "$dotfiles_dir/scripts/install"
     file=$(find . -type f | sed 's:^\./::' | fzf --query "$query")
     if [ -n "$file" ]; then
       "./$file"
     fi
     ;;
   ctrl-g)
-    ~/.dotfiles/scripts/misc/gen -q "$query"
+    "$dotfiles_dir/scripts/misc/gen" -q "$query"
     ;;
   ctrl-d)
-    exec fe ~/.dotfiles
+    exec fe "$dotfiles_dir"
     ;;
   ctrl-s)
-    exec s ~/.dotfiles
+    exec s "$dotfiles_dir"
     ;;
 esac
