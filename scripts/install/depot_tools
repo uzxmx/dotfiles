@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Install depot_tools (https://chromium.googlesource.com/chromium/tools/depot_tools.git).
+
+set -eo pipefail
+
+type -p gclient &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+dir="$HOME/depot_tools"
+git_clone https://chromium.googlesource.com/chromium/tools/depot_tools "$dir" --depth 1
+
+[ -f ~/.zshrc.local ] || touch ~/.zshrc.local
+cat >>~/.zshrc.local <<EOF
+PATH="\$PATH:$dir"
+export DEPOT_TOOLS_UPDATE=0
+EOF
