@@ -2,79 +2,222 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+# Ref: https://akshayranganath.github.io/OCSP-Validation-With-Openssl/
+# openssl s_client -status
 usage() {
   cat <<-EOF 1>&2
-Wrapper for openssl utility. Pass in '-' to call the original.
+Wrapper for openssl utility.
 
-Provided subcommands include:
-
-  * exp: show expiration info
-
-      $> openssl exp example.com
-
-  * exp_file: show expiration info by file
-
-      $> openssl exp_file cert.pem
-
-  * verify: verify a host
-
-      $> openssl verify example.com
-
-  * pubkey: get public key of a host
-
-      $> openssl pubkey example.com
-
-  * cert: get certificate of a host
-
-      $> openssl cert example.com
-
-  * tlsversions: show supported tls versions of remote server
-
-      $> openssl tlsversions example.com
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  e, exp      - show expiration info
+  exp_file    - show expiration info by file
+  v, verify   - verify a host
+  pubkey      - get public key for a host
+  cert        - get certificate for a host, or its content
+  chain       - get intermediate certificate for a host
+  tlsversions - show supported tls versions of remote server
+  ocsp_req    - send request to OCSP responder
 EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
-show_expiration() {
-  echo | openssl s_client -connect $1:443 -servername $1 2>/dev/null | openssl x509 -noout -dates
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
 }
 
-host="$2"
+usage_exp() {
+  cat <<-EOF 1>&2
+Usage: openssl exp <host>
+
+Show expiration info.
+
+Example:
+  $> openssl exp example.com
+EOF
+  exit 1
+}
+
+check_host() {
+  [ -n "$1" ] || (echo 'Host is required' && exit 1)
+}
+
+show_expiration() {
+  echo | openssl s_client -connect "$1:443" -servername "$1" 2>/dev/null | openssl x509 -noout -dates
+}
+
+cmd_exp() {
+  check_host "$@"
+  show_expiration "$1"
+}
+alias_cmd e exp
+
+cmd_exp_file() {
+  check_host "$@"
+  openssl x509 -enddate -noout -in "$1"
+}
+
+cmd_verify() {
+  check_host "$@"
+  openssl s_client -connect "$1:443" -servername "$1" < /dev/null
+  show_expiration "$1"
+}
+alias_cmd v verify
+
+cmd_pubkey() {
+  check_host "$@"
+  openssl s_client -connect "$1:443" -servername "$1" 2>/dev/null < /dev/null | openssl x509 -pubkey -noout
+}
+
+usage_cert() {
+  cat <<-EOF 1>&2
+Usage: openssl cert <host | path-to-a-cert-pem> [-t]
+
+Get server certificate for a host, or when a certificate pem file is specified,
+show its content.
+
+Options:
+  -t show certificate content
+
+Example:
+  $> openssl cert example.com
+  $> openssl cert cert.pem
+EOF
+  exit 1
+}
+
+cmd_cert() {
+  if [ -n "$1" -a -f "$1" ]; then
+    cat "$1" | openssl x509 -text -noout
+    exit
+  else
+    check_host "$@"
+  fi
+
+  local host
+  local options=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -t)
+        options+=(-text -noout)
+        ;;
+      -*)
+        usage_cert
+        ;;
+      *)
+        host="$1"
+        ;;
+    esac
+    shift
+  done
+  openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null < /dev/null | openssl x509 "${options[@]}"
+}
+
+cmd_tlsversions() {
+  check_host "$@"
+  local versions=(1 1_1 1_2 1_3)
+  for version in "${versions[@]}"; do
+    expected=$(echo "Protocol *: *TLSv$version" | tr _ .)
+    if openssl s_client -tls$version -connect "$1:443" 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
+      supported=
+    else
+      supported=not
+    fi
+    printf "TLSv%-3s %3s supported\n" "$version" "$supported" | tr _ .
+  done
+}
+
+cmd_chain() {
+  check_host "$@"
+  openssl s_client -showcerts -connect "$1:443" </dev/null 2>&1 | awk '
+BEGIN { first_cert = 1 }
+/-----BEGIN/ { cert_section = 1 }
+{ if (!first_cert && cert_section) print }
+/-----END/ { cert_section = 0; first_cert = 0 }
+'
+}
+
+usage_ocsp_req() {
+  cat <<-EOF 1>&2
+Usage: openssl ocsp_req <host>
+
+Send request to OCSP (Online Certificate Status Protocol) responder. It can
+also be used to check if the server has enabled OCSP stapling (to improve
+loading speed).
+
+Options:
+  --show-uri only show OCSP responder URI
+  --stapling check if OCSP stapling is supported by the server
+
+Example:
+  $> openssl ocsp_req example.com
+EOF
+  exit 1
+}
+
+cmd_ocsp_req() {
+  local show_uri uri check_stapling host
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --show-uri)
+        show_uri=1
+        ;;
+      --stapling)
+        check_stapling=1
+        ;;
+      -*)
+        usage_ocsp_req
+        ;;
+      *)
+        host="$1"
+        ;;
+    esac
+    shift
+  done
+
+  check_host "$host"
+  if [ "$check_stapling" = "1" ]; then
+    openssl s_client -connect "$host:443" -status < /dev/null 2>/dev/null | grep -i "OCSP response"
+    exit
+  fi
+
+  local cert_file="$(mktemp)"
+  cmd_cert "$host" >"$cert_file"
+  uri="$(openssl x509 -noout -ocsp_uri -in "$cert_file")"
+  if [ "$show_uri" = "1" ]; then
+    echo "OCSP Responder URI: $uri"
+  else
+    local chain_file="$(mktemp)"
+    cmd_chain "$host" >"$chain_file"
+    local output="$(openssl ocsp -issuer "$chain_file" -cert "$cert_file" -text -url "$uri")"
+    rm "$chain_file"
+  fi
+  rm "$cert_file"
+}
+
 case "$1" in
-  exp)
-    show_expiration $host
-    ;;
-  exp_file)
-    openssl x509 -enddate -noout -in $2
-    ;;
-  verify)
-    openssl s_client -connect $host:443 -servername $host < /dev/null
-    show_expiration $host
-    ;;
-  pubkey)
-    openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509 -pubkey -noout
-    ;;
-  cert)
-    openssl s_client -connect $host:443 -servername $host 2>/dev/null < /dev/null | openssl x509
-    ;;
-  tlsversions)
-    versions=(1 1_1 1_2 1_3)
-    for version in "${versions[@]}"; do
-      expected=$(echo "Protocol *: *TLSv$version" | tr _ .)
-      if openssl s_client -tls$version -connect $host:443 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
-        supported=
-      else
-        supported=not
-      fi
-      printf "TLSv%-3s %3s supported\n" "$version" "$supported" | tr _ .
-    done
+  e | exp | exp_file | v | verify | pubkey | cert | chain | tlsversions | ocsp_req)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
     ;;
   -h)
     usage
@@ -84,6 +227,10 @@ case "$1" in
     ;&
     # Fall through
   *)
-    openssl "$@"
+    if [ "$1" = "help" ]; then
+      openssl "$@" 2>&1
+    else
+      openssl "$@"
+    fi
     ;;
 esac
