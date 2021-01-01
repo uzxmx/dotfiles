@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
@@ -123,7 +123,7 @@ cmd_cert() {
     esac
     shift
   done
-  openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null < /dev/null | openssl x509 "${options[@]}"
+  (openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null < /dev/null || true) | openssl x509 "${options[@]}"
 }
 
 cmd_tlsversions() {
@@ -131,7 +131,7 @@ cmd_tlsversions() {
   local versions=(1 1_1 1_2 1_3)
   for version in "${versions[@]}"; do
     expected=$(echo "Protocol *: *TLSv$version" | tr _ .)
-    if openssl s_client -tls$version -connect "$1:443" 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
+    if openssl s_client -tls$version -connect "$1:443" -servername "$1" 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
       supported=
     else
       supported=not
@@ -142,7 +142,7 @@ cmd_tlsversions() {
 
 cmd_chain() {
   check_host "$@"
-  openssl s_client -showcerts -connect "$1:443" </dev/null 2>&1 | awk '
+  openssl s_client -showcerts -connect "$1:443" -servername "$1" </dev/null 2>&1 | awk '
 BEGIN { first_cert = 1 }
 /-----BEGIN/ { cert_section = 1 }
 { if (!first_cert && cert_section) print }
@@ -161,6 +161,7 @@ loading speed).
 Options:
   --show-uri only show OCSP responder URI
   --stapling check if OCSP stapling is supported by the server
+  -v, --verbose show verbose output
 
 Example:
   $> openssl ocsp_req example.com
@@ -168,8 +169,25 @@ EOF
   exit 1
 }
 
+parse_ocsp_response() {
+  echo "$1" | awk '
+BEGIN { ocsp_section = 0 }
+/OCSP Response Data:/ { ocsp_section = 1; print; next }
+/^[^ ]/ { ocsp_section = 0 }
+{ if (ocsp_section) print }
+'
+}
+
+check_ocsp_cert_status() {
+  if echo "$1" | grep -i 'Cert Status: good$' &>/dev/null; then
+    echo 'Cert is good.'
+  else
+    echo 'Cert is not good.'
+  fi
+}
+
 cmd_ocsp_req() {
-  local show_uri uri check_stapling host
+  local show_uri uri check_stapling verbose host
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --show-uri)
@@ -177,6 +195,9 @@ cmd_ocsp_req() {
         ;;
       --stapling)
         check_stapling=1
+        ;;
+      -v | --verbose)
+        verbose=1
         ;;
       -*)
         usage_ocsp_req
@@ -190,7 +211,14 @@ cmd_ocsp_req() {
 
   check_host "$host"
   if [ "$check_stapling" = "1" ]; then
-    openssl s_client -connect "$host:443" -status < /dev/null 2>/dev/null | grep -i "OCSP response"
+    local resp="$(parse_ocsp_response "$(openssl s_client -connect "$host:443" -servername "$1" -status < /dev/null 2>/dev/null)")"
+    if [ -z "$resp" ]; then
+      echo 'OCSP stapling is not enabled.'
+    else
+      [ "$verbose" = "1" ] && echo -e "$resp\n"
+      echo "OCSP stapling is enabled."
+      check_ocsp_cert_status "$resp"
+    fi
     exit
   fi
 
@@ -202,7 +230,10 @@ cmd_ocsp_req() {
   else
     local chain_file="$(mktemp)"
     cmd_chain "$host" >"$chain_file"
-    local output="$(openssl ocsp -issuer "$chain_file" -cert "$cert_file" -text -url "$uri")"
+    # It may result in "Bad Request" without "Host" header. See http://www.jfcarter.net/~jimc/documents/bugfix/21-openssl-ocsp.html.
+    local resp="$(parse_ocsp_response "$(openssl ocsp -issuer "$chain_file" -cert "$cert_file" -text -url "$uri" -header Host "$(echo "$uri" | sed -E 's#(https?://)?([^/:]+).*#\2#')" 2>/dev/null)")"
+    [ "$verbose" = "1" ] && echo -e "$resp\n"
+    check_ocsp_cert_status "$resp"
     rm "$chain_file"
   fi
   rm "$cert_file"
