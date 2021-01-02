@@ -193,15 +193,15 @@ EOF
 }
 
 enable_git_proxy() {
-  git config --global http.proxy http://$user_http_proxy
+  git config --file ~/.gitconfig.local http.proxy http://$user_http_proxy
   # TODO test if this works
-  git config --global https.proxy https://$user_http_proxy
+  git config --file ~/.gitconfig.local https.proxy https://$user_http_proxy
   dump_git_proxy
 }
 
 disable_git_proxy() {
-  git config --unset --global http.proxy
-  git config --unset --global https.proxy
+  git config --unset --file ~/.gitconfig.local http.proxy
+  git config --unset --file ~/.gitconfig.local https.proxy
   dump_git_proxy
 }
 
