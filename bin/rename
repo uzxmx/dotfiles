@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+  cat <<-EOF 1>&2
+Usage: $0
+
+Rename files in batch.
+
+Options:
+  -t <command> transform filename from stdin with a command
+  -d dry run
+
+Examples:
+  # All dash characters in txt file names will be substituted with underscore characters.
+  $> rename -d -t "sed 's/-/_/'" *.txt
+EOF
+  exit 1
+}
+
+files=()
+dry_run=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -t)
+      shift
+      transform_cmd="$1"
+      ;;
+    -d)
+      dry_run=1
+      ;;
+    -h)
+      usage
+      ;;
+    *)
+      [ -f "$1" ] || (echo "File $1 doesn't exist." && exit 1)
+      files+=("$1")
+      ;;
+  esac
+  shift
+done
+
+for file in "${files[@]}"; do
+  new_name="$(echo "$file" | eval "$transform_cmd")"
+  cmd=(mv "$file" "$new_name")
+  if [ "$dry_run" = "1" ]; then
+    echo "${cmd[@]}"
+  else
+    "${cmd[@]}"
+    echo "File $file has been renamed to $new_name"
+  fi
+done
