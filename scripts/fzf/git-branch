@@ -2,11 +2,47 @@
 #
 # Switch to a branch, or checkout a new branch from a selected branch.
 
-set -eo pipefail
+set -e
+
+usage() {
+  cat <<-EOF
+Wrapper for git branch utility.
+
+Options:
+  -l show local branches
+  -r show remote branches
+  -a, --all show all branches
+  -v, -vv show remote tracking branches
+EOF
+  exit 1
+}
+
+branch_opts=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -l | -r | -vv | -a | --all)
+      branch_opts+=("$1")
+      ;;
+    -v)
+      branch_opts+=("-vv")
+      ;;
+    -*)
+      usage
+      ;;
+  esac
+  shift
+done
+
+if [ "${#branch_opts}" -eq 0 ]; then
+  branch_opts=(-l -vv)
+fi
 
 . $(dirname "$BASH_SOURCE")/git-common
 
-select_branch --prompt '(CTRL-E:NewBranch CTRL-Y:yank CTRL-D:delete)> ' --expect "ctrl-e,ctrl-d"
+select_branch --result --prompt '(CTRL-E:NewBranch CTRL-Y:yank CTRL-D:delete)> ' \
+  --expect "ctrl-e,ctrl-d" \
+  --bind "ctrl-y:execute-silent(echo -n {} | sed 's/^* //' | awk '{print \$1}' | trim | cb)+abort" \
+  "${branch_opts[@]}"
 
 key="${result[0]}"
 selection="${result[1]}"

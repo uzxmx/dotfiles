@@ -1,20 +1,49 @@
 #!/usr/bin/env bash
 
-. ~/.dotfiles/scripts/lib/utils/common.sh
-. ~/.dotfiles/scripts/lib/fzf.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
 
 get_branches() {
-  git branch --all | grep -v HEAD
+  local opts
+  if [ "$#" -gt 0 ]; then
+    opts="$@"
+  else
+    opts=(--all)
+  fi
+  git branch "${opts[@]}" | grep -v HEAD
 }
 
 select_branch() {
-  local branches=$(get_branches)
-  call_fzf_tmux result -d $((2 + $(wc -l <<<"$branches"))) +m "$@" <<<"$branches"
+  local branch_opt="--all"
+  local use_result
+  local remainder=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -l | -r | -vv | -a | --all)
+        branch_opt="$1"
+        ;;
+      --result)
+        use_result=1
+        ;;
+      *)
+        remainder+=("$1")
+        ;;
+    esac
+    shift
+  done
+
+  if [ "$use_result" = "1" ]; then
+    local branches="$(get_branches "$branch_opt")"
+    call_fzf_tmux result "${remainder[@]}" <<<"$branches"
+  else
+    parse_branch "$(get_branches "$branch_opt" | fzf "${remainder[@]}")"
+  fi
 }
 
 parse_branch() {
   # Strip off '*' when current branch selected.
-  echo "$1" | cut -d ' ' -f 2
+  echo "$1" | sed "s/^* //" | awk '{print $1}'
 }
 
 convert_remote_branch_to_local() {

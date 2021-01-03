@@ -115,7 +115,7 @@ export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 # Use `asdf where java` to find the JAVA_HOME
 export JAVA_HOME=$HOME/.asdf/installs/java/adopt-openjdk-11.0.9+11_openj9-0.23.0
 
-export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
+export FZF_DEFAULT_OPTS="--no-mouse --cycle --bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
 # Use a clean PATH variable
 PATH="$HOME/bin:$HOME/.cargo/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"

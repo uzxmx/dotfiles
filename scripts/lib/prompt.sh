@@ -10,7 +10,7 @@
 #   Will output yes/no.
 #
 # @example
-#   local reply=`yesno "Do you want to push after merging? (Y/n)" "yes"`
+#   local reply="$(yesno "Do you want to push after merging? (Y/n)" "yes")"
 #   if [ "$reply" = "yes" ]; then
 #     ...
 #   fi

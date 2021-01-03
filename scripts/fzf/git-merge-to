@@ -4,14 +4,20 @@
 
 set -eo pipefail
 
-. ~/.dotfiles/scripts/lib/prompt.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+source "$dotfiles_dir/scripts/lib/prompt.sh"
 
 branch="$(git symbolic-ref --short HEAD)"
 
-$(dirname "$BASH_SOURCE")/git-branch
+"$(dirname "$BASH_SOURCE")/git-branch"
 
-reply=$(yesno "Do you want to push after merging? (Y/n)" "yes")
-git pull && git merge $branch
+if ! git rev-parse --abbrev-ref --symbolic-full-name @{u} &>/dev/null; then
+  echo 'Upstream branch has not been set. Please use `git branch -u <upstream>` to set am upstream first.'
+  exit 1
+fi
+
+reply="$(yesno "Do you want to push after merging? (Y/n)" "yes")"
+git pull && git merge "$branch"
 if [ "$reply" = "yes" ]; then
   git push
 fi

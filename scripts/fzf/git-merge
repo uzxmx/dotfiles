@@ -4,10 +4,12 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/git-common
-. ~/.dotfiles/scripts/lib/prompt.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 
-select_branch
+. "$(dirname "$BASH_SOURCE")/git-common"
+. "$dotfiles_dir/scripts/lib/prompt.sh"
+
+select_branch --result
 
 selection="${result[0]}"
 if [ -n "$selection" ]; then

@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
 dotfiles_dir="$(dirname "$BASH_SOURCE")/.."
+git_dir="$dotfiles_dir/scripts/git"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for git utility.
 
 Subcommands:
-  ignore - output .gitignore contents for some topic
-  cm - enhanced commit
-  fzf - search a command by its description and execute
+  ignore      - output .gitignore contents for some topic
+  cm          - enhanced commit utility
+  pt          - push a local branch to a remote branch
+  l           - enhanced log utility by fzf
+  show_commit - show files of a commit by fzf and tmux
+  fzf         - search a command by its description and execute
 EOF
   exit 1
 }
@@ -27,6 +31,8 @@ cmd_ignore() {
 usage_cm() {
   cat <<-EOF 1>&2
 Usage: g cm [<message>]
+
+Enhanced commit utility.
 EOF
   exit 1
 }
@@ -42,23 +48,39 @@ cmd_cm() {
   git commit -s --date "$date" "${args[@]}"
 }
 
-cmd="$1"
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
 case "$1" in
   "")
     git status .
     ;;
   fzf)
     source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
-    ;&
-    # Fall through
+    run "$@"
+    ;;
+  l)
+    source "$git_dir/log.sh"
+    run "$@"
+    ;;
+  show_commit)
+    source "$git_dir/show_commit.sh"
+    run "$@"
+    ;;
+  pt)
+    source "$git_dir/push_to.sh"
+    run "$@"
+    ;;
   ignore | cm)
-    shift
-    case "$1" in
-      -h)
-        type "usage_$cmd" &>/dev/null && "usage_$cmd"
-        ;;
-    esac
-    "cmd_$cmd" "$@"
+    run "$@"
     ;;
   -h)
     usage
