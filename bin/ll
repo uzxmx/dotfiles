@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [[ "$OSTYPE" =~ ^darwin.* ]]; then
+  ls -lh -T "$@"
+else
+  # For Linux
+  ls -lh --time-style=long-iso "$@"
+fi

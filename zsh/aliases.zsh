@@ -49,7 +49,6 @@ alias gt="git tag"
 alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 alias l="ls -1tA"
 alias la="ls -a"
-alias ll="ls -lh"
 
 alias lg="lazygit"
 
