@@ -1,20 +1,44 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF 1>&2
 Wrapper for pod utility.
 
 Subcommands:
-  install - add --verbose option
+  f - search pod specs
+  i, install - install with verbose output
 EOF
   exit 1
 }
 
-# Delete below snippet if you don't want a wrapper.
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+cmd_f() {
+  local specs_dir="$HOME/.cocoapods/repos/trunk/Specs"
+  if [ ! -d "$specs_dir" -o "$(ls "$specs_dir" | wc -l)" -lt 3 ]; then
+    echo "Specs directory doesn't exist or is empty."
+    exit
+  fi
+  cd ~/.cocoapods/repos/trunk/Specs && "$dotfiles_dir/bin/fe"
+}
 
 usage_install() {
   pod install --help
@@ -25,8 +49,10 @@ cmd_install() {
   pod install --verbose "$@"
 }
 
+alias_cmd i install
+
 case "$1" in
-  install)
+  f | i | install)
     cmd="$1"
     shift
     case "$1" in
