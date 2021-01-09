@@ -2,7 +2,7 @@
 
 set -e
 
-dotfiles_dir="$(dirname "$BASH_SOURCE")/.."
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 git_dir="$dotfiles_dir/scripts/git"
 
 usage() {
