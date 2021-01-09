@@ -239,6 +239,14 @@ cmd_ocsp_req() {
   rm "$cert_file"
 }
 
+run_fallback() {
+  if [ "$1" = "help" ]; then
+    openssl "$@" 2>&1
+  else
+    openssl "$@"
+  fi
+}
+
 case "$1" in
   e | exp | exp_file | v | verify | pubkey | cert | chain | tlsversions | ocsp_req)
     cmd="$1"
@@ -255,13 +263,9 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    run_fallback "$@"
+    ;;
   *)
-    if [ "$1" = "help" ]; then
-      openssl "$@" 2>&1
-    else
-      openssl "$@"
-    fi
+    run_fallback "$@"
     ;;
 esac
