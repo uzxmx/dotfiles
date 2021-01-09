@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for perl utility.
+
+Subcommands:
+  i, repl - read, evaluate, print and loop
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+usage_repl() {
+  cat <<-EOF 1>&2
+Usage: perl repl
+
+Read, evaluate, print and loop.
+EOF
+  exit 1
+}
+
+cmd_repl() {
+  rlwrap -A -pgreen -S"perl> " perl -wnE'say eval()//$@'
+}
+
+alias_cmd i repl
+
+case "$1" in
+  i | repl)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    perl "$@"
+    ;;
+  *)
+    perl "$@"
+    ;;
+esac
