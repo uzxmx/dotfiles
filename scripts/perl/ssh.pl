@@ -4,9 +4,12 @@ use warnings;
 use JSON::PP;
 use IPC::Open2;
 use File::Basename;
+use Cwd;
 use Text::ParseWords;
 
-require glob('~/.dotfiles/scripts/perl/wrapper.pl');
+my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+
+require $dotfiles_dir . '/scripts/perl/wrapper.pl';
 
 sub check_ssh_hosts_file {
   if (! -e glob('~/.ssh_hosts')) {
@@ -106,10 +109,10 @@ sub run {
     }
   }
 
-  # Don't remove ~/.dotfiles from PATH, because we may rely on other
+  # Don't remove dotfiles from PATH, because we may rely on other
   # executables in that path, unless we've changed to use absolute paths.
   #
-  # ::remove_path_from_env(glob('~/.dotfiles/bin'));
+  # ::remove_path_from_env(glob($dotfiles_dir . '/bin'));
 
   # Let the caller execute for us.
   #

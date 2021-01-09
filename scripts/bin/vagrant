@@ -4,9 +4,12 @@ use strict;
 use warnings;
 
 use File::Basename;
+use Cwd;
 
-require glob('~/.dotfiles/scripts/perl/wrapper.pl');
-require glob('~/.dotfiles/scripts/perl/prompt.pl');
+my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+
+require $dotfiles_dir . '/scripts/perl/wrapper.pl';
+require $dotfiles_dir . '/scripts/perl/prompt.pl';
 
 run_original_if_required(1);
 
@@ -26,7 +29,7 @@ EOF
 }
 
 sub ssh {
-  require glob('~/.dotfiles/scripts/perl/fzf.pl');
+  require $dotfiles_dir . '/scripts/perl/fzf.pl';
 
   my @vms = ();
   push @vms, substr($_, 18) for glob('.vagrant/machines/*');
