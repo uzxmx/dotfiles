@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [ -z "$BASH" ]; then
+  echo 'This script should be evaluated in bash.'
+  return
+fi
+
 source $(dirname "$BASH_SOURCE")/../lib/utils/capture_source_and_signal.sh
 
 eval "
