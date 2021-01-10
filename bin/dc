@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+  cat <<-EOF 1>&2
+Utility for docker-compose.
+
+Subcommands:
+  u, up   - alias for docker-compose up -d
+  d, down - alias for docker-compose down
+EOF
+  exit 1
+}
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+cmd_up() {
+  docker-compose up -d
+}
+alias_cmd u up
+
+cmd_down() {
+  docker-compose down
+}
+alias_cmd d down
+
+case "$1" in
+  u | up | d | down)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    docker-compose "$@"
+    ;;
+  *)
+    docker-compose "$@"
+    ;;
+esac
