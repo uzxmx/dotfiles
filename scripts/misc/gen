@@ -178,12 +178,24 @@ gen_launched() {
   gen -d "$HOME/Library/LaunchAgents" -p -e --ext plist launchd.plist
 }
 
+gen_autossh() {
+  gen -f "$HOME/Library/LaunchAgents/autossh.plist" -e autossh.plist
+}
+
+gen_appium() {
+  gen -f "$HOME/Library/LaunchAgents/appium.plist" -e appium.plist
+}
+
 gen_ssh_hosts() {
   gen -e -f "$HOME/.ssh_hosts" ssh_hosts
 }
 
 gen_mvn_settings() {
   gen -e -f "$HOME/.m2/settings.xml" mvn_settings.xml
+}
+
+gen_editorconfig() {
+  gen -e -f .editorconfig editorconfig
 }
 
 while [ "$#" -gt 0 ]; do
@@ -219,6 +231,9 @@ Vagrantfile\tgen_vagrantfile
 Mac OSX User daemon/agent plist file\tgen_launched
 SSH hosts for wrapper utility\tgen_ssh_hosts
 Maven settings\tgen_mvn_settings
+Editor config\tgen_editorconfig
+Autossh plist file for Mac OSX\tgen_autossh
+Appium plist file for Mac OSX\tgen_appium
 "
 
 source ~/.dotfiles/scripts/lib/cmd_fzf.sh
