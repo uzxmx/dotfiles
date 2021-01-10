@@ -34,7 +34,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ "${#branch_opts}" -eq 0 ]; then
-  branch_opts=(-l -vv)
+  branch_opts=(-a)
 fi
 
 . $(dirname "$BASH_SOURCE")/git-common
