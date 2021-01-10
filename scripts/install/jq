@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install jq.
+# Install jq (https://stedolan.github.io/jq/).
 
 set -eo pipefail
 
