@@ -1,19 +1,35 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF 1>&2
 Wrapper for pkg-config utility.
 
 Subcommands:
-  print_search_path - print the search path
+  l, list              - list all known packages
+  p, print_search_path - print the search path
 EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
 
 usage_print_search_path() {
   cat <<-EOF 1>&2
@@ -27,9 +43,15 @@ EOF
 cmd_print_search_path() {
   pkg-config --variable pc_path pkg-config
 }
+alias_cmd p print_search_path
+
+cmd_list() {
+  pkg-config --list-all | fzf
+}
+alias_cmd l list
 
 case "$1" in
-  print_search_path)
+  list | print_search_path)
     cmd="$1"
     shift
     case "$1" in
@@ -44,8 +66,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    pkg-config "$@"
+    ;;
   *)
     pkg-config "$@"
     ;;
