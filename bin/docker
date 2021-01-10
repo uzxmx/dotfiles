@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for docker utility.
+
+Subcommands:
+  l, logs   - show logs of a container selected by fzf
+  list_tags - list image tags from dockerhub
+  pids      - show pids of containers
+  prune     - remove unused and dangling(unamed) images, and unused volumes
+  fzf       - search a command by its description and execute
+EOF
+  exit 1
+}
+
+# Delete below snippet if you don't want a wrapper.
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+FZF_COMMANDS="Show exited containers\tdocker ps --filter=\"status=exited\"
+Remove containers exited before\t$dotfiles_dir/scripts/docker/rm --exited
+Remove containers with created status\t$dotfiles_dir/scripts/docker/rm --created
+"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+select_container() {
+  local id="$(docker ps --format "table {{.Names}} - {{.Image}}  {{.ID}}" | sed 1d | fzf -d "  " --with-nth=1)"
+  if [ -n "$id" ]; then
+    echo "$id" | awk '{print $NF}'
+  fi
+}
+
+usage_logs() {
+  cat <<-EOF 1>&2
+Usage: docker logs
+
+Show logs of a container selected by fzf.
+EOF
+  exit 1
+}
+
+cmd_logs() {
+  if [ "$#" -gt 0 ]; then
+    docker logs "$@"
+  else
+    local id="$(select_container)"
+    [ -z "$id" ] && exit
+    docker logs -f "$id"
+  fi
+}
+
+alias_cmd l logs
+
+usage_list_tags() {
+  cat <<-EOF 1>&2
+Usage: docker list_tags <image>
+
+List docker image tags from dockerhub.
+
+Examples:
+  $ docker list_tags alpine
+  $ docker list_tags bitnami/phabricator
+EOF
+  exit 1
+}
+
+cmd_list_tags() {
+  "$dotfiles_dir/scripts/docker/tags" "$@"
+}
+
+usage_pids() {
+  cat <<-EOF 1>&2
+Usage: docker pids
+
+Show pids of containers.
+EOF
+  exit 1
+}
+
+cmd_pids() {
+  "$dotfiles_dir/scripts/docker/inspect_pid" "$@"
+}
+
+cmd_prune() {
+  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  local reply="$(yesno "Are you sure you want to remove all unused images and volumes? (y/N)" "no")"
+  [ "$reply" = "no" ] && echo Cancelled && exit
+  docker image prune -a -f
+  docker volume prune -f
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  fzf)
+    source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
+    run "$@"
+    ;;
+  l | logs | list_tags | pids | prune)
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    docker "$@"
+    ;;
+  *)
+    docker "$@"
+    ;;
+esac
