@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# vi: ft=sh
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+# pretty_size() {
+#   local result=$(echo "scale=2; $1/1024/1024" | bc -l)
+#   local unit
+#   if [ "$result" = "0" ]; then
+#     result=$(echo "scale=2; $1/1024" | bc -l)
+#     unit='KB'
+#   else
+#     unit='MB'
+#   fi
+#   printf "%.2f $unit" $result
+# }
+
+fetch_tags_by_page() {
+  local fullname="$1"
+  local page="$2"
+  local tmpfile=$(mktemp)
+
+  # Bash implementation is too slow, so we use perl implementation instead.
+  #
+  # local item image
+  # local results=$(curl "https://registry.hub.docker.com/v2/repositories/$fullname/tags/?page=$page" 2>/dev/null | jq -c '.results[]')
+  # for item in $results; do
+  #   tag=$(echo $item | jq -r '.name')
+  #   last_updated=$(echo $item | jq -r '.last_updated')
+  #   printf "%-20s Updated at %s\n" "$tag" "$last_updated" >>$tmpfile
+  #   for image in $(echo $item | jq -c '.images[]'); do
+  #     arch=$(echo $image | jq -r '.architecture')
+  #     size=$(echo $image | jq -r '.size')
+  #     variant=$(echo $image | jq -r '.variant')
+  #     if [ -n "$variant" -a ! "$variant" = "null" ]; then
+  #       printf "\tArch: %-10s Size: %-10s Variant: %s\n" "$arch"  "$(pretty_size $size)" "$variant" >>$tmpfile
+  #     else
+  #       printf "\tArch: %-10s Size: %-10s\n" "$arch"  "$(pretty_size $size)" >>$tmpfile
+  #     fi
+  #   done
+  # done
+
+  perl - "$fullname" "$page" "$tmpfile" <<'EOF'
+    use strict;
+    use warnings;
+    use JSON::PP;
+    use Data::Dumper;
+
+    sub pretty_size {
+      my ($size) = @_;
+      $size /= 1024;
+      if ($size > 1024) {
+        return sprintf("%.2f MB", $size / 1024);
+      } else {
+        return sprintf("%.2f KB", $size);
+      }
+    }
+
+    open(TMPFILE, '>', $ARGV[2]) or die $!;
+
+    my $json = `curl "https://registry.hub.docker.com/v2/repositories/$ARGV[0]/tags/?page=$ARGV[1]" 2>/dev/null`;
+    $json = decode_json($json);
+    for my $item (@{$json->{results}}) {
+      printf TMPFILE "%-20s Updated at %s\n", $item->{name}, $item->{last_updated};
+
+      for my $image (@{$item->{images}}) {
+        if ($image->{variant}) {
+          printf TMPFILE "\tArch: %-10s Size: %-10s Variant: %s\n",
+            $image->{architecture}, pretty_size($image->{size}), $image->{variant};
+        } else {
+          printf TMPFILE "\tArch: %-10s Size: %-10s\n",
+            $image->{architecture}, pretty_size($image->{size});
+        }
+      }
+    }
+
+    close(TMPFILE);
+EOF
+
+  less $tmpfile
+  rm $tmpfile
+}
+
+fullname="$1"
+if [ -z "$fullname" ]; then
+  echo 'An image name is required.'
+  exit 1
+fi
+
+if [[ ! "$fullname" =~ .+/.+ ]]; then
+  fullname="library/$fullname"
+fi
+
+source "$dotfiles_dir/scripts/lib/prompt.sh"
+
+i=1
+while fetch_tags_by_page "$fullname" "$i"; do
+  if [ ! "$(yesno "Continue to load next page? (y/N)" "no")" = "yes" ]; then
+    break
+  fi
+  i=$((i+1))
+done
