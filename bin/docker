@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+docker_dir="$dotfiles_dir/scripts/docker"
 
 usage() {
   cat <<-EOF 1>&2
 Wrapper for docker utility.
 
 Subcommands:
+  p         - pull image from a mirror
   l, logs   - show logs of a container selected by fzf
   list_tags - list image tags from dockerhub
   pids      - show pids of containers
@@ -23,8 +25,8 @@ source "$dotfiles_dir/scripts/lib/path.sh"
 PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 FZF_COMMANDS="Show exited containers\tdocker ps --filter=\"status=exited\"
-Remove containers exited before\t$dotfiles_dir/scripts/docker/rm --exited
-Remove containers with created status\t$dotfiles_dir/scripts/docker/rm --created
+Remove containers exited before\t$docker_dir/rm --exited
+Remove containers with created status\t$docker_dir/rm --created
 "
 
 alias_cmd() {
@@ -82,7 +84,7 @@ EOF
 }
 
 cmd_list_tags() {
-  "$dotfiles_dir/scripts/docker/tags" "$@"
+  "$docker_dir/list_tags" "$@"
 }
 
 usage_pids() {
@@ -95,7 +97,7 @@ EOF
 }
 
 cmd_pids() {
-  "$dotfiles_dir/scripts/docker/inspect_pid" "$@"
+  "$docker_dir/inspect_pid" "$@"
 }
 
 cmd_prune() {
@@ -123,6 +125,10 @@ case "$1" in
     run "$@"
     ;;
   l | logs | list_tags | pids | prune)
+    run "$@"
+    ;;
+  p)
+    source "$docker_dir/pull_image.sh"
     run "$@"
     ;;
   -h)
