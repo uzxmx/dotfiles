@@ -10,9 +10,12 @@
 #
 # When exit code is 100, the data is a full command ready to execute. It places
 # the command in the shell history and then executes.
-
+#
 # When exit code is 101, it pushes the data onto the editing buffer stack to
 # let the user edit and then execute by pressing enter.
+#
+# When exit code is 102, it is the same as exit code 100, except that the
+# command will be evaluated (can be shell builtins), rather than executed.
 #
 # @params:
 #   $1: the executable to be called
@@ -51,6 +54,12 @@ capture_source_and_signal() {
       # stack.
       101)
         print -z "${result:q}"
+        ;;
+      # When exit code is 102, the output is a full command ready to be evaluated.
+      # We first place the command in the shell history and then evaluate it.
+      102)
+        print -s "${result:q}"
+        eval "$result"
         ;;
     esac
   fi

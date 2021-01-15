@@ -18,10 +18,16 @@ run_with_arguments() {
   "$1" "${args[@]}"
 }
 
+switch_locale() {
+  echo export LANG=$1 >&3
+  exit 102
+}
+
 FZF_COMMANDS="Benchmark zsh startup time\t$dotfiles_dir/scripts/misc/benchmark_zsh_startup_time
 Benchmark vim startup time\t$dotfiles_dir/scripts/misc/benchmark_vim_startup_time
 Decompile dex files to java sources\trun_with_arguments $dotfiles_dir/scripts/misc/decompile_dex
 Mac OSX mount NTFS read-write\t$dotfiles_dir/bin/diskutil ntfs_rw -q
+Switch to en-US locale\tswitch_locale en_US.UTF-8
 "
 
 if [ "$#" -gt 0 ]; then
