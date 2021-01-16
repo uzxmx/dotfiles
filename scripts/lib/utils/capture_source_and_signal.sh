@@ -17,6 +17,9 @@
 # When exit code is 102, it is the same as exit code 100, except that the
 # command will be evaluated (can be shell builtins), rather than executed.
 #
+# When exit code is 104, it is the same as exit code 102, except that the
+# command will not go into the shell history.
+#
 # @params:
 #   $1: the executable to be called
 #   VARARGS: the arguments passed to the executable
@@ -59,6 +62,10 @@ capture_source_and_signal() {
       # We first place the command in the shell history and then evaluate it.
       102)
         print -s "${result:q}"
+        eval "$result"
+        ;;
+      # When exit code is 104, the output is a full command ready to be evaluated.
+      104)
         eval "$result"
         ;;
     esac
