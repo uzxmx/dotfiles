@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF 1>&2
@@ -87,14 +89,16 @@ gen() {
     local filename
     if [ -z "$dst" ]; then
       if [ "$ask_filename" = "1" ]; then
+        source "$dotfiles_dir/scripts/lib/prompt.sh"
         while true; do
-          filename="$(rlwrap -S "File name: $dst_dir/" -o cat)"
+          ask_for_input filename "File name: $dst_dir/"
           if [ -n "$extname" ] && [[ ! "$filename" =~ "$extname"$ ]]; then
             filename="$filename$extname"
           fi
           if [ -n "$filename" ]; then
             if [ -e "$dst_dir/$filename" ]; then
               echo "File '$dst_dir/$filename' already exists"
+              unset filename
             else
               break
             fi
@@ -198,6 +202,30 @@ gen_editorconfig() {
   gen -e -f .editorconfig editorconfig
 }
 
+gen_password() {
+  source "$dotfiles_dir/scripts/lib/utils/random.sh"
+  local password="$(random_string 15)"
+  echo "$password"
+  echo
+  echo -n "$password" | cb --log-level short
+}
+
+gen_uuid() {
+  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  local reply="$(yesno "Keep dash? (Y/n)" "yes")"
+  local cmd="uuidgen | tr A-Z a-z"
+  local uuid
+  if [ "$reply" = "yes" ]; then
+    uuid="$(eval $cmd)"
+  else
+    uuid="$(eval $cmd | sed -e 's/\-//g')"
+  fi
+  echo
+  echo "$uuid"
+  echo
+  echo -n "$uuid" | cb --log-level short
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -q)
@@ -234,8 +262,10 @@ Maven settings\tgen_mvn_settings
 Editor config\tgen_editorconfig
 Autossh plist file for Mac OSX\tgen_autossh
 Appium plist file for Mac OSX\tgen_appium
+Random string, password, etc.\tgen_password
+UUID\tgen_uuid
 "
 
-source ~/.dotfiles/scripts/lib/cmd_fzf.sh
+source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
 
 cmd_fzf --query "$query"

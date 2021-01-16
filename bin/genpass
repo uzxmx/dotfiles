@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-#
-# Generate random password.
-
-set -eo pipefail
-
-source ~/.dotfiles/scripts/lib/utils/random.sh
-
-random_string 15

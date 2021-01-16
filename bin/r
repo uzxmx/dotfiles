@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
@@ -52,7 +52,7 @@ case "$key" in
     fi
     ;;
   ctrl-g)
-    "$dotfiles_dir/scripts/misc/gen" -q "$query"
+    "$dotfiles_dir/bin/gen" -q "$query"
     ;;
   ctrl-d)
     exec fe "$dotfiles_dir"
