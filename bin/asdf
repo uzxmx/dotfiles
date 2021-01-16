@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+asdf_dir="$dotfiles_dir/scripts/asdf"
+
+usage() {
+  cat <<-EOF 1>&2
+Wrapper for asdf utility.
+
+Subcommands:
+  s, shell   - set the package version in the current shell
+  c, current - display current version set
+  l, list    - list installed versions
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+if [ -z "$1" ]; then
+  set - shell
+fi
+
+case "$1" in
+  s | shell)
+    source "$asdf_dir/shell.sh"
+    run "$@"
+    ;;
+  c | current)
+    source "$asdf_dir/current.sh"
+    run "$@"
+    ;;
+  l | list)
+    source "$asdf_dir/list.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    asdf "$@"
+    ;;
+  *)
+    asdf "$@"
+    ;;
+esac

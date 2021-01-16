@@ -1,3 +1,4 @@
+alias a='capture_source_and_signal ~/.dotfiles/bin/asdf "$@"'
 alias bi="bundle install"
 alias e='$EDITOR'
 

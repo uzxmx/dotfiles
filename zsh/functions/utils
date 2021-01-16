@@ -117,15 +117,3 @@ x() {
     cd "$dir"
   fi
 }
-
-a() {
-  local script
-  if [ $# -lt 2 ]; then
-    script=$(~/.dotfiles/scripts/misc/asdf_common_workflow.sh "$@")
-    if [ $? -eq 0 -a -n "$script" ]; then
-      eval "$script"
-    fi
-  else
-    asdf "$@"
-  fi
-}
