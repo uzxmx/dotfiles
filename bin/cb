@@ -2,7 +2,36 @@
 #
 # Manage clipboard for different systems.
 
-set -eo pipefail
+set -e
+
+usage() {
+  cat <<-EOF 1>&2
+Utility to send data from the pipe to clipboard or query the clipboard for
+different systems.
+
+Options:
+  --log-level log level, values include none/short/verbose, default is verbose
+
+Examples:
+  $> echo -n foo | cb
+  $> echo " foo bar " | trim | cb
+EOF
+  exit 1
+}
+
+log_level="verbose"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --log-level)
+      shift
+      log_level="$1"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
 
 if [[ "$OSTYPE" =~ ^darwin.* ]]; then
   copy_cmd="pbcopy"
@@ -17,7 +46,7 @@ fi
 # Copy from stdin when stdin is not a terminal.
 if [[ ! -t 0 ]]; then
   eval "$copy_cmd"
-  if [ -n "$paste_cmd" ]; then
+  if [ -n "$paste_cmd" -a "$log_level" = "verbose" ]; then
     count="$(eval "$paste_cmd" | wc -c | sed -e 's/ //g')"
     if [[ $count > 1 ]]; then
       echo "$count characters are copied."
@@ -25,10 +54,12 @@ if [[ ! -t 0 ]]; then
       echo "$count character is copied."
     fi
     echo
+  elif [ "$log_level" = "short" ]; then
+    echo 'Copied to clipboard.'
   fi
 fi
 
-if [ -n "$paste_cmd" ]; then
+if [ -n "$paste_cmd" -a "$log_level" = "verbose" ]; then
   echo '===== Tail 5 of clipboard ====='
   eval "$paste_cmd" | tail -5
   echo '===== End of clipboard ====='
