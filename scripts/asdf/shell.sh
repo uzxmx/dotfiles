@@ -1,7 +1,7 @@
 source "$(dirname $BASH_SOURCE)/common.sh"
 
 cmd_shell() {
-  [ "$#" -gt 0 ] && asdf shell "$@" && exit
+  [ "$#" -gt 0 ] && (asdf shell "$@" || true) && exit
 
   local plugin current version prompt
   plugin="$(select_plugin --prompt "Change version in current shell> ")"

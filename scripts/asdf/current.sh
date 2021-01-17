@@ -1,7 +1,7 @@
 source "$(dirname $BASH_SOURCE)/common.sh"
 
 cmd_current() {
-  [ "$#" -gt 0 ] && asdf current "$@" && exit
+  [ "$#" -gt 0 ] && (asdf current "$@" || true) && exit
 
   local plugin
   plugin="$(select_plugin --prompt "Show current versions> ")"
