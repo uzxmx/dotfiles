@@ -13,11 +13,18 @@ EOF
 cmd_d() {
   local opts=()
   local cached
+  local remainder=()
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -c | --cached)
         opts+=(--cached)
         cached=1
+        ;;
+      -*)
+        usage_d
+        ;;
+      *)
+        remainder+=("$1")
         ;;
     esac
     shift
@@ -29,7 +36,7 @@ cmd_d() {
     (cd "$(git rev-parse --show-toplevel)" && git add -N .)
   fi
 
-  local cmd=(git diff "${opts[@]}" --name-status)
+  local cmd=(git diff "${opts[@]}" --name-status "${remainder[@]}")
   local preview_cmd="git diff ${opts[*]} --color=always -- {2} | less -r"
   local edit_cmd="${EDITOR:-vi} {2}"
   local output="$("${cmd[@]}")"
