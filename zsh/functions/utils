@@ -38,17 +38,6 @@ fcd() {
   dir=$(fd ${1:-.} --type d 2> /dev/null | fzf +m) && cd "$dir"
 }
 
-# Select a directory from configured directory lists and change to there.
-c() {
-  local dir
-  local lines="\
-$(find ~/.dotfiles -maxdepth 1 -type d -not -path "$HOME/.dotfiles/.git")
-$HOME/tmp
-$(if type zsh_utils_cd_path_fn &>/dev/null; then; zsh_utils_cd_path_fn; fi)\
-"
-  dir=$(echo "$lines" | fzf +m) && cd "$dir"
-}
-
 # This is a ZLE widget function that allows us to execute the command in the
 # editing buffer by pressing CTRL-S.
 _zle_capture_source_and_signal() {

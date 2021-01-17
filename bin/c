@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
+
+usage() {
+  cat <<-EOF
+Utility to change to a target directory quickly. You can provide more paths as
+candidates by creating a custom shell script at ~/.cd_paths.sh, and outputting
+each directory per line.
+
+Options:
+  -c change to a directory under current working directory
+EOF
+  exit 1
+}
+
+use_cwd=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -c)
+      use_cwd=1
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+if [ "$use_cwd" = "1" ]; then
+  directories="$(find . -maxdepth 2 -type d ! -path .)"
+else
+  directories="\
+$dotfiles_dir
+$HOME/tmp
+$(find ~/projects -maxdepth 1 -type d)\
+"
+  if [ -f ~/.cd_paths.sh ]; then
+    directories="$directories
+$(sh ~/.cd_paths.sh)\
+"
+  fi
+fi
+
+change_directory() {
+  echo cd "$1" >&3
+  exit 102
+}
+
+while true; do
+  unset result
+
+  call_fzf result +m --exit-0 \
+    --prompt '(CTRL-D:go-further CTRL-Y:yank CTRL-E:edit)> ' \
+    --expect="ctrl-d,ctrl-e" \
+    <<<"$directories"
+
+  [ -z "${result[*]}" ] && break
+
+  key="${result[0]}"
+  result=("${result[1]}")
+  case "$key" in
+    ctrl-d)
+      [ ! -e "$result" ] && mkdir -p "$result"
+      directories="$(find "$result" -maxdepth 2 -type d)"
+      if [ "$(echo "$directories" | wc -l)" -eq 1 ]; then
+        echo 'No sub directories available.'
+        change_directory "$directories"
+        break
+      fi
+      ;;
+    ctrl-e)
+      echo "$result" >&3
+      exit 101
+      break
+      ;;
+    *)
+      [ ! -e "$result" ] && mkdir -p "$result"
+      change_directory "$result"
+      break
+      ;;
+  esac
+done
