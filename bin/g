@@ -10,6 +10,7 @@ usage() {
 Wrapper for git utility.
 
 Subcommands:
+  d           - enhanced diff utility by fzf
   ignore      - output .gitignore contents for some topic
   cm          - enhanced commit utility
   pt          - push a local branch to a remote branch
@@ -65,6 +66,10 @@ case "$1" in
     ;;
   fzf)
     source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
+    run "$@"
+    ;;
+  d)
+    source "$git_dir/diff.sh"
     run "$@"
     ;;
   l)
