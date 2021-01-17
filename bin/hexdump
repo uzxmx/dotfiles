@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF 1>&2
@@ -15,8 +17,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 execute_hexdump() {
   local text="$1"
@@ -117,6 +119,8 @@ case "$1" in
     # We got a text.
     if [ -n "$1" ] && [ $# -eq 1 ] && [[ ! "$1" =~ ^- ]]; then
       cmd_hex "$1"
+    elif [ "$#" -eq 0 ]; then
+      hexdump -C
     else
       hexdump "$@"
     fi
