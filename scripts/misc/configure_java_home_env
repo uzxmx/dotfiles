@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# This file should be sourced.
+
+no_java_version_found() {
+  echo 'Not found any Java version managed by asdf. You may need to install a
+Java version by `$dotfiles_dir/scripts/install/java` or `asdf install java <version>`.'
+  exit
+}
+
+if ! asdf_java_path="$(exit 0)" || [ -z "$asdf_java_path" ]; then
+  if ! version="$(asdf list java | fzf +m --select-1 --prompt "Select a Java version> " | "$dotfiles_dir/bin/trim")" || [ -z "$version" ]; then
+    no_java_version_found
+  fi
+  asdf_java_path="$(asdf where java "$version")"
+fi
+
+[ -n "$asdf_java_path" ] || no_java_version_found
+
+source "$dotfiles_dir/scripts/lib/prompt.sh"
+if [ -n "$JAVA_HOME" ] && [ ! "$JAVA_HOME" = "$asdf_java_path" ]; then
+  echo "Old JAVA_HOME: $JAVA_HOME"
+  echo "New JAVA_HOME: $asdf_java_path"
+  reply="$(yesno "Are you sure you want to update to the new one? (y/N)" "no")"
+elif [ "$JAVA_HOME" = "$asdf_java_path" ]; then
+  echo "JAVA_HOME has already been $asdf_java_path."
+  reply="$(yesno "Do you still want to configure it again? (y/N)" "no")"
+else
+  reply="yes"
+fi
+
+if [ "$reply" = "yes" ]; then
+  [ -f ~/.zshrc.local ] || touch ~/.zshrc.local
+  echo export JAVA_HOME=$asdf_java_path >>~/.zshrc.local
+  echo export JAVA_HOME=$asdf_java_path >&3
+  echo JAVA_HOME has been changed to "$asdf_java_path"
+  exit 102
+else
+  echo Cancelled.
+fi

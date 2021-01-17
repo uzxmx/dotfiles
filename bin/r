@@ -28,6 +28,7 @@ Benchmark vim startup time\t$dotfiles_dir/scripts/misc/benchmark_vim_startup_tim
 Decompile dex files to java sources\trun_with_arguments $dotfiles_dir/scripts/misc/decompile_dex
 Mac OSX mount NTFS read-write\t$dotfiles_dir/bin/diskutil ntfs_rw -q
 Switch to en-US locale\tswitch_locale en_US.UTF-8
+Configure JAVA_HOME environment variable\tsource $dotfiles_dir/scripts/misc/configure_java_home_env
 "
 
 if [ "$#" -gt 0 ]; then
