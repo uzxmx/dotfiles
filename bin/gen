@@ -141,7 +141,7 @@ gen() {
           eval "echo \"$(cat "$file")\"" >"$tmpfile"
           ;;
         $name.tpl.erb)
-          erb "$file" >"$tmpfile"
+          erb -T - "$file" >"$tmpfile"
           ;;
       esac
       unset FILENAME
@@ -226,6 +226,10 @@ gen_uuid() {
   echo -n "$uuid" | cb --log-level short
 }
 
+gen_zshrc_local() {
+  gen -e -f "$HOME/.zshrc.local" zshrc.local
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -q)
@@ -264,7 +268,7 @@ Autossh plist file for Mac OSX\tgen_autossh
 Appium plist file for Mac OSX\tgen_appium
 Random string, password, etc.\tgen_password
 UUID\tgen_uuid
-"
+Local zshrc\tgen_zshrc_local"
 
 source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
 
