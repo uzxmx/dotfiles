@@ -30,12 +30,6 @@ cmd_d() {
     shift
   done
 
-  if [ -z "$cached" ]; then
-    # Record the fact that the path will be added later, so it can show new
-    # files when executing `git diff`.
-    (cd "$(git rev-parse --show-toplevel)" && git add -N .)
-  fi
-
   local cmd=(git diff "${opts[@]}" --name-status "${remainder[@]}")
   local preview_cmd="git diff ${opts[*]} --color=always -- {2} | less -r"
   local edit_cmd="${EDITOR:-vi} {2}"
@@ -43,6 +37,10 @@ cmd_d() {
   if [ -z "$output" ]; then
     echo 'No changes found.'
   else
+    # Because `git diff` shows files relative to the git root, so if we are not in
+    # the git root, preview or bind command may fail to find the file. To resolve this,
+    # we change to the git root first.
+    cd "$(git rev-parse --show-toplevel)"
     fzf --no-mouse --cycle \
       --layout=reverse \
       --prompt="CTRL-V:diff-file CTRL-O:open-file CTRL-S:stage-file> " \
