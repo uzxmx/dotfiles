@@ -37,6 +37,9 @@ if [ "$use_cwd" = "1" ]; then
 else
   directories="\
 $dotfiles_dir
+$HOME/.templates
+$HOME/.docs
+$HOME/.private
 $HOME/tmp
 $(find ~/projects -maxdepth 1 -type d)\
 "
