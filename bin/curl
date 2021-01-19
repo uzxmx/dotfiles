@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+curl_dir="$dotfiles_dir/scripts/curl"
 
 usage() {
   cat <<-EOF 1>&2
 Wrapper for curl utility.
 
 Subcommands:
-  time - show time stats
-  cors - check if CORS is allowed
+  time     - show time stats
+  cors     - check if CORS is allowed
+  https_ip - request an HTTPS server by IP address
 EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 usage_time() {
   cat <<-EOF 1>&2
@@ -88,24 +92,32 @@ cmd_cors() {
   fi
 }
 
-cmd="$1"
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
 case "$1" in
   time | cors)
-    shift
-    case "$1" in
-      -h)
-        type "usage_$cmd" &>/dev/null && "usage_$cmd"
-        ;;
-    esac
-    "cmd_$cmd" "$@"
+    run "$@"
+    ;;
+  https_ip)
+    source "$curl_dir/https_ip.sh"
+    run "$@"
     ;;
   -h)
     usage
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    curl "$@"
+    ;;
   *)
     curl "$@"
     ;;
