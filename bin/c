@@ -35,6 +35,7 @@ done
 if [ "$use_cwd" = "1" ]; then
   directories="$(find . -maxdepth 2 -type d ! -path .)"
 else
+  [ -d ~/projects ] || mkdir ~/projects
   directories="\
 $dotfiles_dir
 $HOME/.templates
