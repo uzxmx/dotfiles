@@ -6,6 +6,7 @@ Enhanced diff utility by fzf.
 
 Options:
   -c, --cached show staged changes
+  -f, --fzf use fzf mode
 EOF
   exit 1
 }
@@ -13,12 +14,16 @@ EOF
 cmd_d() {
   local opts=()
   local cached
+  local fzf_mode
   local remainder=()
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -c | --cached)
         opts+=(--cached)
         cached=1
+        ;;
+      -f | --fzf)
+        fzf_mode=1
         ;;
       -*)
         usage_d
@@ -29,6 +34,8 @@ cmd_d() {
     esac
     shift
   done
+
+  [ -n "$fzf_mode" ] || exec git diff "${opts[@]}" "${remainder[@]}"
 
   local cmd=(git diff "${opts[@]}" --name-status "${remainder[@]}")
   local preview_cmd="git diff ${opts[*]} --color=always -- {2} | less -r"
