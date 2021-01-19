@@ -12,6 +12,7 @@ Wrapper for docker utility.
 Subcommands:
   p         - pull image from a mirror
   l, logs   - show logs of a container selected by fzf
+  e, exec   - execute a comand in a container selected by fzf
   list_tags - list image tags from dockerhub
   pids      - show pids of containers
   prune     - remove unused and dangling(unamed) images, and unused volumes
@@ -41,34 +42,6 @@ alias_cmd() {
     }
   "
 }
-
-select_container() {
-  local id="$(docker ps --format "table {{.Names}} - {{.Image}}  {{.ID}}" | sed 1d | fzf -d "  " --with-nth=1)"
-  if [ -n "$id" ]; then
-    echo "$id" | awk '{print $NF}'
-  fi
-}
-
-usage_logs() {
-  cat <<-EOF 1>&2
-Usage: docker logs
-
-Show logs of a container selected by fzf.
-EOF
-  exit 1
-}
-
-cmd_logs() {
-  if [ "$#" -gt 0 ]; then
-    docker logs "$@"
-  else
-    local id="$(select_container)"
-    [ -z "$id" ] && exit
-    docker logs -f "$id"
-  fi
-}
-
-alias_cmd l logs
 
 usage_list_tags() {
   cat <<-EOF 1>&2
@@ -124,7 +97,15 @@ case "$1" in
     source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
     run "$@"
     ;;
-  l | logs | list_tags | pids | prune)
+  list_tags | pids | prune)
+    run "$@"
+    ;;
+  l | logs)
+    source "$docker_dir/logs.sh"
+    run "$@"
+    ;;
+  e | exec)
+    source "$docker_dir/exec.sh"
     run "$@"
     ;;
   p)
