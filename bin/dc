@@ -7,8 +7,9 @@ usage() {
 Utility for docker-compose.
 
 Subcommands:
-  u, up   - alias for docker-compose up -d
-  d, down - alias for docker-compose down
+  u, up      - alias for docker-compose up -d
+  d, down    - alias for docker-compose down
+  r, restart - alias for docker-compose restart
 EOF
   exit 1
 }
@@ -36,8 +37,13 @@ cmd_down() {
 }
 alias_cmd d down
 
+cmd_restart() {
+  docker-compose restart
+}
+alias_cmd r restart
+
 case "$1" in
-  u | up | d | down)
+  u | up | d | down | r | restart)
     cmd="$1"
     shift
     case "$1" in
