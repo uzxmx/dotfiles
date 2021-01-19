@@ -21,35 +21,45 @@ EOF
 gen() {
   local dst_dir="$(pwd)"
   local ask_filename=0
+  local ask_filename_default
   local edit=0
   local executable=0
   local extname
   local dst
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      # Target directory
-      -d)
+      # Target directory.
+      -d | --target-dir)
         shift
         dst_dir="$1"
         shift
         ;;
-      # Ask user to input the file name
-      -p)
+      # Ask user to input the file name.
+      -p | --ask-filename)
         shift
         ask_filename=1
         ;;
-      # Open destination file with EDITOR
-      -e)
+      # The default filename when asking.
+      --ask-filename-default)
+        shift
+        ask_filename_default="$1"
+        shift
+        ;;
+      # Open destination file with EDITOR.
+      # Only available when template is not a directory.
+      -e | --editor)
         shift
         if [ ! "$no_editor" = "1" ]; then
           edit=1
         fi
         ;;
-      # Change to executable
-      -x)
+      # Change to executable.
+      # Only available when template is not a directory.
+      -x | --exec)
         shift
         executable=1
         ;;
+      # Only available when template is not a directory.
       --ext)
         shift
         extname="$1"
@@ -58,11 +68,12 @@ gen() {
           extname=".$extname"
         fi
         ;;
-      # Absolute path to the generated file
+      # Absolute path to the generated file.
       -f)
         dst="$2"
         shift 2
         ;;
+      # Any unknown argument will break the while loop. So the argument order matters.
       *)
         break
         ;;
@@ -76,8 +87,47 @@ gen() {
   local src_root="$root/src"
   local short_name="$1"
   local name="$src_root/$short_name"
+  local filename
   if [ -d "$name" ]; then
-    echo "TODO: directory currently is not supported."
+    if [ -z "$dst" ]; then
+      if [ "$ask_filename" = "1" ]; then
+        source "$dotfiles_dir/scripts/lib/prompt.sh"
+        while true; do
+          ask_for_input filename "Directory name: " "$ask_filename_default"
+          if [ -n "$filename" ]; then
+            if [ -e "$dst_dir/$filename" ]; then
+              echo "File '$dst_dir/$filename' already exists"
+              unset filename
+            else
+              break
+            fi
+          fi
+        done
+      else
+        filename="$1"
+      fi
+      dst="$dst_dir/$filename"
+    fi
+    local cmds=(cp -R "$name" "$dst")
+    local src_parent_dir="$name/__parent__"
+    if [ -e "$src_parent_dir" ]; then
+      cmds+=("&&" "rm" -rf "$dst/__parent__")
+      local dst_parent_dir="$(dirname "$dst")"
+      local f
+      while read f; do
+        if [ -e "$dst_parent_dir/$f" ]; then
+          echo "$dst_parent_dir/$f already exists. Abort"
+          exit 1
+        fi
+        if [ -d "$src_parent_dir/$f" ]; then
+          cmds+=("&&" "cp" -R "$src_parent_dir/$f" "$dst_parent_dir/$f")
+        else
+          cmds+=("&&" "cp" "$src_parent_dir/$f" "$dst_parent_dir/$f")
+        fi
+      done < <(ls -A "$src_parent_dir")
+    fi
+    eval "${cmds[@]}"
+    echo "Generated successfully."
   else
     # We don't use regex because of the differences between linux based systems and BSD systems.
     local file="$(find "$src_root" -name "$short_name.tpl" -or -name "$short_name.tpl.sh" -or -name "$short_name.tpl.erb" | head -1)"
@@ -86,7 +136,6 @@ gen() {
       exit 1
     fi
 
-    local filename
     if [ -z "$dst" ]; then
       if [ "$ask_filename" = "1" ]; then
         source "$dotfiles_dir/scripts/lib/prompt.sh"
@@ -230,6 +279,10 @@ gen_zshrc_local() {
   gen -e -f "$HOME/.zshrc.local" zshrc.local
 }
 
+gen_nginx_service() {
+  gen --ask-filename --ask-filename-default "nginx" nginx_service
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -q)
@@ -268,7 +321,8 @@ Autossh plist file for Mac OSX\tgen_autossh
 Appium plist file for Mac OSX\tgen_appium
 Random string, password, etc.\tgen_password
 UUID\tgen_uuid
-Local zshrc\tgen_zshrc_local"
+Local zshrc\tgen_zshrc_local
+Nginx docker-compose service\tgen_nginx_service"
 
 source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
 
