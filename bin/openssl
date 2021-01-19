@@ -156,7 +156,19 @@ Usage: openssl ocsp_req <host>
 
 Send request to OCSP (Online Certificate Status Protocol) responder. It can
 also be used to check if the server has enabled OCSP stapling (to improve
-loading speed).
+loading speed if access to the original OCSP responder is blocked from client).
+
+When OCSP stapling is not enabled, performance problem may occur for new users.
+It becomes even worse when it's hard to reproduce.
+
+As a conclusion of my experiment, iOS system caches the certificate status
+globally after the first successful return (I'm not sure about how long it will
+be cached). Also there seems no way to clear the cache, so it may be hard to
+reproduce if it suddenly becomes slow to access.
+
+To reproduce it on the client device, use a proxy and deploy a new temporary
+certificate (issued by the same issuer as production); or just use a new
+device.
 
 Options:
   --show-uri only show OCSP responder URI
