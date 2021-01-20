@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Install CoreDNS (https://github.com/coredns/coredns).
+
+set -e
+
+type -p coredns &> /dev/null && exit
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+. "$dotfiles_dir/scripts/lib/install.sh"
+
+version="1.8.0"
+path_to_save="/tmp/coredns-$version.tgz"
+if is_mac; then
+  platform="darwin"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+"$dotfiles_dir/bin/cget" "https://github.com/coredns/coredns/releases/download/v1.8.0/coredns_${version}_${platform}_amd64.tgz" "$path_to_save"
+
+sudo tar zxf "$path_to_save" -C /usr/bin
+
+rm -f "$path_to_save"
