@@ -5,7 +5,7 @@
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: $0 <extension>
 Install coc extensions.
 
@@ -31,7 +31,22 @@ npm_install() {
   npm install --global-style --ignore-scripts --no-bin-links --no-package-lock --only=prod "$@"
 }
 
-case "$1" in
+extension="$1"
+extensions=(
+  ultisnips
+  java
+  python
+  clangd
+  omnisharp
+  sourcekit
+  tsserver
+)
+if [ -z "$extension" ]; then
+  extension="$(IFS=$'\n'; echo "${extensions[*]}" | fzf +m)"
+  [ -z "$extension" ] && exit 1
+fi
+
+case "$extension" in
   ultisnips)
     npm_install coc-ultisnips@1.2.3
     ;;
