@@ -3,6 +3,7 @@
 set -e
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+templates_dir="$HOME/.templates"
 
 usage() {
   cat <<-EOF 1>&2
@@ -80,11 +81,7 @@ gen() {
     esac
   done
 
-  local root="$HOME/.templates"
-  if [ ! -e "$root" ]; then
-    git clone https://github.com/uzxmx/templates "$root" --depth 1
-  fi
-  local src_root="$root/src"
+  local src_root="$templates_dir/src"
   local short_name="$1"
   local name="$src_root/$short_name"
   local filename
@@ -207,81 +204,8 @@ gen() {
   fi
 }
 
-gen_bin_wrapper() {
-  gen -d "$HOME/.dotfiles/bin" -p -e -x bin_wrapper
-}
-
-gen_install() {
-  gen -d "$HOME/.dotfiles/scripts/install" -p -e -x install
-}
-
-gen_license() {
-  gen LICENSE
-}
-
-gen_readme() {
-  gen -e README.md
-}
-
-gen_vagrantfile() {
-  gen -e Vagrantfile
-}
-
-gen_launched() {
-  gen -d "$HOME/Library/LaunchAgents" -p -e --ext plist launchd.plist
-}
-
-gen_autossh() {
-  gen -f "$HOME/Library/LaunchAgents/autossh.plist" -e autossh.plist
-}
-
-gen_appium() {
-  gen -f "$HOME/Library/LaunchAgents/appium.plist" -e appium.plist
-}
-
-gen_ssh_hosts() {
-  gen -e -f "$HOME/.ssh_hosts" ssh_hosts
-}
-
-gen_mvn_settings() {
-  gen -e -f "$HOME/.m2/settings.xml" mvn_settings.xml
-}
-
-gen_editorconfig() {
-  gen -e -f .editorconfig editorconfig
-}
-
-gen_password() {
-  source "$dotfiles_dir/scripts/lib/utils/random.sh"
-  local password="$(random_string 15)"
-  echo "$password"
-  echo
-  echo -n "$password" | cb --log-level short
-}
-
-gen_uuid() {
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
-  local reply="$(yesno "Keep dash? (Y/n)" "yes")"
-  local cmd="uuidgen | tr A-Z a-z"
-  local uuid
-  if [ "$reply" = "yes" ]; then
-    uuid="$(eval $cmd)"
-  else
-    uuid="$(eval $cmd | sed -e 's/\-//g')"
-  fi
-  echo
-  echo "$uuid"
-  echo
-  echo -n "$uuid" | cb --log-level short
-}
-
-gen_zshrc_local() {
-  gen -e -f "$HOME/.zshrc.local" zshrc.local
-}
-
-gen_nginx_service() {
-  gen --ask-filename --ask-filename-default "nginx" nginx_service
-}
+[ -e "$templates_dir" ] || git clone https://github.com/uzxmx/templates "$templates_dir" --depth 1
+source "$templates_dir/scripts/gen"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -292,12 +216,12 @@ while [ "$#" -gt 0 ]; do
     --no-editor)
       no_editor=1
       ;;
-    bin_wrapper | install | license | readme | vagrantfile | launchd | ssh_hosts |\
-      mvn_settings)
-      template="$1"
-      ;;
     *)
-      usage
+      if [ "$(type -t "gen_$1")" = "function" ]; then
+        template="$1"
+      else
+        usage
+      fi
       ;;
   esac
   shift
@@ -307,22 +231,6 @@ if [ -n "$template" ]; then
   "gen_$template"
   exit
 fi
-
-FZF_COMMANDS="Bin wrapper or plain old executable\tgen_bin_wrapper
-Installation script\tgen_install
-MIT license\tgen_license
-README.md or Markdown template\tgen_readme
-Vagrantfile\tgen_vagrantfile
-Mac OSX User daemon/agent plist file\tgen_launched
-SSH hosts for wrapper utility\tgen_ssh_hosts
-Maven settings\tgen_mvn_settings
-Editor config\tgen_editorconfig
-Autossh plist file for Mac OSX\tgen_autossh
-Appium plist file for Mac OSX\tgen_appium
-Random string, password, etc.\tgen_password
-UUID\tgen_uuid
-Local zshrc\tgen_zshrc_local
-Nginx docker-compose service\tgen_nginx_service"
 
 source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
 
