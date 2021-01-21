@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-set -eo pipefail
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
-  cat <<-EOF 1>&2
-Usage: $0 [starting-directory]
+  cat <<-EOF
+Usage: s [directory-or-file]...
 
 Search file contents.
 
@@ -13,22 +15,20 @@ Shortcuts:
   ctrl-v: View selected file in tmux panel.
 
 Options:
-
   [-t type] The file type to search, e.g. cpp
   [--binary] Resort to grep searching binary files
   [-h] Show help
 
 Examples:
-
   # Only search files matching some type.
-  $ $0 -t cpp
+  $ s -t cpp
 EOF
   exit 1
 }
 
 rg_options=()
 
-remainder=()
+files=()
 while [ $# -gt 0 ]; do
   case "$1" in
     -t)
@@ -42,28 +42,24 @@ while [ $# -gt 0 ]; do
       usage
       ;;
     *)
-      remainder+=("$1")
+      files+=("$1")
       ;;
   esac
   shift
 done
 
-set - "${remainder[@]}"
-
-target=${1:-.}
-if [ ! -d "$target" ]; then
-  echo 'Target should be a directory.'
-  exit 1
+if [ "${#files}" -eq 0 ]; then
+  files=(.)
 fi
 
-source ~/.dotfiles/scripts/lib/utils/common.sh
-source ~/.dotfiles/scripts/lib/fzf.sh
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
 
 # rg doesn't support --binary well. So we resort to grep.
 if [ "$search_binary" = "1" ]; then
-  cmd=(grep --line-number --binary-files=text . -R .)
+  cmd=(grep --line-number --binary-files=text . -R "${files[@]}")
 else
-  cmd=(rg --line-number --hidden "${rg_options[@]}" . "$target")
+  cmd=(rg --line-number --with-filename --hidden "${rg_options[@]}" . "${files[@]}")
 fi
 
 # Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
