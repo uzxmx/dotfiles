@@ -3,22 +3,14 @@
 
 set -e
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: $0
 
 Utility to deal with git stashes. Use fzf to select a stash and operate on
-the selection. Supported operations include:
-
-* Enter-key: show the stash content
-* Ctrl-b: check the stash out as a branch
-* Ctrl-d: show a diff of the stash against current HEAD
-* Ctrl-o: pop the stash
-* Ctrl-r: drop the stash
-
-Options:
-
-  [-h] Show help
+the selection.
 EOF
   exit 1
 }
@@ -38,16 +30,24 @@ done
 
 set - "${remainder[@]}"
 
-source ~/.dotfiles/scripts/lib/utils/common.sh
-source ~/.dotfiles/scripts/lib/fzf.sh
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
+source "$dotfiles_dir/scripts/lib/prompt.sh"
 
 query=
 while true; do
   unset result
+  output="$(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")"
+  [ -z "$output" ] && echo 'No stash available, exit' && exit
+  bind_cmd="execute(tmux split-window \"$dotfiles_dir/bin/g show_commit {2} -d {2}~1\")"
   call_fzf result --ansi --no-sort --query="$query" --print-query \
-    --prompt '(CTRL-B:checkout CTRL-D:diff CTRL-O:pop CTRL-R:drop)> ' \
-    --expect="ctrl-b,ctrl-d,ctrl-o,ctrl-r" \
-    < <(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")
+    --layout=reverse \
+    --prompt '(CTRL-B:checkout CTRL-V|Enter:view CTRL-O:pop CTRL-R:drop)> ' \
+    --preview "git stash show --name-status {2}" \
+    --bind "ctrl-v:$bind_cmd" \
+    --bind "enter:$bind_cmd" \
+    --expect="ctrl-b,ctrl-o,ctrl-d" \
+    <<<"$output"
 
   [ -z "${result[*]}" ] && break
 
@@ -63,19 +63,15 @@ while true; do
       git stash branch "stash-$sha" "$sha"
       break
       ;;
-    ctrl-d)
-      git diff --color=always "$sha" | less -r
-      ;;
     ctrl-o)
       git stash pop "$ref"
       break
       ;;
-    ctrl-r)
-      git stash drop "$ref"
-      break
-      ;;
-    "")
-      git stash show --color=always -p "$sha" | less -r
+    ctrl-d)
+      reply=$(yesno "Are you sure you want to drop $ref? (y/N)" "no")
+      if [ "$reply" = "yes" ]; then
+        git stash drop "$ref"
+      fi
       ;;
   esac
 done
