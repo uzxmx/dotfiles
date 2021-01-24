@@ -10,6 +10,7 @@ usage() {
 Wrapper for git utility.
 
 Subcommands:
+  cl          - clone with depth 1
   d           - enhanced diff utility by fzf
   ignore      - output .gitignore contents for some topic
   cm          - enhanced commit utility
@@ -66,6 +67,10 @@ case "$1" in
     ;;
   fzf)
     source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
+    run "$@"
+    ;;
+  cl)
+    source "$git_dir/clone.sh"
     run "$@"
     ;;
   d)
