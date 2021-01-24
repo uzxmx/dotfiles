@@ -14,16 +14,66 @@ candidates by creating a custom shell script at ~/.cd_paths.sh, and outputting
 each directory per line.
 
 Options:
-  -c change to a directory under current working directory
+  c, -c change to a directory under current working directory
+  p, -p change to a parent directory (so you don't need to 'cd ..' one level by one level)
 EOF
   exit 1
 }
 
+change_directory() {
+  echo cd "$1" >&3
+  exit 102
+}
+
+main_loop_with_fzf() {
+  while true; do
+    if [ -z "$directories" ]; then
+      echo 'No directory available, exit'
+      break
+    fi
+
+    unset result
+
+    call_fzf result +m --exit-0 "$@" <<<"$directories"
+
+    [ -z "${result[*]}" ] && break
+
+    key="${result[0]}"
+    result=("${result[1]}")
+    case "$key" in
+      ctrl-d)
+        [ ! -e "$result" ] && mkdir -p "$result"
+        directories="$(find "$result" -maxdepth 2 -type d)"
+        if [ "$(echo "$directories" | wc -l)" -eq 1 ]; then
+          echo 'No sub directories available.'
+          change_directory "$directories"
+          break
+        fi
+        ;;
+      ctrl-e)
+        echo "$result" >&3
+        exit 101
+        break
+        ;;
+      *)
+        [ ! -e "$result" ] && mkdir -p "$result"
+        change_directory "$result"
+        break
+        ;;
+    esac
+  done
+}
+
+
 use_cwd=
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    -c)
+    c | -c)
       use_cwd=1
+      ;;
+    p | -p)
+      source "$dotfiles_dir/scripts/cd/parent.sh"
+      exit
       ;;
     *)
       usage
@@ -51,42 +101,4 @@ $(sh ~/.cd_paths.sh)\
   fi
 fi
 
-change_directory() {
-  echo cd "$1" >&3
-  exit 102
-}
-
-while true; do
-  unset result
-
-  call_fzf result +m --exit-0 \
-    --prompt '(CTRL-D:go-further CTRL-Y:yank CTRL-E:edit)> ' \
-    --expect="ctrl-d,ctrl-e" \
-    <<<"$directories"
-
-  [ -z "${result[*]}" ] && break
-
-  key="${result[0]}"
-  result=("${result[1]}")
-  case "$key" in
-    ctrl-d)
-      [ ! -e "$result" ] && mkdir -p "$result"
-      directories="$(find "$result" -maxdepth 2 -type d)"
-      if [ "$(echo "$directories" | wc -l)" -eq 1 ]; then
-        echo 'No sub directories available.'
-        change_directory "$directories"
-        break
-      fi
-      ;;
-    ctrl-e)
-      echo "$result" >&3
-      exit 101
-      break
-      ;;
-    *)
-      [ ! -e "$result" ] && mkdir -p "$result"
-      change_directory "$result"
-      break
-      ;;
-  esac
-done
+main_loop_with_fzf --prompt "(CTRL-D:go-further CTRL-Y:yank CTRL-E:edit)> " --expect="ctrl-d,ctrl-e"
