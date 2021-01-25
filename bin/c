@@ -21,7 +21,8 @@ EOF
 }
 
 change_directory() {
-  echo cd "$1" >&3
+  # Escape all spaces.
+  echo cd "${1// /\\ }" >&3
   exit 102
 }
 
