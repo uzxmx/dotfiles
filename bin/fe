@@ -2,21 +2,21 @@
 
 set -eo pipefail
 
-usage() {
-  cat <<-EOF 1>&2
-Usage: $0 [starting-directory]
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
-Use fzf to select a file and open it with the default editor. You can also
-press ctrl-v to create a new file from the selected file and edit it.
+usage() {
+  cat <<-EOF
+Usage: $0 [directory]...
+
+Use fzf to select a file and open it with the default editor.
 
 Options:
-
   [-t type] The file type to search, e.g. cpp
   [-p pattern] The pattern to search
+  [-q query] The query
   [-h] Show help
 
 Examples:
-
   # Search files by type.
   $ $0 -t cpp
 
@@ -26,7 +26,7 @@ EOF
   exit 1
 }
 
-remainder=()
+directories=()
 while [ $# -gt 0 ]; do
   case "$1" in
     -t)
@@ -37,30 +37,35 @@ while [ $# -gt 0 ]; do
       shift
       pattern="$1"
       ;;
+    -q)
+      shift
+      query="$1"
+      ;;
     -*)
       usage
       ;;
     *)
-      remainder+=("$1")
+      directories+=("$1")
       ;;
   esac
   shift
 done
 
-set - "${remainder[@]}"
-
-dir="${1:-.}"
-if [ -n "$dir" -a ! -d "$dir" ]; then
-  echo "Directory $dir does not exist."
-  exit 1
+if [ "${#directories}" -eq 0 ]; then
+  directories=(.)
+else
+  for dir in "${directories[@]}"; do
+    if [ ! -d "$dir" ]; then
+      echo "Directory $dir does not exist."
+      exit 1
+    fi
+  done
 fi
-shift || true
 
-source ~/.dotfiles/scripts/lib/utils/common.sh
-source ~/.dotfiles/scripts/lib/fzf.sh
+source "$dotfiles_dir/scripts/lib/utils/common.sh"
+source "$dotfiles_dir/scripts/lib/fzf.sh"
 
 no_ignore=
-query="$1"
 while true; do
   unset result
 
@@ -69,10 +74,10 @@ while true; do
     fd_opts+=(-I -H)
   fi
 
-  call_fzf result --query="$query" --print-query --multi --select-1 --exit-0 \
+  call_fzf result --query="$query" --print-query --multi --exit-0 \
     --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-D:cd)> ' \
     --expect="ctrl-v,ctrl-e,ctrl-i,ctrl-d" \
-    < <(fd "${fd_opts[@]}" "${pattern:-.}" "$dir")
+    < <(fd "${fd_opts[@]}" "${pattern:-.}" "${directories[@]}")
 
   [ -z "${result[*]}" ] && break
 
