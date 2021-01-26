@@ -2,8 +2,10 @@
 
 set -e
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 OSX open likewise.
 
 When running on OSX, it's just a wrapper.
@@ -15,7 +17,7 @@ which is inferred by 'https?://' prefix.
 Usage:
 
 $0 [-b <http url>]
-$0 <path>
+$0 [path]
 
 [-b] Use browser to open the specified url (only available on WSL)
 [-h] Show help
@@ -48,7 +50,7 @@ if [[ "$(uname -r)" =~ Microsoft$ ]]; then
     esac
   done
 
-  source ~/.dotfiles/scripts/lib/utils.sh
+  source "$dotfiles_dir/scripts/lib/utils.sh"
 
   target="${1:-.}"
   if has_http_prefix "$target"; then
@@ -61,7 +63,12 @@ if [[ "$(uname -r)" =~ Microsoft$ ]]; then
 
   cmd.exe /c "start explorer.exe $(wslpath -w "$target")"
 else
-  source ~/.dotfiles/scripts/lib/path.sh
-  PATH=$(new_path_exclude ~/.dotfiles/bin)
-  open "$@"
+  source "$dotfiles_dir/scripts/lib/path.sh"
+  PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+  # Open the current working direcotry without any argument.
+  if [ "$#" -eq 0 ]; then
+    open .
+  else
+    open "$@"
+  fi
 fi
