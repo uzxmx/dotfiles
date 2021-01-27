@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Utility to manage PEM.
+
+For more info, please see https://tools.ietf.org/html/rfc1421.
+
+Subcommands:
+  s, squeeze - squeeze multi-lines of a PEM file into one line
+  f, fold    - fold one line into multi-lines (reverse of squeeze subcommand)
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+usage_squeeze() {
+  cat <<-EOF
+Usage: pem squeeze <pem-file>
+
+Squeeze multi-lines of a PEM file into one line. By default each original line
+will be appended with '\n', if you don't want it, specify '-n'.
+
+Options:
+  -r remove both header and footer (-----BEGIN ... / -----END ...)
+  -n don't add line feed
+EOF
+  exit 1
+}
+
+cmd_squeeze() {
+  local remove_header_footer file
+  local line_feed="\\\\n"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -r)
+        remove_header_footer=1
+        ;;
+      -n)
+        line_feed=
+        ;;
+      -*)
+        usage_squeeze
+        ;;
+      *)
+        file="$1"
+        ;;
+    esac
+    shift
+  done
+
+  [ -z "$file" ] && usage_squeeze
+
+  if [ -z "$remove_header_footer" ]; then
+    awk 'NF {sub(/\r/, ""); printf "%s'$line_feed'",$0;}' "$file"
+  else
+    awk '/-----(BEGIN|END)/ { next; } NF {sub(/\r/, ""); printf "%s'$line_feed'",$0;}' "$file"
+  fi
+}
+alias_cmd s squeeze
+
+usage_fold() {
+  cat <<-EOF
+Usage: pem fold [file]
+
+Fold one line into multi-lines (reverse of squeeze subcommand). If the line of
+the string contains the escaped line feed ('\n'), it will be removed first.
+
+Options:
+  -a <type> add a header and footer, types include priv/rsa_priv/pub
+EOF
+  exit 1
+}
+
+cmd_fold() {
+  local file t
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -a)
+        shift
+        t="$1"
+        ;;
+      -*)
+        usage_fold
+        ;;
+      *)
+        file="$1"
+        ;;
+    esac
+    shift
+  done
+  [ -z "$file" ] && usage_fold
+
+  local str
+  case "$t" in
+    priv)
+      str="PRIVATE KEY"
+      ;;
+    rsa_priv)
+      str="RSA PRIVATE KEY"
+      ;;
+    pub)
+      str="PUBLIC KEY"
+      ;;
+    "")
+      ;;
+    *)
+      echo "Unsupported type: $t"
+      exit 1
+      ;;
+  esac
+
+  [ -z "$str" ] || echo "-----BEGIN $str-----"
+  cat "$file" | sed 's/\\n//g' | fold -w 64
+  [ -z "$str" ] || echo -e "\n-----END $str-----"
+}
+alias_cmd f fold
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  s | squeeze | f | fold)
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
