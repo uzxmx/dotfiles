@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+gradle_dir="$dotfiles_dir/scripts/gradle"
+
+source "$dotfiles_dir/scripts/lib/utils/find.sh"
+gradle_bin="$(find_file_hierarchical gradlew)"
+
+usage() {
+  cat <<-EOF
+Wrapper for gradle utility.
+
+It tries to find a gradle wrapper first. If not found, it resorts to gradle
+command.
+
+Subcommands:
+  help    - show gradle help
+  tasks   - show all tasks
+  bootRun - run spring-boot based project
+  mirror  - manage(show/enable/disable) maven mirrors
+
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  tasks | bootRun | mirror)
+    source "$gradle_dir/$1.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    "$gradle_bin" "$@"
+    ;;
+  *)
+    "$gradle_bin" "$@"
+    ;;
+esac
