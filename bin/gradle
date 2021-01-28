@@ -21,6 +21,10 @@ Subcommands:
   bootRun - run spring-boot based project
   mirror  - manage(show/enable/disable) maven mirrors
 
+Tasks:
+  showRepos                - show repositories
+  showBuildScriptRepos     - show buildscript repositories
+  showBuildScriptClasspath - show buildscript classpath
 EOF
   exit 1
 }
@@ -52,9 +56,41 @@ run() {
   "cmd_$cmd" "$@"
 }
 
+run_task() {
+  local script="$1"
+  local task="$2"
+  shift 2
+  local initdir="$HOME/.gradle/init.d"
+  mkdir -p "$initdir"
+  tmpfile="$(mktemp -u --suffix=.gradle -p "$initdir")"
+  handle_exit() {
+    echo handle_exit
+    [ -e "$tmpfile" ] && rm "$tmpfile"
+  }
+  trap handle_exit EXIT
+  cp "$dotfiles_dir/gradle/lib/$script" "$tmpfile"
+  "$gradle_bin" "$task" "$@"
+}
+
+def_task_cmds() {
+  local script="$1"
+  local cmd
+  for cmd in "$@"; do
+    eval "
+      cmd_$cmd() {
+        run_task \"$script\" \"$cmd\" \"\$@\"
+      }
+    "
+  done
+}
+
 case "$1" in
   tasks | bootRun | mirror)
     source "$gradle_dir/$1.sh"
+    run "$@"
+    ;;
+  showRepos | showBuildScriptRepos | showBuildScriptClasspath)
+    source "$gradle_dir/utils.sh"
     run "$@"
     ;;
   -h)

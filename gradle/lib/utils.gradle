@@ -1,0 +1,33 @@
+allprojects {
+    // << is an alias for doLast.
+    task showBuildScriptClasspath << {
+        def path = buildscript.configurations.classpath.asPath
+        if (project.hasProperty("no_split")) {
+            println path
+        } else {
+            path.split(":").each { println it }
+        }
+    }
+
+    def showRepositories = {
+        it.repositories.each {
+            if (it.metaClass.respondsTo(it, "url")) {
+                println it.name + ": " + it.url
+            } else {
+                println it.name
+            }
+        }
+    }
+
+    task showBuildScriptRepos {
+        doLast {
+            showRepositories(buildscript)
+        }
+    }
+
+    task showRepos {
+        doLast {
+            showRepositories(project)
+        }
+    }
+}
