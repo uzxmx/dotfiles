@@ -35,5 +35,5 @@ cmd_mirror() {
   elif [ "$action" = "disable" ]; then
     [ -e "$mirrors_file" ] && rm "$mirrors_file"
   fi
-  cat "$mirrors_file"
+  [ -e "$mirrors_file" ] && cat "$mirrors_file"
 }
