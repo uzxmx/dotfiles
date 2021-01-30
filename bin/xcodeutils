@@ -14,8 +14,10 @@ consistent with a same version. When switching to a different version, it's
 better to restart your system.
 
 Subcommands:
-  s, show              - show information of some type
-  a, archive           - archive the product before it can be exported
+  s, show           - show information of some type
+  a, archive        - archive the product before it can be exported
+  e, export         - export to an ipa file
+  pgyer             - upload an ipa file to pgyer (https://www.pgyer.com)
 EOF
   exit 1
 }
@@ -47,13 +49,16 @@ run() {
 }
 
 case "$1" in
-  s | show | a | archive)
+  s | show | a | archive | e | export | pgyer)
     case "$1" in
       s)
         name="show"
         ;;
       a)
         name="archive"
+        ;;
+      e)
+        name="export"
         ;;
       *)
         name="$1"
