@@ -17,6 +17,7 @@ Subcommands:
   s, show           - show information of some type
   a, archive        - archive the product before it can be exported
   e, export         - export to an ipa file
+  u, upload         - upload an ipa file to AppStore and TestFlight
   pgyer             - upload an ipa file to pgyer (https://www.pgyer.com)
 EOF
   exit 1
@@ -49,7 +50,7 @@ run() {
 }
 
 case "$1" in
-  s | show | a | archive | e | export | pgyer)
+  s | show | a | archive | e | export | u | upload | pgyer)
     case "$1" in
       s)
         name="show"
@@ -59,6 +60,9 @@ case "$1" in
         ;;
       e)
         name="export"
+        ;;
+      u)
+        name="upload"
         ;;
       *)
         name="$1"
