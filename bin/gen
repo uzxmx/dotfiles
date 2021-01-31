@@ -15,6 +15,7 @@ let user select one.
 Options:
   -q <query> Fzf query string
   --no-editor Do not open generated file with an editor
+  - delimit the start of the options for template generator, see gen function
 EOF
   exit 1
 }
@@ -25,31 +26,26 @@ gen() {
   local ask_filename_default
   local edit=0
   local executable=0
-  local extname
-  local dst
+  local extname dst overwrite
   while [ "$#" -gt 0 ]; do
     case "$1" in
       # Target directory.
       -d | --target-dir)
         shift
         dst_dir="$1"
-        shift
         ;;
       # Ask user to input the file name.
       -p | --ask-filename)
-        shift
         ask_filename=1
         ;;
       # The default filename when asking.
       --ask-filename-default)
         shift
         ask_filename_default="$1"
-        shift
         ;;
       # Open destination file with EDITOR.
       # Only available when template is not a directory.
       -e | --editor)
-        shift
         if [ ! "$no_editor" = "1" ]; then
           edit=1
         fi
@@ -57,28 +53,30 @@ gen() {
       # Change to executable.
       # Only available when template is not a directory.
       -x | --exec)
-        shift
         executable=1
         ;;
       # Only available when template is not a directory.
       --ext)
         shift
         extname="$1"
-        shift
         if [ ! "${extname:0:1}" = "." ]; then
           extname=".$extname"
         fi
         ;;
       # Absolute path to the generated file.
       -f)
-        dst="$2"
-        shift 2
+        shift
+        dst="$1"
+        ;;
+      --overwrite)
+        overwrite=1
         ;;
       # Any unknown argument will break the while loop. So the argument order matters.
       *)
         break
         ;;
     esac
+    shift
   done
 
   local src_root="$templates_dir/src"
@@ -158,7 +156,7 @@ gen() {
       filename="$(basename "$dst")"
     fi
 
-    if [ -e "$dst" ]; then
+    if [ -e "$dst" -a -z "$overwrite" ]; then
       local reply
       echo -n "File $dst already exists, overwrite it or generate a temporary file? (y/N/g)"
       read reply
@@ -216,6 +214,10 @@ while [ "$#" -gt 0 ]; do
     --no-editor)
       no_editor=1
       ;;
+    -)
+      shift
+      break
+      ;;
     *)
       if [ "$(type -t "gen_$1")" = "function" ]; then
         template="$1"
@@ -228,7 +230,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 if [ -n "$template" ]; then
-  "gen_$template"
+  "gen_$template" "$@"
   exit
 fi
 
