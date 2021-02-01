@@ -17,6 +17,7 @@ Subcommands:
   chain       - get intermediate certificate for a host
   tlsversions - show supported tls versions of remote server
   ocsp_req    - send request to OCSP responder
+  rm_pass     - remove passphrase from a private key
 EOF
   exit 1
 }
@@ -65,7 +66,8 @@ run_fallback() {
 }
 
 case "$1" in
-  e | exp | v | verify | pubkey | cert | chain | tlsversions | ocsp_req)
+  e | exp | v | verify | pubkey | cert |\
+  chain | tlsversions | ocsp_req | rm_pass)
     case "$1" in
       e)
         name="exp"
