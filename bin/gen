@@ -6,7 +6,7 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 templates_dir="$HOME/.templates"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: $0 [--no-editor] [-q <query>] [<template>]
 
 Generate files from a template. When no template is given, it will use fzf to
@@ -27,6 +27,7 @@ gen() {
   local edit=0
   local executable=0
   local extname dst overwrite
+  local use_sudo
   while [ "$#" -gt 0 ]; do
     case "$1" in
       # Target directory.
@@ -70,6 +71,9 @@ gen() {
         ;;
       --overwrite)
         overwrite=1
+        ;;
+      --sudo)
+        use_sudo="sudo"
         ;;
       # Any unknown argument will break the while loop. So the argument order matters.
       *)
@@ -170,7 +174,7 @@ gen() {
     fi
 
     if [ "$file" = "$name.tpl" ]; then
-      cp "$file" "$dst"
+      $use_sudo cp "$file" "$dst"
     else
       tmpfile="$(mktemp)"
       handle_exit() {
@@ -189,13 +193,13 @@ gen() {
           ;;
       esac
       unset FILENAME
-      cp "$tmpfile" "$dst"
+      $use_sudo cp "$tmpfile" "$dst"
     fi
 
-    [ "$executable" = "1" ] && chmod a+x "$dst"
+    [ "$executable" = "1" ] && $use_sudo chmod a+x "$dst"
 
     if [ "$edit" = "1" ]; then
-      "${EDITOR:-vim}" "$dst"
+      $use_sudo "${EDITOR:-vim}" "$dst"
     else
       echo "File $dst generated."
     fi
