@@ -63,3 +63,43 @@ get_schemes() {
 select_scheme() {
   get_schemes | fzf +m --select-1 --prompt="Select a scheme: "
 }
+
+get_profiles() {
+  local filter_aps_environment filter_app_id
+  local format="full"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --format)
+        shift
+        format="$1"
+        ;;
+      --aps-environment)
+        shift
+        filter_aps_environment="$1"
+        ;;
+      --app-id)
+        shift
+        filter_app_id="$1"
+        ;;
+    esac
+    shift
+  done
+
+  local decoded_profile aps_environment app_id
+  local profile
+  while read profile; do
+    decoded_profile="$(security cms -D -i "$profile")"
+    aps_environment="$(/usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" /dev/stdin 2>/dev/null <<<"$decoded_profile" || true)"
+    if [ -z "$filter_aps_environment" -o "$aps_environment" = "$filter_aps_environment" ]; then
+      app_id="$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
+      if [ -z "$filter_app_id" -o "$app_id" = "$filter_app_id" ]; then
+        local str="$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
+        if [ "$format" = "simple" ]; then
+          profiles+=("$str")
+        else
+          profiles+=("$str!${aps_environment:-" "}!$app_id")
+        fi
+      fi
+    fi
+  done < <(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*)
+}

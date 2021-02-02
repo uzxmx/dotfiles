@@ -19,8 +19,10 @@ Subcommands:
   e, export         - export to an ipa file
   u, upload         - upload an ipa file to AppStore and TestFlight
   pgyer             - upload an ipa file to pgyer (https://www.pgyer.com)
+  onestop           - archive, export and upload in one command
   show_entitlements - show entitlements of an IPA file
   verify_site       - verify apple-app-site-association file
+  list_profiles     - list profiles on current system
 EOF
   exit 1
 }
@@ -52,7 +54,9 @@ run() {
 }
 
 case "$1" in
-  s | show | a | archive | e | export | u | upload | pgyer | show_entitlements | verify_site)
+  s | show | a | archive | e | export | u | \
+  upload | pgyer | show_entitlements | verify_site | \
+  onestop | list_profiles)
     case "$1" in
       s)
         name="show"

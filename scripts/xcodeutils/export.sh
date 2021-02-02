@@ -10,6 +10,8 @@ standard archives directory managed by Xcode.
 
 Options:
   -s <archive-path>
+  -m <method> the export method, e.g. app-store, development
+  -p <profile> the profle
 
 Example:
   $> xcodeutils export foo
@@ -73,12 +75,20 @@ select_archive() {
 }
 
 cmd_export() {
-  local archive_path export_path
+  local archive_path export_path method profile
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -s)
         shift
         archive_path="$1"
+        ;;
+      -m)
+        shift
+        method="$1"
+        ;;
+      -p)
+        shift
+        profile="$1"
         ;;
       -*)
         usage_export
@@ -99,7 +109,10 @@ cmd_export() {
   fi
   [ ! -e "$archive_path" ] && echo "Archive dosen't exist." && exit 1
 
-  local method="$(echo -e "app-store\ndevelopment" | fzf --prompt="Select a method (e.g. you should select app-store when you want to upload to AppStore)> ")"
+  if [ -z "$method" ]; then
+    method="$(echo -e "app-store\ndevelopment" | fzf --prompt="Select a method (e.g. you should select app-store when you want to upload to AppStore)> ")"
+  fi
+
   local aps_environment
   case "$method" in
     development)
@@ -115,19 +128,14 @@ cmd_export() {
   esac
 
   local bundle_id="$(/usr/libexec/PlistBuddy -c "Print :ApplicationProperties:CFBundleIdentifier" "$archive_path/Info.plist" 2>/dev/null)"
-  local team="$(/usr/libexec/PlistBuddy -c "Print :ApplicationProperties:Team" "$archive_path/Info.plist" 2>/dev/null)"
-  local profile decoded_profile
-  local -a profiles
-  while read profile; do
-    decoded_profile="$(security cms -D -i "$profile")"
-    if [ "$(/usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" /dev/stdin 2>/dev/null <<<"$decoded_profile")" = "$aps_environment" ]; then
-      if [ "$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin 2>/dev/null <<<"$decoded_profile")" = "$team.$bundle_id" ]; then
-        profiles+=("$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin 2>/dev/null <<<"$decoded_profile")")
-      fi
-    fi
-  done < <(ls -t "$HOME/Library/MobileDevice/Provisioning Profiles/"*)
-  profile="$(IFS=$'\n'; echo "${profiles[*]}" | awk '!mem[$0]++' | fzf --prompt="Select a profile> ")"
-  [ -z "$profile" ] && echo "A provision profile is required." && exit 1
+
+  if [ -z "$profile" ]; then
+    local team="$(/usr/libexec/PlistBuddy -c "Print :ApplicationProperties:Team" "$archive_path/Info.plist" 2>/dev/null)"
+    local -a profiles
+    get_profiles --format simple --aps-environment "$aps_environment" --app-id "$team.$bundle_id"
+    local profile="$(IFS=$'\n'; echo "${profiles[*]}" | awk '!mem[$0]++' | fzf --prompt="Select a profile> ")"
+    [ -z "$profile" ] && echo "A provision profile is required." && exit 1
+  fi
 
   export EXPORT_METHOD="$method"
   export EXPORT_PROVISION_PROFILE_KEY="$bundle_id"

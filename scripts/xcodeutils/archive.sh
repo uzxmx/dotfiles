@@ -30,6 +30,7 @@ Options:
   --clean clean before archiving
   -o <archive-path> path to save the archive, optional
   --simulator use iphonesimulator sdk
+  --log-dir the directory to save the archive log, the filename is archive.log
 
 Example:
   $> xcodeutils archive
@@ -39,7 +40,7 @@ EOF
 }
 
 cmd_archive() {
-  local scheme archive_path sdk
+  local scheme archive_path sdk log_path
   local -a actions
   process_common_options
   while [ "$#" -gt 0 ]; do
@@ -57,6 +58,10 @@ cmd_archive() {
         ;;
       --iphonesimulator)
         sdk="iphonesimulator"
+        ;;
+      --log-dir)
+        shift
+        log_path="$1/archive.log"
         ;;
       *)
         usage_archive
@@ -80,9 +85,21 @@ cmd_archive() {
   [ -e "$archive_path" ] && echo "Archive path $archive_path already exists, please remove it first." && exit 1
 
   actions+=(archive)
-  xcodebuild -workspace "$workspace_path" \
-    -scheme "$scheme" \
-    -sdk "${sdk:-iphoneos}" -archivePath "$archive_path" \
-    "${actions[@]}"
+
+  local cmd=(
+    xcodebuild -workspace "$workspace_path" \
+      -scheme "$scheme" \
+      -sdk "${sdk:-iphoneos}" -archivePath "$archive_path" \
+      "${actions[@]}"
+  )
+
+  if [ -n "$log_path" ]; then
+    mkdir -p "$(dirname "$log_path")"
+    "${cmd[@]}" &>"$log_path"
+  else
+    "${cmd[@]}"
+  fi
+
+  echo "Archive is saved to $archive_path"
 }
 alias_cmd a archive
