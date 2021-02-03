@@ -64,7 +64,6 @@ run_task() {
   mkdir -p "$initdir"
   tmpfile="$(mktemp -u --suffix=.gradle -p "$initdir")"
   handle_exit() {
-    echo handle_exit
     [ -e "$tmpfile" ] && rm "$tmpfile"
   }
   trap handle_exit EXIT
