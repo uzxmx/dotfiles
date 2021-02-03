@@ -6,6 +6,8 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF
+Usage: open [uri]
+
 OSX open likewise.
 
 When running on OSX, it's just a wrapper.
@@ -14,61 +16,67 @@ When running on WSL, we uses cmd.exe to implement the same behavior.
 The parameter can be a filesystem path. Also it can be an HTTP URL
 which is inferred by 'https?://' prefix.
 
-Usage:
+When no argument is passed, it opens the current working direcotry.
 
-$0 [-b <http url>]
-$0 [path]
-
-[-b] Use browser to open the specified url (only available on WSL)
-[-h] Show help
+Options:
+  -b use browser to open the specified uri
 EOF
   exit 1
 }
 
-if [[ "$(uname -r)" =~ Microsoft$ ]]; then
-  has_http_prefix() {
-    [[ "$1" =~ ^https?:// ]]
-  }
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
-  open_browser() {
-    url="$1"
-    if ! has_http_prefix "$url"; then
-      url="http://$url"
-    fi
-    cmd.exe /c start "$url"
-  }
+is_wsl() {
+  [[ "$(uname -r)" =~ Microsoft$ ]]
+}
 
-  while getopts "b:h" opt; do
-    case "$opt" in
-      b)
-        open_browser "$OPTARG"
-        exit
-        ;;
-      *)
-        usage
-        ;;
-    esac
-  done
+if ! is_wsl && [ "$#" -gt 0 -a "$1" = "-" ]; then
+  shift
+  exec open "$@"
+fi
 
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -b)
+      use_browser=1
+      ;;
+    -h)
+      usage
+      ;;
+    *)
+      uri="$1"
+      ;;
+  esac
+  shift
+done
+
+has_http_prefix() {
+  [[ "$1" =~ ^https?:// ]]
+}
+
+uri="${uri:-.}"
+
+if [ "$use_browser" = "1" -a ! -f "$uri" ] && ! has_http_prefix "$uri"; then
+  uri="http://$uri"
+fi
+
+if is_wsl; then
   source "$dotfiles_dir/scripts/lib/utils.sh"
 
-  target="${1:-.}"
-  if has_http_prefix "$target"; then
-    open_browser "$target"
+  if [ "$use_browser" = "1" ] || has_http_prefix "$uri"; then
+    cmd.exe /c start "$uri"
     exit
   fi
-  if [ ! -e "$target" ]; then
-    abort "Directory or file '$target' doesn't exist."
+  if [ ! -e "$uri" ]; then
+    abort "Directory or file '$uri' doesn't exist."
   fi
 
-  cmd.exe /c "start explorer.exe $(wslpath -w "$target")"
+  cmd.exe /c "start explorer.exe $(wslpath -w "$uri")"
 else
-  source "$dotfiles_dir/scripts/lib/path.sh"
-  PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-  # Open the current working direcotry without any argument.
-  if [ "$#" -eq 0 ]; then
-    open .
+  if [ "$use_browser" = "1" ]; then
+    open -a "Google Chrome" "$uri"
   else
-    open "$@"
+    open "$uri"
   fi
 fi
