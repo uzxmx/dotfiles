@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+android_dir="$dotfiles_dir/scripts/android"
+
+usage() {
+  cat <<-EOF
+Wrapper for android utility.
+
+Subcommands:
+  build - build apks of release version (can also build only one flavor)
+  zip   - zip apks under build/outputs/apk directory
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  build | zip)
+    source "$android_dir/$1.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    android "$@"
+    ;;
+  *)
+    android "$@"
+    ;;
+esac

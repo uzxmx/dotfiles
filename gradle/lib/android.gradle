@@ -1,0 +1,9 @@
+allprojects {
+    task showFlavors {
+        doLast {
+            android.productFlavors.all { flavor ->
+                println flavor.name
+            }
+        }
+    }
+}

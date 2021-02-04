@@ -17,6 +17,7 @@ Subcommands:
   tasks   - show all tasks
   bootRun - run spring-boot based project
   mirror  - manage(show/enable/disable) maven mirrors
+  android - android related utilities
 
 Tasks:
   showRepos                - show repositories
@@ -81,7 +82,7 @@ run_task() {
   shift 2
   local initdir="$HOME/.gradle/init.d"
   mkdir -p "$initdir"
-  tmpfile="$(mktemp -u --suffix=.gradle -p "$initdir")"
+  tmpfile="$initdir/$(basename "$script")-$(date +%Y%m%d%H%M%S).gradle"
   handle_exit() {
     [ -e "$tmpfile" ] && rm "$tmpfile"
   }
@@ -103,7 +104,7 @@ def_task_cmds() {
 }
 
 case "$1" in
-  tasks | bootRun | mirror)
+  tasks | bootRun | mirror | android)
     source "$gradle_dir/$1.sh"
     run "$@"
     ;;
