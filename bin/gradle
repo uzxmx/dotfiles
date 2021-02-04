@@ -5,9 +5,6 @@ set -eo pipefail
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 gradle_dir="$dotfiles_dir/scripts/gradle"
 
-source "$dotfiles_dir/scripts/lib/utils/find.sh"
-gradle_bin="$(find_file_hierarchical gradlew)"
-
 usage() {
   cat <<-EOF
 Wrapper for gradle utility.
@@ -25,6 +22,9 @@ Tasks:
   showRepos                - show repositories
   showBuildScriptRepos     - show buildscript repositories
   showBuildScriptClasspath - show buildscript classpath
+
+Options:
+  --no-wrapper do not use gradle wrapper
 EOF
   exit 1
 }
@@ -44,6 +44,25 @@ alias_cmd() {
     }
   "
 }
+
+remainder=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --no-wrapper)
+      gradle_bin="gradle"
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+set - "${remainder[@]}"
+
+if [ -z "$gradle_bin" ]; then
+  source "$dotfiles_dir/scripts/lib/utils/find.sh"
+  gradle_bin="$(find_file_hierarchical gradlew)"
+fi
 
 run() {
   local cmd="$1"
