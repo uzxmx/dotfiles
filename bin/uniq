@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for uniq utility.
+
+Subcommands:
+  na - remove repeated lines even if they are not adjacent
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+cmd_na() {
+  # Ref: https://metacpan.org/pod/nauniq
+  awk '!mem[$0]++'
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  na)
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    uniq "$@"
+    ;;
+  *)
+    uniq "$@"
+    ;;
+esac
