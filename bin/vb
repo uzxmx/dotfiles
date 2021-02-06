@@ -2,189 +2,73 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+vb_dir="$dotfiles_dir/scripts/vb"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Utility for managing VirtualBox vms.
 
-Provided subcommands include:
-
-  * start: start a vm
-
-      $> vb start <vm_name>
-
-  * show: show a vm
-
-      $> vb show <vm_name>
-
-  * ssh: ssh into a vm
-
-      $> vb ssh <vm_name>
-
-  * stop: power off a vm
-
-      $> vb stop <vm_name>
-
-  * set_cpus: Set the number of cpu
-
-      $> vb set_cpus <vm_name> 4
-
-  * set_mem: Change memory of a vm (unit is gigabyte)
-
-      $> vb set_mem <vm_name> 16
-
-  * enable_bridge: enable bridged network for a vm, which operates on the 2nd nic.
-
-      $> vb enable_bridge <vm_name>
-
-  * disable_bridge: disable bridged network for a vm, which operates on the 2nd nic.
-
-      $> vb disable_bridge <vm_name>
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  s, status      - show status of a vm
+  start          - start a vm
+  show           - show a vm
+  ssh            - ssh into a vm
+  stop           - power off one or more vms
+  set_cpus       - set the number of cpu
+  set_mem        - change memory of a vm (unit is gigabyte)
+  enable_bridge  - enable bridged network for a vm, which operates on the 2nd nic
+  disable_bridge - disable bridged network for a vm, which operates on the 2nd nic
+  list           - list vms, usbhost, etc.
 EOF
   exit 1
 }
 
-VBOXMANAGE=
-if type -p VBoxManage &>/dev/null; then
-  VBOXMANAGE=VBoxManage
-elif type -p VBoxManage.exe &>/dev/null; then
-  VBOXMANAGE=VBoxManage.exe
-else
-  echo 'Cannot find `VBoxManage` in PATH.'
-  exit 1
-fi
-
-listvms() {
-  "$VBOXMANAGE" list vms | awk '{print $1}' | sed 's/^"\(.*\)"$/\1/'
-}
-
-select_vm() {
-  if [ -n "$1" ]; then
-    echo "$1"
+check_vboxmanage() {
+  if type -p VBoxManage &>/dev/null; then
+    VBOXMANAGE=VBoxManage
+  elif type -p VBoxManage.exe &>/dev/null; then
+    VBOXMANAGE=VBoxManage.exe
   else
-    listvms | fzf
-  fi
-}
-
-select_bridge_device() {
-  local name status
-  while read name; do
-    read status
-    if [ "$(echo $status | tr -d '\r')" = "Up" ]; then
-      echo "$name"
-      return
-    fi
-  done < <("$VBOXMANAGE" list bridgedifs | grep -E "^Name:|^Status:" |  sed -E 's/^(Name|Status):\s*//')
-}
-
-startvm() {
-  "$VBOXMANAGE" startvm "$1"
-}
-
-stopvm() {
-  "$VBOXMANAGE" controlvm "$1" poweroff
-}
-
-showvminfo() {
-  "$VBOXMANAGE" showvminfo --machinereadable "$1"
-}
-
-is_running() {
-  [ "$(showvminfo "$1" | grep "^VMState=" | sed "s/^VMState=\"\(.*\)\"/\\1/" | tr -d '\r')" = "running" ]
-}
-
-select_vm_and_check_running() {
-  local vm="$(select_vm "$1")"
-  [ -z "$vm" ] && exit 1
-  if ! is_running "$vm"; then
-    startvm "$vm"
-    # TODO It seems we don't have a good way to detect when vm is booted up.
-    echo 'VM is starting. Please execute your command again when it is started.'
+    echo 'Cannot find `VBoxManage` in PATH.'
     exit 1
   fi
-  echo "$vm"
 }
 
-get_ssh_target() {
-  local user="$(rlwrap -S "User(vagrant): " -o cat)"
-  local ip="$("$VBOXMANAGE" guestproperty get "$1" "/VirtualBox/GuestInfo/Net/1/V4/IP" | awk '{print $2}')"
-  echo "${user:-vagrant}@$ip"
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
 }
 
-cmd="$1"
-shift || true
-case "$cmd" in
-  status)
-    vm="$(select_vm "$1")"
-    if is_running "$vm"; then
-      echo $vm is running
-    else
-      echo $vm is NOT running
-    fi
+case "$1" in
+  status | start | show | ssh | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
+    case "$1" in
+      s)
+        name="status"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$vb_dir/$name.sh"
+    run "$@"
     ;;
-  start)
-    vm="$(select_vm "$1")"
-    startvm "$vm"
+  -h)
+    usage
     ;;
-  show)
-    vm="$(select_vm "$1")"
-    showvminfo "$vm"
-    ;;
-  ssh)
-    vm="$(select_vm_and_check_running "$1")"
-    ssh -A "$(get_ssh_target "$vm")"
-    ;;
-  stop)
-    vm="$(select_vm "$1")"
-    stopvm "$vm"
-    ;;
-  stop_all)
-    while read vm; do
-      if is_running "$vm"; then
-        stopvm "$vm"
-        echo $vm is stopped.
-      fi
-    done < <(listvms)
-    ;;
-  set_cpus)
-    if [ "$#" -gt 1 ]; then
-      vm="$1"
-      num="$2"
-    elif [ "$#" -eq 1 ]; then
-      vm="$(select_vm)"
-      num="$1"
-    else
-      echo "The number of CPU is required"
-      exit 1
-    fi
-    "$VBOXMANAGE" modifyvm "$vm" --cpus "$num"
-    ;;
-  set_mem)
-    if [ "$#" -gt 1 ]; then
-      vm="$1"
-      size="$2"
-    elif [ "$#" -eq 1 ]; then
-      vm="$(select_vm)"
-      size="$1"
-    else
-      echo "Memory size is required"
-      exit 1
-    fi
-    "$VBOXMANAGE" modifyvm "$vm" --memory $(($size * 1024))
-    ;;
-  enable_bridge)
-    vm="$(select_vm "$1")"
-    device="$(select_bridge_device)"
-    "$VBOXMANAGE" modifyvm "$vm" --nic2 bridged --bridgeadapter1 "$device"
-    ;;
-  disable_bridge)
-    vm="$(select_vm "$1")"
-    "$VBOXMANAGE" modifyvm "$vm" --nic2 none
+  -)
+    shift
+    check_vboxmanage
+    "$VBOXMANAGE" "$@"
     ;;
   *)
-    usage
+    check_vboxmanage
+    "$VBOXMANAGE" "$@"
     ;;
 esac
