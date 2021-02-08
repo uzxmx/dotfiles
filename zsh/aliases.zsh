@@ -47,6 +47,8 @@ alias gss="git stash"
 alias gsp="git stash pop"
 alias gt="git tag"
 
+alias h='capture_source_and_signal ~/.dotfiles/bin/h "$@"'
+
 alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 alias l="ls -1tA"
 alias la="ls -a"
