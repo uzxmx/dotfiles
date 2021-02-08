@@ -75,8 +75,8 @@ while true; do
   fi
 
   call_fzf result --query="$query" --print-query --multi --exit-0 \
-    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-D:cd)> ' \
-    --expect="ctrl-v,ctrl-e,ctrl-i,ctrl-d" \
+    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-D:cd CTRL-X:exec)> ' \
+    --expect="ctrl-v,ctrl-e,ctrl-i,ctrl-d,ctrl-x" \
     < <(fd "${fd_opts[@]}" "${pattern:-.}" "${directories[@]}")
 
   [ -z "${result[*]}" ] && break
@@ -115,14 +115,19 @@ while true; do
         no_ignore=
       fi
       ;;
-    ctrl-d | "")
+    ctrl-d | ctrl-x | "")
       if [ "${#result[@]}" -eq 0 ]; then
         echo "No file available"
         exit
       fi
+      file="${result[0]}"
       if [ "$key" = "ctrl-d" ]; then
-        echo "cd $(dirname "${result[0]}")" >&3
+        echo "cd $(dirname "$file")" >&3
         exit
+      elif [ "$key" = "ctrl-x" ]; then
+        [ ! -x "$file" ] && echo "$file is not an executable." && exit
+        echo "$(realpath "$file")" >&3
+        exit 100
       fi
       break
       ;;
