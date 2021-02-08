@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF
+Usage: $0 <file-specifier>
+
+This script only requires one argument, which specifies the file and the
+optional lineno. There are two formats supported: one is 'filename:lineno', the
+other is '::filename'. The colon in the formats is a separator.
+EOF
+  exit 1
+}
+
+[ -z "$1" ] && usage
+
+filename="$(echo "$1" | awk -F: '{print $1}')"
+if [ -z "$filename" ]; then
+  filename="$(echo "$1" | awk -F: '{print $3}')"
+else
+  lineno="$(echo "$1" | awk -F: '{print $2}')"
+fi
+
+if [ -z "$lineno" ]; then
+  ~/.vim/plugged/fzf.vim/bin/preview.sh "$filename"
+else
+  ~/.vim/plugged/fzf.vim/bin/preview.sh "$filename:$lineno"
+fi
