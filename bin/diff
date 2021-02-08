@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for diff utility.
+
+Subcommands:
+  brief - do not show file contents
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+cmd_brief() {
+  diff -qr "$@"
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  brief)
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    diff "$@"
+    ;;
+  *)
+    diff "$@"
+    ;;
+esac
