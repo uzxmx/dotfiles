@@ -44,3 +44,8 @@ ask_for_input() {
     eval "$1=\"$(rlwrap -S "$2" -P "$3" -o cat)\""
   done
 }
+
+# Prompt for a string. The input is allowed to be empty.
+ask_for_input_empty() {
+  eval "$1=\"$(rlwrap -S "$2" -P "$3" -o cat)\""
+}

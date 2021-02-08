@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(dirname "$BASH_SOURCE")/../.."
+source "$dotfiles_dir/scripts/lib/prompt.sh"
+
+ask_for_input input_image "Input image: "
+if [ ! -f "$input_image" ]; then
+  echo "Input image $input_image does not exist."
+  exit 1
+fi
+
+output_opts=()
+while true; do
+  ask_for_input_empty resize "Resize(e.g. scale%, width, xheight. h/? for help): "
+  if [ "$resize" = "h" -o "$resize" = "?" ]; then
+    cat <<EOF
+Geometry format:
+
+scale%            Height and width both scaled by specified percentage.
+scale-x%xscale-y% Height and width individually scaled by specified percentages. (Only one % symbol needed.)
+width             Width given, height automagically selected to preserve aspect ratio.
+xheight           Height given, width automagically selected to preserve aspect ratio.
+widthxheight      Maximum values of height and width given, aspect ratio preserved.
+widthxheight^     Minimum values of width and height given, aspect ratio preserved.
+widthxheight!     Width and height emphatically given, original aspect ratio ignored.
+
+For more information, please visit https://imagemagick.org/script/command-line-processing.php#geometry.
+EOF
+  else
+    output_opts+=("-resize" "$resize")
+    break
+  fi
+done
+
+ask_for_input output_image "Output image: "
+
+convert "$input_image" "${output_opts[@]}" "$output_image"
+identify "$input_image"
+identify "$output_image"
