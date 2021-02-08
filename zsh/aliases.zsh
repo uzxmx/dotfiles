@@ -77,8 +77,7 @@ alias pi='px info'
 # `r` is also a zsh built-in command.
 alias r='capture_source_and_signal ~/.dotfiles/bin/r "$@"'
 
-alias sd="s ~/.dotfiles"
-alias sdd="s ~/.dotfiles/doc"
+alias s='capture_source_and_signal ~/.dotfiles/bin/s "$@"'
 
 alias ta="~/.dotfiles/scripts/misc/tmuxctl attach"
 alias td="~/.dotfiles/scripts/misc/tmuxctl detach"
