@@ -1,14 +1,5 @@
 # vim: ft=zsh
 
-# Make directory and change into it
-mc() {
-  mkdir -p "$1" && cd "$1"
-}
-
-todo() {
-  vi ~/.dotfiles/doc/todo.md
-}
-
 enable_pry_rails() {
   unset DISABLE_PRY_RAILS
 }
@@ -31,12 +22,6 @@ _fed() {
 }
 
 alias fevp="_fed ~/.vim/plugged"
-
-# Select a directory from current directory and change to there.
-fcd() {
-  local dir
-  dir=$(fd ${1:-.} --type d 2> /dev/null | fzf +m) && cd "$dir"
-}
 
 # This is a ZLE widget function that allows us to execute the command in the
 # editing buffer by pressing CTRL-S.
