@@ -24,17 +24,22 @@ if ! [ $(basename $(dirname "$BASH_SOURCE")) = "bootstrap" -a $(basename $(dirna
     fi
   fi
 
+  tmpfile="$(mktemp)"
+  handle_exit() {
+    [ -e "$tmpfile" ] && rm "$tmpfile"
+  }
+  trap handle_exit EXIT
+
   if is_available curl; then
-    download_cmd="curl -s $REMOTE_STAGE0_SCRIPT"
+    curl -o "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
   elif is_available wget; then
-    download_cmd="wget -O- $REMOTE_STAGE0_SCRIPT 2>/dev/null"
+    wget -O "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
   else
-    # Should never be reachable.
     echo 'No curl or wget found'
     exit 1
   fi
 
-  source <($download_cmd)
+  source "$tmpfile"
 else
   DOTFILES_ROOT=$(dirname "$BASH_SOURCE")/../..
   source "$DOTFILES_ROOT/scripts/bootstrap/stage0"
