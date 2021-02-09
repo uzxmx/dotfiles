@@ -72,7 +72,7 @@ if is_wsl; then
     abort "Directory or file '$uri' doesn't exist."
   fi
 
-  cmd.exe /c "start explorer.exe $(wslpath -w "$uri")"
+  cmd.exe /c "start explorer.exe $("$dotfiles_dir/bin/wslpath" -w "$uri")"
 else
   if [ "$use_browser" = "1" ]; then
     open -a "Google Chrome" "$uri"
