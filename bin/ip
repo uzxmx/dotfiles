@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for ip utility.
 
 Subcommands:
@@ -13,11 +15,11 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 usage_my() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: ip my [--concise]
 
 Get the external IP of the current machine. We use below APIs to query:
@@ -74,11 +76,14 @@ cmd_my() {
     ip="$ip2"
   fi
 
-  echo "$ip" | tee >(~/.dotfiles/bin/cb >/dev/null)
+  echo "$ip" | tee >("$dotfiles_dir/bin/cb" >/dev/null)
+  if [ ! "$concise" = "1" ]; then
+    cmd_geo "$ip"
+  fi
 }
 
 usage_geo() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: ip geo <ip>
 
 Get the geo info of an IP.
@@ -125,8 +130,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    ip "$@"
+    ;;
   *)
     ip "$@"
     ;;
