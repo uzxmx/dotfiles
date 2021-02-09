@@ -12,5 +12,5 @@
 #   local str="$(str_trim "  foo  ")"
 str_trim() {
   local str="$1"
-  echo "$1" | sed 's/^[[:space:]]\|[[:space:]]$//g'
+  echo -n "$1" | gsed 's/^[[:space:]]*\|[[:space:]]*$//g'
 }
