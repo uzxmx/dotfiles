@@ -2,9 +2,55 @@
 
 set -eo pipefail
 
-if ! [ $(basename $(dirname "$BASH_SOURCE")) = "bootstrap" -a $(basename $(dirname $(dirname "$BASH_SOURCE"))) = "scripts" ]; then
+usage() {
+  cat <<-EOF
+Utility to setup dotfiles repository in current system.
+
+Options:
+  -p, --proxy <proxy> http proxy
+  -v, --verbose show verbose output
+EOF
+  exit 1
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -p | --proxy)
+      shift
+      user_http_proxy="$1"
+      ;;
+    -v | --verbose)
+      verbose=1
+      ;;
+  esac
+  shift
+done
+
+run() {
+  if [ "$verbose" = "1" ]; then
+    echo "Run: $@" >&2
+  fi
+  eval "$@"
+}
+
+run_with_proxy() {
+  if [ -n "$user_http_proxy" ]; then
+    export http_proxy=http://$user_http_proxy
+    export HTTP_PROXY=http://$user_http_proxy
+    export https_proxy=http://$user_http_proxy
+    export HTTPS_PROXY=http://$user_http_proxy
+  fi
+
+  run "$@"
+
+  if [ -n "$user_http_proxy" ]; then
+    unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
+  fi
+}
+
+if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(dirname $(dirname "$BASH_SOURCE"))")" = "scripts" ]; then
   # Download and execute stage0 script.
-  REMOTE_STAGE0_SCRIPT=${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/stage0}
+  REMOTE_STAGE0_SCRIPT="${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/stage0}"
 
   is_available() {
     type -p "$1" &> /dev/null
@@ -31,9 +77,9 @@ if ! [ $(basename $(dirname "$BASH_SOURCE")) = "bootstrap" -a $(basename $(dirna
   trap handle_exit EXIT
 
   if is_available curl; then
-    curl -o "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
+    run_with_proxy curl -o "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
   elif is_available wget; then
-    wget -O "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
+    run_with_proxy wget -O "$tmpfile" "$REMOTE_STAGE0_SCRIPT"
   else
     echo 'No curl or wget found'
     exit 1
@@ -51,7 +97,7 @@ cd "$DOTFILES_ROOT"
 source ./scripts/lib/utils.sh
 
 if is_vagrant; then
-  ./scripts/misc/set_sudo_nopasswd
+  run ./scripts/misc/set_sudo_nopasswd
 fi
 
 if [ -n "$PROXY" ]; then
@@ -60,7 +106,7 @@ if [ -n "$PROXY" ]; then
   trap pd EXIT
 fi
 
-./scripts/misc/setup_system_repo_mirror
+run ./scripts/misc/setup_system_repo_mirror
 
 deps=(
   prerequisites
@@ -80,7 +126,7 @@ deps=(
 )
 
 for dep in "${deps[@]}"; do
-  "./scripts/install/$dep"
+  run "./scripts/install/$dep"
 
   case "$dep" in
     rcm)
@@ -97,9 +143,9 @@ done
 
 # Required by ssh wrapper.
 if ! perl -MJSON::PP -e 1 &>/dev/null; then
-  ./scripts/install/perl
+  run ./scripts/install/perl
 fi
 
 for dep in cpanm perl_modules; do
-  "./scripts/install/$dep"
+  run "./scripts/install/$dep"
 done
