@@ -42,7 +42,7 @@ cmd_bootRun() {
     shift
   done
 
-  if [ ! -n "$TMUX" ]; then
+  if [ -n "$TMUX" ]; then
     tmux split-window -h "$gradle_bin" build --continuous
   fi
 
