@@ -6,7 +6,9 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../lib/system.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+. "$dotfiles_dir/scripts/lib/system.sh"
 
 usage() {
   cat <<-EOF 1>&2
@@ -63,26 +65,9 @@ fatal() {
   exit 1
 }
 
-SED=
-check_gsed() {
-  local cmd
-  if [[ -z "$SED" ]]; then
-    if type gsed &>/dev/null; then
-      cmd=gsed
-    else
-      cmd=sed
-    fi
-    if ! $cmd --version | head -1 | grep 'GNU sed' &>/dev/null; then
-      fatal 'GNU sed is required.'
-      exit 1
-    fi
-    SED=$cmd
-  fi
-}
-
 test_proxy() {
   if ! type -p nc &>/dev/null; then
-    $(dirname "$BASH_SOURCE")/../install/netcat
+    "$dotfiles_dir/scripts/install/netcat"
   fi
 
   local ary host port
@@ -218,7 +203,7 @@ enable_curl_proxy() {
   fi
 
   if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
-    check_gsed
+    source "$dotfiles_dir/scripts/lib/gsed.sh"
     $SED -i -E "s/^proxy ?= ?.*$/proxy = $user_http_proxy/" ~/.curlrc
   else
     echo "proxy = $user_http_proxy" >>~/.curlrc
@@ -229,7 +214,7 @@ enable_curl_proxy() {
 
 disable_curl_proxy() {
   if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
-    check_gsed
+    source "$dotfiles_dir/scripts/lib/gsed.sh"
     $SED -i -E '/^proxy ?= ?.*$/d' ~/.curlrc
   fi
 
@@ -286,7 +271,7 @@ dump_docker_proxy() {
 
 enable_yum_proxy() {
   if type -p yum &>/dev/null; then
-    check_gsed
+    source "$dotfiles_dir/scripts/lib/gsed.sh"
     if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
       sudo $SED -i -E "s/^proxy=.*$/proxy=http:\\/\\/$user_http_proxy/" /etc/yum.conf
     else
@@ -301,7 +286,7 @@ enable_yum_proxy() {
 disable_yum_proxy() {
   if type -p yum &>/dev/null; then
     if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
-      check_gsed
+      source "$dotfiles_dir/scripts/lib/gsed.sh"
       sudo $SED -i -E '/^proxy=.*$/d' /etc/yum.conf
     fi
 
