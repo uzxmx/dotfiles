@@ -102,7 +102,7 @@ fi
 
 if [ -n "$PROXY" ]; then
   source ./scripts/misc/bash_proxyctl
-  pe -p "$PROXY"
+  pe -p "$PROXY" http git curl
   trap pd EXIT
 fi
 
