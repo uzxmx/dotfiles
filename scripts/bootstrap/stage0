@@ -29,5 +29,5 @@ if [ ! -d "$DOTFILES_ROOT" ] || ! (cd "$DOTFILES_ROOT" && git status &> /dev/nul
   else
     url="https://github.com/uzxmx/dotfiles.git"
   fi
-  git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_ROOT"
+  run_with_proxy git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_ROOT"
 fi
