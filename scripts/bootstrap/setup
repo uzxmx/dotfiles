@@ -41,7 +41,7 @@ if ! [ $(basename $(dirname "$BASH_SOURCE")) = "bootstrap" -a $(basename $(dirna
 
   source "$tmpfile"
 else
-  DOTFILES_ROOT=$(dirname "$BASH_SOURCE")/../..
+  DOTFILES_ROOT="$(dirname "$BASH_SOURCE")/../.."
   source "$DOTFILES_ROOT/scripts/bootstrap/stage0"
 fi
 
@@ -55,7 +55,7 @@ if is_vagrant; then
 fi
 
 if [ -n "$PROXY" ]; then
-  source ./scripts/misc/bash_proxyctl.sh
+  source ./scripts/misc/bash_proxyctl
   pe -p "$PROXY"
   trap pd EXIT
 fi
