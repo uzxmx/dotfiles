@@ -6,12 +6,13 @@ set -eo pipefail
 
 # Install required repos for centos.
 if has_yum; then
-  sudo yum install -y epel-release
+  # sudo yum install -y epel-release
+  # sudo sed -i.bak -e 's;^metalink=;#metalink=;' \
+  #   -e 's;^#baseurl=http://download\.fedoraproject\.org/pub;baseurl=https://mirrors.tuna.tsinghua.edu.cn;' \
+  #   /etc/yum.repos.d/epel.repo \
+  #   /etc/yum.repos.d/epel-testing.repo
 
-  sudo sed -i.bak -e 's;^metalink=;#metalink=;' \
-    -e 's;^#baseurl=http://download\.fedoraproject\.org/pub;baseurl=https://mirrors.tuna.tsinghua.edu.cn;' \
-    /etc/yum.repos.d/epel.repo \
-    /etc/yum.repos.d/epel-testing.repo
+  sudo curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
   # TODO this cannot be found.
   # sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm
@@ -21,7 +22,10 @@ if has_yum; then
 
   sudo yum install -y centos-release
 
-  sudo sed -i.bak -e 's;http://vault.centos.org;https://mirrors.tuna.tsinghua.edu.cn/centos-vault;' \
+  # sudo sed -i.bak -e 's;http://vault.centos.org;https://mirrors.tuna.tsinghua.edu.cn/centos-vault;' \
+  #   /etc/yum.repos.d/CentOS-Vault.repo
+
+  sudo sed -i.bak -e 's;http://vault.centos.org;https://mirrors.aliyun.com/centos-vault;' \
     /etc/yum.repos.d/CentOS-Vault.repo
 fi
 
