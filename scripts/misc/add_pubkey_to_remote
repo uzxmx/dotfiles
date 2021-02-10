@@ -5,10 +5,11 @@ set -eo pipefail
 . $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: $0 user@host
 
-Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote server.
+Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote
+server for passwordless ssh login.
 
 Note: if shared ssh connection is not configured, it may ask for password for
 serveral times.
