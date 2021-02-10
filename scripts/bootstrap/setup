@@ -102,7 +102,9 @@ fi
 
 if [ -n "$PROXY" ]; then
   # Create a symlink for gitconfig, so git http proxy can be shown correctly.
-  run ln -s "$DOTFILES_ROOT/gitconfig" ~/.gitconfig
+  if [ ! -e ~/.gitconfig ]; then
+    run ln -s "$DOTFILES_ROOT/gitconfig" ~/.gitconfig
+  fi
 
   source ./scripts/misc/bash_proxyctl
   pe -p "$PROXY" http git curl
