@@ -52,8 +52,9 @@ query="${result[0]}"
 key="${result[1]}"
 case "$key" in
   ctrl-i)
+    fzf_bin="$(which fzf)"
     cd "$dotfiles_dir/scripts/install"
-    file=$(find . -type f | sed 's:^\./::' | fzf --query "$query")
+    file="$(find . -type f | sed 's:^\./::' | "$fzf_bin" --query "$query")"
     if [ -n "$file" ]; then
       "./$file"
     fi
