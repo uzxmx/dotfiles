@@ -139,7 +139,7 @@ for dep in "${deps[@]}"; do
       chmod 600 ~/.ssh/config
       ;;
     tmux)
-      run ./scripts/setup_tmux
+      run ./scripts/misc/setup_tmux
       ;;
   esac
 done
