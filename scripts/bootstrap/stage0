@@ -30,4 +30,6 @@ if [ ! -d "$DOTFILES_ROOT" ] || ! (cd "$DOTFILES_ROOT" && git status &> /dev/nul
     url="https://github.com/uzxmx/dotfiles.git"
   fi
   run_with_proxy git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_ROOT"
+elif [ "$update_repo" = "1" ]; then
+  (cd "$DOTFILES_ROOT" && run_with_proxy git pull)
 fi

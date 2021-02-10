@@ -9,6 +9,7 @@ Utility to setup dotfiles repository in current system.
 Options:
   -p, --proxy <proxy> http proxy
   -v, --verbose show verbose output
+  --update-repo fetch new updates from remote before setting up
 EOF
   exit 1
 }
@@ -21,6 +22,12 @@ while [ "$#" -gt 0 ]; do
       ;;
     -v | --verbose)
       verbose=1
+      ;;
+    --update-repo)
+      update_repo=1
+      ;;
+    *)
+      usage
       ;;
   esac
   shift
