@@ -4,14 +4,17 @@
 // Use vim to edit this file, so that it can be copied to the correct location on saving.
 //
 // To view the default settings, hold "alt" while clicking on the "Settings" button.
-// For documentation on these settings, see: https://aka.ms/terminal-documentation
+// For documentation on these settings, see: https://aka.ms/terminal-documentation or
+// https://github.com/microsoft/terminal/blob/main/doc/cascadia/profiles.schema.json
 {
   "$schema": "https://aka.ms/terminal-profiles-schema",
   "defaultProfile": "{9a771fbb-cb68-4e92-aaf3-79efbbeb3ed0}",
   "copyOnSelect": true,
   "multiLinePasteWarning": false,
   "profiles": {
-    "defaults":{},
+    "defaults":{
+      "bellStyle": "none",
+    },
     "list": [
       {
         "guid": "{9a771fbb-cb68-4e92-aaf3-79efbbeb3ed0}",
