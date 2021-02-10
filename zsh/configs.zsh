@@ -94,6 +94,8 @@ fi
 # Bash like completion
 setopt noautomenu
 
+unsetopt BEEP
+
 if [ -t 0 ]; then
   # So as not to be disturbed by Ctrl-S ctrl-Q in terminals
   stty -ixon
