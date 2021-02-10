@@ -87,7 +87,7 @@ if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(d
 
   source "$tmpfile"
 else
-  DOTFILES_ROOT="$(dirname "$BASH_SOURCE")/../.."
+  DOTFILES_ROOT="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
   source "$DOTFILES_ROOT/scripts/bootstrap/stage0"
 fi
 
@@ -101,6 +101,9 @@ if is_vagrant; then
 fi
 
 if [ -n "$PROXY" ]; then
+  # Create a symlink for gitconfig, so git http proxy can be shown correctly.
+  run ln -s "$DOTFILES_ROOT/gitconfig" ~/.gitconfig
+
   source ./scripts/misc/bash_proxyctl
   pe -p "$PROXY" http git curl
   trap pd EXIT
@@ -130,13 +133,13 @@ for dep in "${deps[@]}"; do
 
   case "$dep" in
     rcm)
-      rcup
+      run rcup
 
       # Fix bad permissions.
       chmod 600 ~/.ssh/config
       ;;
     tmux)
-      ./scripts/setup_tmux
+      run ./scripts/setup_tmux
       ;;
   esac
 done

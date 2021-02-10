@@ -128,7 +128,7 @@ if [ "$subcommand" = "enable" ]; then
   fi
 fi
 
-if [ -z "$@" ]; then
+if [ "$#" -eq 0 ]; then
   target_http=1
   target_git=1
   target_curl=1
