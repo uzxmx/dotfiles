@@ -21,3 +21,14 @@ _shell_quote() {
     echo "${1:q}"
   fi
 }
+
+# Expand tilde in quotes.
+#
+# @params:
+#   $1: a quoted path starting with tilde
+#
+# @example
+#   expand_tilde_in_quotes "~/foo"
+expand_tilde_in_quotes() {
+  eval echo "$1"
+}
