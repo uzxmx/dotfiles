@@ -6,14 +6,21 @@ usage() {
   cat <<-EOF
 Utility to setup dotfiles repository in current system.
 
+A type predefines which tools will be installed. Supported types include:
+
+* minimal: only essential tools
+* full: all tools, default type
+
 Options:
   -p, --proxy <proxy> http proxy
   -v, --verbose show verbose output
   --update-repo fetch new updates from remote before setting up
+  -t, --type setup type, e.g. minimal, full. Default is full
 EOF
   exit 1
 }
 
+setup_type="full"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -p | --proxy)
@@ -25,6 +32,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --update-repo)
       update_repo=1
+      ;;
+    -t | --type)
+      shift
+      setup_type="$1"
       ;;
     *)
       usage
@@ -54,6 +65,19 @@ run_with_proxy() {
     unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
   fi
 }
+
+case "$setup_type" in
+  full)
+    setup_go=1
+    setup_coc_java=1
+    setup_coc_python=1
+    ;;
+  minimal)
+    ;;
+  *)
+    usage
+    ;;
+esac
 
 if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(dirname $(dirname "$BASH_SOURCE"))")" = "scripts" ]; then
   # Download and execute stage0 script.
@@ -146,6 +170,26 @@ for dep in "${deps[@]}"; do
 
       # Fix bad permissions.
       chmod 600 ~/.ssh/config
+      ;;
+    nvim)
+      coc_extensions=(ultisnips)
+      if [ "$setup_coc_python" = "1" ]; then
+        coc_extensions+=(python)
+      fi
+      if [ "$setup_coc_java" = "1" ]; then
+        coc_extensions+=(java)
+      fi
+      for e in "${coc_extensions[@]}"; do
+        run ./scripts/install/coc_extensions "$e"
+      done
+
+      if [ "$setup_coc_java" = "1" ]; then
+        run ./scripts/install/lombok
+      fi
+
+      if [ "$setup_go" = "1" ]; then
+        run ./scripts/install/gopls
+      fi
       ;;
     tmux)
       run ./scripts/misc/setup_tmux
