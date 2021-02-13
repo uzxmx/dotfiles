@@ -2,22 +2,25 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for hub utility.
 
 Subcommands:
   create - create a github repo
   clone - clone a github repo
+  download - download an archive for a specific revision
 EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 usage_create() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hub create [name]
 
 Create a github repo.
@@ -54,7 +57,7 @@ cmd_create() {
 }
 
 usage_clone() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hub clone <arg>
 
 Clone a github repo.
@@ -81,8 +84,53 @@ cmd_clone() {
   hub clone "$name"
 }
 
+usage_download() {
+  cat <<-EOF
+Usage: hub download [-d dest-dir] <project> [revision]
+
+Download an archive for a specific revision. By default the revision is master.
+EOF
+  exit 1
+}
+
+cmd_download() {
+  local dest_dir
+  local remainder=()
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -d)
+        shift
+        dest_dir="$1"
+        ;;
+      -*)
+        usage_download
+        ;;
+      *)
+        remainder+=("$1")
+        ;;
+    esac
+    shift
+  done
+  set - "${remainder[@]}"
+
+  [ -e "$dest_dir" ] && echo "Directory $dest_dir already exists." && exit 1
+
+  local project="$1"
+  local revision="${2:-master}"
+  tmpdir="$(mktemp -d)"
+  tmpfile="$(mktemp)"
+  handle_exit() {
+    [ -e "$tmpdir" ] && rm -rf "$tmpdir"
+    [ -e "$tmpfile" ] && rm "$tmpfile"
+  }
+  trap handle_exit EXIT
+  curl -o "$tmpfile" -L "https://github.com/$project/archive/$revision.zip"
+  (cd "$tmpdir"; unzip "$tmpfile")
+  mv "$tmpdir/$(ls "$tmpdir")" "${dest_dir:-.}"
+}
+
 case "$1" in
-  create | clone)
+  create | clone | download)
     cmd="$1"
     shift
     case "$1" in
@@ -97,8 +145,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    hub "$@"
+    ;;
   *)
     hub "$@"
     ;;
