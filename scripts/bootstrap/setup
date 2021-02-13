@@ -28,7 +28,7 @@ while [ "$#" -gt 0 ]; do
       user_http_proxy="$1"
       ;;
     -v | --verbose)
-      verbose=1
+      export verbose=1
       ;;
     --update-repo)
       update_repo=1
@@ -44,12 +44,13 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-export run() {
+run() {
   if [ "$verbose" = "1" ]; then
     echo "Run: $@" >&2
   fi
   eval "$@"
 }
+export -f run
 
 run_with_proxy() {
   if [ -n "$user_http_proxy" ]; then
@@ -68,9 +69,11 @@ run_with_proxy() {
 
 case "$setup_type" in
   full)
-    export setup_go=1
-    export setup_coc_java=1
     export setup_coc_python=1
+    export setup_java=1
+    export setup_coc_java=1
+    export setup_go=1
+    export setup_gopls=1
     ;;
   minimal)
     ;;
@@ -131,14 +134,14 @@ if is_vagrant; then
   run ./scripts/misc/set_sudo_nopasswd
 fi
 
-if [ -n "$PROXY" ]; then
+if [ -n "$user_http_proxy" ]; then
   # Create a symlink for gitconfig, so git http proxy can be shown correctly.
   if [ ! -e ~/.gitconfig ]; then
     run ln -s "$DOTFILES_ROOT/gitconfig" ~/.gitconfig
   fi
 
   source ./scripts/misc/bash_proxyctl
-  pe -p "$PROXY" http git curl
+  pe -p "$user_http_proxy" http git curl
   trap pd EXIT
 fi
 
@@ -167,4 +170,4 @@ for dep in "${deps[@]}"; do
   esac
 done
 
-zsh -c "$(dirname "$BASH_SOURCE")/inc/post-setup"
+zsh -c "source ~/.zshrc; $(dirname "$BASH_SOURCE")/inc/post-setup"

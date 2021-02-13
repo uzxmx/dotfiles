@@ -17,22 +17,29 @@ for dep in "${deps[@]}"; do
 
   case "$dep" in
     nvim)
-      coc_extensions=(ultisnips)
+      run ./scripts/install/coc_extensions ultisnips
+
       if [ "$setup_coc_python" = "1" ]; then
-        coc_extensions+=(python)
+        run ./scripts/install/coc_extensions python
       fi
+
+      if [ "$setup_java" = "1" ]; then
+        run ./scripts/install/java
+      fi
+
       if [ "$setup_coc_java" = "1" ]; then
-        coc_extensions+=(java)
+        run ./scripts/install/coc_extensions java
       fi
-      for e in "${coc_extensions[@]}"; do
-        run ./scripts/install/coc_extensions "$e"
-      done
 
       if [ "$setup_coc_java" = "1" ]; then
         run ./scripts/install/lombok
       fi
 
       if [ "$setup_go" = "1" ]; then
+        run ./scripts/install/golang
+      fi
+
+      if [ "$setup_gopls" = "1" ]; then
         run ./scripts/install/gopls
       fi
       ;;
