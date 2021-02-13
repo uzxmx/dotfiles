@@ -26,6 +26,9 @@ install_plugin_package() {
         # asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
         hub download -d ~/.asdf/plugins/java halcyon/asdf-java 7a04f7c1a615370cc639d3ee02a91e99ecca27b5
         ;;
+      golang)
+        hub download -d ~/.asdf/plugins/golang kennyp/asdf-golang 9297fbefb1f95aaeadfd872b53d28e355a3e67e5
+        ;;
       *)
         asdf plugin-add "$plugin"
         ;;
