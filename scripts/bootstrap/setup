@@ -170,4 +170,4 @@ for dep in "${deps[@]}"; do
   esac
 done
 
-zsh -c "source ~/.zshrc; $(dirname "$BASH_SOURCE")/inc/post-setup"
+zsh -c "source ~/.zshrc; $DOTFILES_ROOT/scripts/bootstrap/inc/post-setup"
