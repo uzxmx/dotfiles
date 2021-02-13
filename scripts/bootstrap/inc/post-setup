@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+deps=(
+  nvim
+  tmux
+  bc
+  socat
+  fzf
+  fd
+  rg
+)
+
+for dep in "${deps[@]}"; do
+  run "./scripts/install/$dep"
+
+  case "$dep" in
+    nvim)
+      coc_extensions=(ultisnips)
+      if [ "$setup_coc_python" = "1" ]; then
+        coc_extensions+=(python)
+      fi
+      if [ "$setup_coc_java" = "1" ]; then
+        coc_extensions+=(java)
+      fi
+      for e in "${coc_extensions[@]}"; do
+        run ./scripts/install/coc_extensions "$e"
+      done
+
+      if [ "$setup_coc_java" = "1" ]; then
+        run ./scripts/install/lombok
+      fi
+
+      if [ "$setup_go" = "1" ]; then
+        run ./scripts/install/gopls
+      fi
+      ;;
+    tmux)
+      run ./scripts/misc/setup_tmux
+      ;;
+  esac
+done
+
+# Required by ssh wrapper.
+if ! perl -MJSON::PP -e 1 &>/dev/null; then
+  run ./scripts/install/perl
+fi
+
+for dep in cpanm perl_modules; do
+  run "./scripts/install/$dep"
+done

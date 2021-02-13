@@ -44,7 +44,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-run() {
+export run() {
   if [ "$verbose" = "1" ]; then
     echo "Run: $@" >&2
   fi
@@ -68,9 +68,9 @@ run_with_proxy() {
 
 case "$setup_type" in
   full)
-    setup_go=1
-    setup_coc_java=1
-    setup_coc_python=1
+    export setup_go=1
+    export setup_coc_java=1
+    export setup_coc_python=1
     ;;
   minimal)
     ;;
@@ -81,7 +81,7 @@ esac
 
 if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(dirname $(dirname "$BASH_SOURCE"))")" = "scripts" ]; then
   # Download and execute stage0 script.
-  REMOTE_STAGE0_SCRIPT="${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/stage0}"
+  REMOTE_STAGE0_SCRIPT="${REMOTE_STAGE0_SCRIPT:-https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/inc/stage0}"
 
   is_available() {
     type -p "$1" &> /dev/null
@@ -119,7 +119,7 @@ if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(d
   source "$tmpfile"
 else
   DOTFILES_ROOT="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
-  source "$DOTFILES_ROOT/scripts/bootstrap/stage0"
+  source "$DOTFILES_ROOT/scripts/bootstrap/inc/stage0"
 fi
 
 # Do real setup.
@@ -152,13 +152,6 @@ deps=(
   hstr
   rlwrap
   asdf
-  nvim
-  tmux
-  bc
-  socat
-  fzf
-  fd
-  rg
 )
 
 for dep in "${deps[@]}"; do
@@ -171,37 +164,7 @@ for dep in "${deps[@]}"; do
       # Fix bad permissions.
       chmod 600 ~/.ssh/config
       ;;
-    nvim)
-      coc_extensions=(ultisnips)
-      if [ "$setup_coc_python" = "1" ]; then
-        coc_extensions+=(python)
-      fi
-      if [ "$setup_coc_java" = "1" ]; then
-        coc_extensions+=(java)
-      fi
-      for e in "${coc_extensions[@]}"; do
-        run ./scripts/install/coc_extensions "$e"
-      done
-
-      if [ "$setup_coc_java" = "1" ]; then
-        run ./scripts/install/lombok
-      fi
-
-      if [ "$setup_go" = "1" ]; then
-        run ./scripts/install/gopls
-      fi
-      ;;
-    tmux)
-      run ./scripts/misc/setup_tmux
-      ;;
   esac
 done
 
-# Required by ssh wrapper.
-if ! perl -MJSON::PP -e 1 &>/dev/null; then
-  run ./scripts/install/perl
-fi
-
-for dep in cpanm perl_modules; do
-  run "./scripts/install/$dep"
-done
+zsh -c "$(dirname "$BASH_SOURCE")/inc/post-setup"
