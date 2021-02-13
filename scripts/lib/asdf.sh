@@ -23,7 +23,8 @@ install_plugin_package() {
         asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-ruby.git
         ;;
       java)
-        asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
+        # asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
+        hub download -d ~/.asdf/plugins/java halcyon/asdf-java 7a04f7c1a615370cc639d3ee02a91e99ecca27b5
         ;;
       *)
         asdf plugin-add "$plugin"
