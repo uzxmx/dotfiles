@@ -35,6 +35,10 @@ for dep in "${deps[@]}"; do
         run ./scripts/install/lombok
       fi
 
+      if [ "$setup_maven" = "1" ]; then
+        run ./scripts/install/mvn
+      fi
+
       if [ "$setup_go" = "1" ]; then
         run ./scripts/install/golang
       fi

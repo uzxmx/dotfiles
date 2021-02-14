@@ -72,6 +72,7 @@ case "$setup_type" in
     export setup_coc_python=1
     export setup_java=1
     export setup_coc_java=1
+    export setup_maven=1
     export setup_go=1
     export setup_gopls=1
     ;;
