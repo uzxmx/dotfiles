@@ -2,18 +2,18 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(dirname "$BASH_SOURCE")/.."
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 settings="$HOME/.m2/settings.xml"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for mvn utility.
 
 Subcommands:
-  gen - generate a project from an archetype
+  gen               - generate a project from an archetype
   remote_archetypes - get remote archetypes
-  download_jar - download jar into ~/.m2
-  mirror - manage(show/enable/disable) aliyun mirror
+  download_jar      - download jar into ~/.m2
+  mirror            - manage(show/enable/disable) aliyun mirror
 EOF
   exit 1
 }
@@ -32,7 +32,7 @@ make_sure_artifact_exists() {
 }
 
 usage_gen() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: mvn gen
 
 Generate a project from an archetype. If a desired archetype cannot be found,
@@ -53,8 +53,7 @@ cmd_gen() {
 Simple Java project\t:maven-archetype-quickstart:1.4
 Simple web project\t:maven-archetype-webapp:1.4
 Spring boot simple sample\torg.springframework.boot:spring-boot-sample-simple-archetype:1.0.2.RELEASE
-Spring boot web project\tfoo:bar:baz
-"
+Spring boot web project\tfoo:bar:baz"
 
   local line="$(echo -e "$archetypes" | fzf -d "\t" --with-nth=1)"
   [ -z "$line" ] && exit
@@ -77,7 +76,7 @@ Spring boot web project\tfoo:bar:baz
 }
 
 usage_download_jar() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: mvn download_jar [-g <group_id>] [-a <artifact_id>] [-v <version>] [--with-source]
 
 Download jar into ~/.m2 without using a pom.xml.
@@ -141,7 +140,7 @@ cmd_remote_archetypes() {
 }
 
 usage_mirror() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: mvn mirror [-e | -d]
 
 Manage(show/enable/disable) aliyun mirror for maven. By default it shows
@@ -236,8 +235,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    mvn "$@"
+    ;;
   *)
     mvn "$@"
     ;;
