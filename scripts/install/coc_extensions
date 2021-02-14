@@ -53,11 +53,15 @@ case "$extension" in
   java)
     npm_install coc-java@1.5.3
     serverdir="coc-java-data/server"
-    dstpath="/tmp/jdtls.tar.gz"
+    [ -n "$(ls "$serverdir" 2>/dev/null)" ] && exit
+    tmpfile="$(mktemp)"
+    handle_exit() {
+      [ -e "$tmpfile" ] && rm "$tmpfile"
+    }
+    trap handle_exit EXIT
     mkdir -p "$serverdir"
-    ~/.dotfiles/bin/cget "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz" "$dstpath"
-    tar zxf "$dstpath" -C "$serverdir"
-    rm "$dstpath"
+    curl -o "$tmpfile" -L "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
+    tar zxf "$tmpfile" -C "$serverdir"
     ;;
   python)
     npm_install coc-python@1.2.13
