@@ -22,3 +22,20 @@ cmd_ssh() {
     ssh -A "$(get_ssh_target "$vm")"
   fi
 }
+
+usage_add_pubkey() {
+  cat <<-EOF
+Usage: vb add_pubkey [vm_name]
+
+Add public key to a vm for passwordless ssh login.
+EOF
+  exit 1
+}
+
+cmd_add_pubkey() {
+  local vm
+  if vm="$(select_vm_and_check_running "$1")"; then
+    [ -z "$vm" ] && exit
+    "$dotfiles_dir/scripts/misc/add_pubkey_to_remote" "$(get_ssh_target "$vm")"
+  fi
+}

@@ -14,6 +14,7 @@ Subcommands:
   start          - start a vm
   show           - show a vm
   ssh            - ssh into a vm
+  add_pubkey     - add public key to a vm for passwordless ssh login
   stop           - power off one or more vms
   set_cpus       - set the number of cpu
   set_mem        - change memory of a vm (unit is gigabyte)
@@ -47,10 +48,13 @@ run() {
 }
 
 case "$1" in
-  status | start | show | ssh | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
+  status | start | show | ssh | add_pubkey | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
     case "$1" in
       s)
         name="status"
+        ;;
+      add_pubkey)
+        name="ssh"
         ;;
       *)
         name="$1"
