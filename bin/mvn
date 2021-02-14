@@ -166,7 +166,7 @@ show_aliyun_mirror() {
 }
 
 enable_aliyun_mirror() {
-  [ -f "$settings" ] || "$dotfiles_dir/scripts/misc/gen" mvn_settings --no-editor
+  [ -f "$settings" ] || "$dotfiles_dir/bin/gen" mvn_settings --no-editor
   source "$dotfiles_dir/scripts/lib/awk/find_line.sh"
   source "$dotfiles_dir/scripts/lib/awk/insert_file.sh"
 
