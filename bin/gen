@@ -13,8 +13,10 @@ Generate files from a template. When no template is given, it will use fzf to
 let user select one.
 
 Options:
-  -q <query> Fzf query string
-  --no-editor Do not open generated file with an editor
+  -q <query> fzf query string
+  --no-editor do not open generated file with an editor
+  --calling-path <path> by which file this command is called
+  --print-output-path print the output path
   - delimit the start of the options for template generator, see gen function
 EOF
   exit 1
@@ -173,6 +175,8 @@ gen() {
       fi
     fi
 
+    mkdir -p "$(dirname "$dst")"
+
     if [ "$file" = "$name.tpl" ]; then
       $use_sudo cp "$file" "$dst"
     else
@@ -186,7 +190,7 @@ gen() {
       export FILENAME="$filename"
       case "$file" in
         $name.tpl.sh)
-          eval "echo \"$(cat "$file")\"" >"$tmpfile"
+          eval "echo -e \"$(cat "$file")\"" >"$tmpfile"
           ;;
         $name.tpl.erb)
           erb -T - "$file" >"$tmpfile"
@@ -198,10 +202,14 @@ gen() {
 
     [ "$executable" = "1" ] && $use_sudo chmod a+x "$dst"
 
-    if [ "$edit" = "1" ]; then
-      $use_sudo "${EDITOR:-vim}" "$dst"
+    if [ "$print_output_path" = "1" ]; then
+      echo $dst
     else
-      echo "File $dst generated."
+      if [ "$edit" = "1" ]; then
+        $use_sudo "${EDITOR:-vim}" "$dst"
+      else
+        echo "File $dst generated."
+      fi
     fi
   fi
 }
@@ -212,11 +220,18 @@ source "$templates_dir/scripts/gen"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -q)
-      query="$2"
       shift
+      query="$1"
       ;;
     --no-editor)
       no_editor=1
+      ;;
+    --calling-path)
+      shift
+      calling_path="$1"
+      ;;
+    --print-output-path)
+      print_output_path=1
       ;;
     -)
       shift
