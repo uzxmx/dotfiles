@@ -4,6 +4,11 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
 # Ensure current user is in docker group.
 check_group() {
   if ! groups | grep docker &> /dev/null; then
@@ -23,10 +28,12 @@ type -p docker &> /dev/null && check_group && check_enabled && exit
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
-  # https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/
+  # Mirrors:
+  # * https://developer.aliyun.com/mirror/docker-ce
+  # * https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/
   sudo wget -O /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
-  sudo sed -i 's+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+' /etc/yum.repos.d/docker-ce.repo
-  sudo yum install -y docker-ce
+  sudo sed -i 's+download.docker.com+mirrors.aliyun.com/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+  sudo yum install -y docker-ce docker-ce-cli
 else
   abort "Unsupported system"
 fi
