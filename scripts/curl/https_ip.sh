@@ -1,5 +1,5 @@
 usage_https_ip() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: curl https_ip [commit]
 
 Request an HTTPS server by IP address, instead of domain name.
