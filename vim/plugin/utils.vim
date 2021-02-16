@@ -81,3 +81,33 @@ function! s:on_gen(code, lines)
 endfunction
 
 command! Gen call s:gen()
+
+function! s:get_visual_selection(delimiter)
+  let [line_start, column_start] = getpos("'<")[1:2]
+  let [line_end, column_end] = getpos("'>")[1:2]
+  let lines = getline(line_start, line_end)
+  if len(lines) == 0
+      return ''
+  endif
+  let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
+  let lines[0] = lines[0][column_start - 1:]
+  return join(lines, a:delimiter)
+endfunction
+
+function! s:Base64(decode) range
+  if a:decode
+    let suffix = '-d'
+    let delimiter = ''
+  else
+    let suffix = '-w 0' " Disable wrap when encoding
+    let delimiter = "\n"
+  endif
+  let command = 'echo -n ' . shellescape(s:get_visual_selection(delimiter), 1) . ' | base64 ' . suffix
+  new
+  setl buftype=nofile bufhidden=wipe nobuflisted noswapfile
+  exe 'read ++bin !' . command
+  1d " Delete the first line, which is empty.
+endfunction
+
+command! -range Base64Encode <line1>,<line2>call s:Base64(0)
+command! -range Base64Decode <line1>,<line2>call s:Base64(1)
