@@ -66,3 +66,18 @@ command! PutRelativePath put =expand('%')
 command! PutRelativeParentPath put =expand('%:h')
 command! PutAbsolutePath put =expand('%:p')
 command! PutAbsoluteParentPath put =expand('%:p:h')
+
+" Generate files from templates
+function! s:gen()
+  call TermExecute({ 'down': '~40%', 'on_exit': function('s:on_gen') }, 'gen --calling-path "' . expand('%:p') . '" --print-output-path')
+endfunction
+
+function! s:on_gen(code, lines)
+  if a:code == 0
+    exe 'vs ' . a:lines[0]
+  else
+    echomsg join(a:lines)
+  endif
+endfunction
+
+command! Gen call s:gen()
