@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Replace all occurrences of the first argument with the second in files. By
 default, it generates a backup file with '.bak' appended to the filename for
 each file.
@@ -26,6 +28,11 @@ Examples:
 EOF
   exit 1
 }
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+source "$dotfiles_dir/scripts/lib/gsed.sh"
 
 remainder=()
 while [ $# -gt 0 ]; do
@@ -66,8 +73,8 @@ fi
 processed=0
 replace_file() {
   if [ -f "$1" ]; then
-    sed "${sed_opts[@]}" "s/$target/$replacement/g" "$1"
-    processed=$(($processed + 1))
+    "$SED" "${sed_opts[@]}" "s/$target/$replacement/g" "$1"
+    processed="$(($processed + 1))"
   fi
 }
 
