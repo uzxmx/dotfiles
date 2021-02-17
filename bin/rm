@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for rm utility. When used with pipe operator, it will identify each
 line as a file and remove it.
 
@@ -18,11 +20,11 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 usage_by_inum() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: rm by_inum <inum>
 
 Remove a file by inode number. This command can be used when the filename
@@ -37,6 +39,39 @@ EOF
 
 cmd_by_inum() {
   find . -maxdepth 1 -inum "$1" -exec rm -i {} \;
+}
+
+run_fallback() {
+  local extra_args=()
+  local has_file
+  if [ ! -t 0 ]; then
+    for opt in "$@"; do
+      case "$opt" in
+        -*)
+          ;;
+        *)
+          has_file=1
+          break
+          ;;
+      esac
+    done
+
+    if [ -z "$has_file" ]; then
+      while read input; do
+        extra_args+=("$input")
+      done
+      if [ "${#extra_args[@]}" -gt 0 ]; then
+        source "$dotfiles_dir/scripts/lib/prompt.sh"
+        echo -e "These files will be removed:\n${extra_args[@]}"
+        if [ ! "$(yesno "Continue? (y/N)" "no")" = "yes" ]; then
+          echo Cancelled
+          exit
+        fi
+      fi
+    fi
+  fi
+
+  rm "$@" "${extra_args[@]}"
 }
 
 case "$1" in
@@ -55,23 +90,9 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    run_fallback "$@"
+    ;;
   *)
-    extra_args=()
-    if [ ! -t 0 ]; then
-      while read input; do
-        extra_args+=("$input")
-      done
-      if [ "${#extra_args[@]}" -gt 0 ]; then
-        source ~/.dotfiles/scripts/lib/prompt.sh
-        echo -e "These files will be removed:\n${extra_args[@]}"
-        if [ ! "$(yesno "Continue? (y/N)" "no")" = "yes" ]; then
-          echo Cancelled
-          exit
-        fi
-      fi
-    fi
-    rm "$@" "${extra_args[@]}"
+    run_fallback "$@"
     ;;
 esac
