@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-#
-# This script helps you manage proxy. It includes enable, disable and dump actions
-# for http, git, curl and docker. For http, the change is only in current shell.
-# For others, the change is global.
 
 set -eo pipefail
 
@@ -11,41 +7,40 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 . "$dotfiles_dir/scripts/lib/system.sh"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage:
 $0 <enable | disable | info> [proxy types...] [-p proxy_server]
 
-Utility script to control proxy. If the machine is a vagrant box, you may use
-10.0.2.2 to access the host.
+This script helps you manage proxy. It includes enable, disable and dump actions
+for http, git, curl, and docker etc. For http, the change is only in current shell.
+For others, the change is global. Supported proxy types include:
 
-Supported proxy types include:
-  * http
-  * git
-  * curl
-  * docker
-  * yum
-  * scoop
-  * all
+  http / git / curl / docker / yum / scoop / all
 
 For enable and disable subcommands, when proxy types are not specified, the
-defaults are http/git/curl/yum/scoop. For info subcommand, the defaults are all
-types.
+defaults are http / git / curl / yum / scoop. For info subcommand, the defaults
+are all types.
+
+If the machine is a vagrant box, you may use 10.0.2.2 to access the host.
+
+Conventions:
+
+Port 8125 is used as the v2ray http proxy port, which supports whitelist (By
+default the first candidate to try).
+
+Port 8124 can be used as a ssh tunnelled port. For example, we can
+start a ssh tunnel by 'ssh user@host -L 0.0.0.0:8124:localhost:8123'.
+This requires a remote http proxy is listening at 8123 on the remote server.
+
+Port 8123 is used as the v2ray http proxy port, where all trafic will
+go to a same outbound (no whitelist).
 
 Examples:
-  # Enable proxy of default types.
-  $> pe
-
-  # Enable docker proxy.
-  $> pe docker
-
-  # Enable all proxy types.
-  $> pe all
-
-  # Disable proxy of default types.
-  $> pd
-
-  # Show status of all proxy types.
-  $> pi
+  $> pe          # Enable proxy of default types.
+  $> pe docker   # Enable docker proxy.
+  $> pe all      # Enable all proxy types.
+  $> pd          # Disable proxy of default types.
+  $> pi          # Show status of all proxy types.
 EOF
   exit 1
 }
@@ -103,24 +98,18 @@ if [ "$subcommand" = "enable" ]; then
     echo 'Choosing a working proxy server...'
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       user_http_proxy="$DEFAULT_HTTP_PROXY"
-    elif test_proxy localhost:8123; then
-      # Port 8123 is used as the v2ray http proxy port, where all trafic will
-      # go to a same outbound (no whitelist).
-      user_http_proxy='localhost:8123'
-    elif test_proxy localhost:8124; then
-      # Port 8124 can be used as a ssh tunnelled port. For example, we can
-      # start a ssh tunnel by `ssh user@host -L 0.0.0.0:8124:localhost:8123`.
-      # This requires a remote http proxy is listening at 8123 on the remote server.
-      user_http_proxy='localhost:8124'
     elif test_proxy localhost:8125; then
-      # Port 8125 is used as the v2ray http proxy port, which supports whitelist.
       user_http_proxy='localhost:8125'
-    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8123; then
-      user_http_proxy='10.0.2.2:8123'
-    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8124; then
-      user_http_proxy='10.0.2.2:8124'
+    elif test_proxy localhost:8124; then
+      user_http_proxy='localhost:8124'
+    elif test_proxy localhost:8123; then
+      user_http_proxy='localhost:8123'
     elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8125; then
       user_http_proxy='10.0.2.2:8125'
+    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8124; then
+      user_http_proxy='10.0.2.2:8124'
+    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8123; then
+      user_http_proxy='10.0.2.2:8123'
     else
       fatal "Not found any working HTTP Proxy."
     fi
