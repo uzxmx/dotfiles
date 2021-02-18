@@ -18,6 +18,7 @@ Subcommands:
   bootRun - run spring-boot based project
   mirror  - manage(show/enable/disable) maven mirrors
   android - android related utilities
+  test    - override to add default options
 
 Tasks:
   showRepos                - show repositories
@@ -104,7 +105,7 @@ def_task_cmds() {
 }
 
 case "$1" in
-  tasks | bootRun | mirror | android)
+  tasks | bootRun | mirror | android | test)
     source "$gradle_dir/$1.sh"
     run "$@"
     ;;
