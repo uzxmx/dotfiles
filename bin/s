@@ -101,10 +101,11 @@ if [ -n "$file" ]; then
       exit 100
       ;;
     "")
+      # Invoke `Rooter` command to change to correct root directory.
       if [ -n "$lineno" ]; then
-        cmd="vi '$file' '+norm ${lineno}G'"
+        cmd="vi +Rooter '$file' '+norm ${lineno}G'"
       else
-        cmd="vi '$file'"
+        cmd="vi +Rooter '$file'"
       fi
       eval $cmd
       ;;
