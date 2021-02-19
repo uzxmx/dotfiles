@@ -13,6 +13,7 @@ Subcommands:
   time     - show time stats
   cors     - check if CORS is allowed
   https_ip - request an HTTPS server by IP address
+  gzip     - check if a remote resource is gzipped
 EOF
   exit 1
 }
@@ -32,7 +33,7 @@ run() {
 }
 
 case "$1" in
-  time | cors | https_ip)
+  time | cors | https_ip | gzip)
     case "$1" in
       *)
         name="$1"
