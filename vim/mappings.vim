@@ -19,6 +19,11 @@ xnoremap c "_c
 nnoremap C "_C
 xnoremap C "_C
 
+function! s:get_char_at_col(col)
+  " To support multi-bytes character.
+  return matchstr(getline('.'), '\%' . a:col . 'c.')
+endfunction
+
 " Put without changing default register content when in visual selection mode.
 function! s:xput() range
   let pre = ''
@@ -31,7 +36,7 @@ function! s:xput() range
     if firstcol > 1
       let pre = getline(a:firstline)[:(firstcol - 2)]
     endif
-    let post = getline(a:lastline)[lastcol:]
+    let post = getline(a:lastline)[(lastcol + len(s:get_char_at_col(lastcol)) - 1):]
   endif
 
   exe a:firstline . ',' . a:lastline . 'd _'
