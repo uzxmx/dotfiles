@@ -1,5 +1,5 @@
 usage_p() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: docker p <image>
 
 Pull an image from a mirror.

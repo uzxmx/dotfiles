@@ -4,3 +4,10 @@ select_container() {
     echo "$id" | awk '{print $NF}'
   fi
 }
+
+select_image() {
+  local image="$(docker images --format "{{.Repository}}:{{.Tag}}\t{{.CreatedSince}}" | grep -v '^<none>\|:<none>' | fzf --tiebreak=index)"
+  if [ -n "$image" ]; then
+    echo "$image" | awk '{print $1}'
+  fi
+}

@@ -1,7 +1,7 @@
 . "$(dirname "$BASH_SOURCE")/common.sh"
 
 usage_exec() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: docker exec
 
 Execute a comand in a container selected by fzf.

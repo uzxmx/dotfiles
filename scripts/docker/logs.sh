@@ -1,7 +1,7 @@
 . "$(dirname "$BASH_SOURCE")/common.sh"
 
 usage_logs() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: docker logs
 
 Show logs of a container selected by fzf.

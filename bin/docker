@@ -6,13 +6,14 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 docker_dir="$dotfiles_dir/scripts/docker"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for docker utility.
 
 Subcommands:
   p         - pull image from a mirror
   l, logs   - show logs of a container selected by fzf
   e, exec   - execute a comand in a container selected by fzf
+  r, run    - run a docker image
   list_tags - list image tags from dockerhub
   pids      - show pids of containers
   prune     - remove unused and dangling(unamed) images, and unused volumes
@@ -21,7 +22,6 @@ EOF
   exit 1
 }
 
-# Delete below snippet if you don't want a wrapper.
 source "$dotfiles_dir/scripts/lib/path.sh"
 PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
@@ -44,7 +44,7 @@ alias_cmd() {
 }
 
 usage_list_tags() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: docker list_tags <image>
 
 List docker image tags from dockerhub.
@@ -61,7 +61,7 @@ cmd_list_tags() {
 }
 
 usage_pids() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: docker pids
 
 Show pids of containers.
@@ -100,16 +100,24 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | logs)
-    source "$docker_dir/logs.sh"
-    run "$@"
-    ;;
-  e | exec)
-    source "$docker_dir/exec.sh"
-    run "$@"
-    ;;
-  p)
-    source "$docker_dir/pull_image.sh"
+  l | logs | e | exec | p | r | run)
+    case "$1" in
+      l)
+        name="logs"
+        ;;
+      e)
+        name="exec"
+        ;;
+      p)
+        name="pull_image"
+        ;;
+      r)
+        name="run"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$docker_dir/$name.sh"
     run "$@"
     ;;
   -h)
