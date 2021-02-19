@@ -56,3 +56,16 @@ function! s:PipeToShell(str) range
   setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
   call setline(1, split(output, "\n"))
 endfunction
+
+function s:format(filetype, bang)
+  exec 'set ft=' . a:filetype
+  if a:bang
+    let saved_mode = g:autoformat_verbosemode
+    let g:autoformat_verbosemode = 1
+  endif
+  Autoformat
+  if a:bang
+    let g:autoformat_verbosemode = saved_mode
+  endif
+endfunction
+command! -bang FormatJSON call s:format('json', <bang>0)
