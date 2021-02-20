@@ -31,7 +31,7 @@ req() {
   local path="$1"
   shift
   if [ "$log_request" = "1" ]; then
-    echo curl "${curl_opts[@]}" "$ES_URL$path" "$@"
+    echo curl "${curl_opts[@]}" "$ES_URL$path" "$@" >&2
   fi
   curl "${curl_opts[@]}" "$ES_URL$path" "$@"
 }
