@@ -141,7 +141,7 @@ cmd_export() {
   export EXPORT_PROVISION_PROFILE_KEY="$bundle_id"
   export EXPORT_PROVISION_PROFILE_VALUE="$profile"
   local export_options_path="$(mktemp)"
-  gen export_options - -f "$export_options_path" --overwrite >/dev/null
+  "$dotfiles_dir/bin/gen" openssl_conf - -f "$export_options_path" --overwrite >/dev/null
 
   xcodebuild -exportArchive -archivePath "$archive_path" \
     -exportOptionsPlist "$export_options_path" \
