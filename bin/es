@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+es_dir="$dotfiles_dir/scripts/es"
+
+usage() {
+  cat <<-EOF
+Wrapper for elasticsearch utility. Options specified before the subcommand will
+be passed in curl.
+
+The default url used is http://localhost:9200, you can change it by exporting
+ES_URL environment variable.
+
+Subcommands:
+  s, show   - show resources of a type
+  d, delete - delete index
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+ES_URL="${ES_URL:-http://localhost:9200}"
+
+curl_opts=()
+
+req() {
+  local path="$1"
+  shift
+  if [ "$log_request" = "1" ]; then
+    echo curl "${curl_opts[@]}" "$ES_URL$path" "$@"
+  fi
+  curl "${curl_opts[@]}" "$ES_URL$path" "$@"
+}
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+while [[ "$1" =~ ^-.* ]]; do
+  curl_opts+=("$1")
+  shift
+done
+
+case "$1" in
+  s | show | d | delete)
+    case "$1" in
+      s)
+        name="show"
+        ;;
+      d)
+        name="delete"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$es_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
