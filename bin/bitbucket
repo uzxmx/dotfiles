@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+bitbucket_dir="$dotfiles_dir/scripts/bitbucket"
+
+usage() {
+  cat <<-EOF
+CLI for bitbucket.
+
+High-level subcommands:
+  i, init - make a new repo (under current folder) or move existing one in/to bitbucket
+
+Low-level subcommands:
+  w, workspace - manage workspaces
+  p, project   - manage projects
+  r, repo      - manage repositories
+
+The API doc is available at https://developer.atlassian.com/bitbucket/api/2/reference/resource/
+EOF
+  exit 1
+}
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+req() {
+  if [ -z "$BITBUCKET_USER" -o -z "$BITBUCKET_PASSWORD" ]; then
+    echo "Both BITBUCKET_USER and BITBUCKET_PASSWORD environment variables must be specified."
+    exit 1
+  fi
+  local curl_opts=(--user "$BITBUCKET_USER:$BITBUCKET_PASSWORD")
+
+  local api="$1"
+  shift
+  curl "${curl_opts[@]}" -Ss "https://api.bitbucket.org/2.0/$api" "$@"
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  w | workspace | r | repo | p | project | i | init)
+    case "$1" in
+      w)
+        name="workspace"
+        ;;
+      r)
+        name="repo"
+        ;;
+      p)
+        name="project"
+        ;;
+      i)
+        name="init"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$bitbucket_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
