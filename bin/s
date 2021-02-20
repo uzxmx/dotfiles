@@ -61,53 +61,86 @@ source "$dotfiles_dir/scripts/lib/fzf.sh"
 
 # rg doesn't support --binary well. So we resort to grep.
 if [ "$search_binary" = "1" ]; then
-  cmd=(grep --line-number --binary-files=text . -R "${files[@]}")
+  cmd_name="grep"
+  cmd_opts=(--line-number --binary-files=text . -R "${files[@]}")
 else
-  cmd=(rg --line-number --with-filename --hidden "${rg_options[@]}" . "${files[@]}")
+  cmd_name="rg"
+  cmd_opts=(-L --line-number --with-filename --hidden "${rg_options[@]}" . "${files[@]}")
 fi
 
-# Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
-# Ref:
-#   https://github.com/junegunn/fzf#executing-external-programs
-#   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
 export BAT_STYLE="numbers,header"
-call_fzf result --delimiter=: --nth=3.. --preview "$dotfiles_dir/scripts/misc/preview {}" \
-  --prompt '(CTRL-V:vsplit CTRL-Y:yank CTRL-E:edit CTRL-X:exec)> ' \
-  --expect 'ctrl-e,ctrl-x' \
-  --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
-  < <("${cmd[@]}"; [ "$search_filename" = "1" ] && fd --type f . "${files[@]}" | awk '{printf "::%s\n", $1}')
+no_ignore=
+while true; do
+  unset result
 
-key="${result[0]}"
-selection="${result[1]}"
-
-if [ -n "$selection" ]; then
-  file="$(echo -E "$selection" | awk -F : '{print $1}')"
-  if [ -z "$file" ]; then
-    file="$(echo -E "$selection" | awk -F : '{print $3}')"
+  if [ "$cmd_name" = "rg" -a -n "$no_ignore" ]; then
+    cmd=("$cmd_name" --no-ignore "${cmd_opts[@]}")
   else
-    lineno="$(echo -E "$selection" | awk -F : '{print $2}')"
+    cmd=("$cmd_name" "${cmd_opts[@]}")
   fi
-fi
 
-if [ -n "$file" ]; then
-  case "$key" in
-    ctrl-e)
-      echo "$file" >&3
-      exit 101
-      ;;
-    ctrl-x)
-      [ ! -x "$file" ] && echo "$file is not an executable." && exit
-      echo "$(realpath "$file")" >&3
-      exit 100
-      ;;
-    "")
-      # Invoke `Rooter` command to change to correct root directory.
-      if [ -n "$lineno" ]; then
-        cmd="vi +Rooter '$file' '+norm ${lineno}G'"
-      else
-        cmd="vi +Rooter '$file'"
-      fi
-      eval $cmd
-      ;;
-  esac
-fi
+  if [ "$cmd_name" = "rg" ]; then
+    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-X:exec)> "
+    expect="ctrl-e,ctrl-i,ctrl-x"
+  else
+    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-E:edit CTRL-X:exec)> "
+    expect="ctrl-e,ctrl-x"
+  fi
+
+  # Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
+  # Ref:
+  #   https://github.com/junegunn/fzf#executing-external-programs
+  #   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
+  call_fzf result --delimiter=: --nth=3.. --preview "$dotfiles_dir/scripts/misc/preview {}" \
+    --query="$query" --print-query \
+    --prompt "$prompt" \
+    --expect "$expect" \
+    --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
+    < <("${cmd[@]}"; [ "$search_filename" = "1" ] && fd --type f . "${files[@]}" | awk '{printf "::%s\n", $1}')
+
+  [ -z "${result[*]}" ] && break
+
+  query="${result[0]}"
+  key="${result[1]}"
+  selection="${result[2]}"
+
+  if [ -n "$selection" ]; then
+    file="$(echo -E "$selection" | awk -F : '{print $1}')"
+    if [ -z "$file" ]; then
+      file="$(echo -E "$selection" | awk -F : '{print $3}')"
+    else
+      lineno="$(echo -E "$selection" | awk -F : '{print $2}')"
+    fi
+  fi
+
+  if [ -n "$file" ]; then
+    case "$key" in
+      ctrl-e)
+        echo "$file" >&3
+        exit 101
+        ;;
+      ctrl-i)
+        if [ -z "$no_ignore" ]; then
+          no_ignore=1
+        else
+          no_ignore=
+        fi
+        ;;
+      ctrl-x)
+        [ ! -x "$file" ] && echo "$file is not an executable." && exit
+        echo "$(realpath "$file")" >&3
+        exit 100
+        ;;
+      "")
+        # Invoke `Rooter` command to change to correct root directory.
+        if [ -n "$lineno" ]; then
+          cmd="vi +Rooter '$file' '+norm ${lineno}G'"
+        else
+          cmd="vi +Rooter '$file'"
+        fi
+        eval $cmd
+        exit
+        ;;
+    esac
+  fi
+done
