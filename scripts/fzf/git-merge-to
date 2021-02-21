@@ -11,13 +11,20 @@ branch="$(git symbolic-ref --short HEAD)"
 
 "$(dirname "$BASH_SOURCE")/git-branch"
 
+rebase="$(yesno "Do you want to rebase? (y/N)" "no")"
+if [ "$rebase" = "no" ]; then
+  cmd=(git merge "$branch")
+else
+  cmd=(git rebase "$branch")
+fi
+
 if ! git rev-parse --abbrev-ref --symbolic-full-name @{u} &>/dev/null; then
   echo 'Warning: Upstream branch has not been set, skip fetching updates from remote. You can use `git branch -u <upstream>` to set am upstream.'
-  git merge "$branch"
+  "${cmd[@]}"
 else
-  reply="$(yesno "Do you want to push after merging? (Y/n)" "yes")"
-  git pull && git merge "$branch"
-  if [ "$reply" = "yes" ]; then
+  push="$(yesno "Do you want to push after merging? (Y/n)" "yes")"
+  git pull && "${cmd[@]}"
+  if [ "$push" = "yes" ]; then
     git push
   fi
 fi

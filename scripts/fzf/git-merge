@@ -13,9 +13,14 @@ select_branch --result
 
 selection="${result[0]}"
 if [ -n "$selection" ]; then
-  reply=$(yesno "Do you want to push after merging? (Y/n)" "yes")
-  git merge "$selection"
-  if [ "$reply" = "yes" ]; then
+  rebase="$(yesno "Do you want to rebase? (y/N)" "no")"
+  push="$(yesno "Do you want to push after merging? (Y/n)" "yes")"
+  if [ "$rebase" = "no" ]; then
+    git merge "$selection"
+  else
+    git rebase "$selection"
+  fi
+  if [ "$push" = "yes" ]; then
     git push
   fi
 fi
