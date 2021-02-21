@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF
+Use fzf to kill a process.
+EOF
+  exit 1
+}
+
+output="$(ps -A -o pid,command)"
+selected="$(echo "$output" | sed 1d | fzf --with-nth=2..)"
+pid="$(echo "$selected" | awk '{print $1}')"
+if [ -n "$pid" ]; then
+  kill -9 "$pid"
+  echo "SIGKILL sent to pid $pid."
+fi
