@@ -20,6 +20,7 @@ cmd_logcat() {
     case "$1" in
       -p)
         shift
+        [ -z "$1" ] && echo "Argument for -p is required." && exit 1
         pid="$1"
         ;;
       --help)
@@ -37,6 +38,7 @@ cmd_logcat() {
   fi
 
   if [ -n "$pid" ]; then
+    # TODO Some old devices doesn't support `--pid` option.
     opts+=("--pid=$pid")
   fi
 
