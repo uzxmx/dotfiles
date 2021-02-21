@@ -1,5 +1,5 @@
 usage_cl() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: g cl <url>
 
 Clone with depth 1.

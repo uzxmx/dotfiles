@@ -1,5 +1,5 @@
 usage_cm() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: g cm [<message>]
 
 Enhanced commit utility.
@@ -12,8 +12,13 @@ cmd_cm() {
   if [ -n "$1" ]; then
     args+=(-m "$1")
   fi
+  local last_unixtime="$(git log -n 1 --format="%at" 2>/dev/null)"
+  local -a date_opts
+  if [ -n "$last_unixtime" ]; then
+    date_opts=(-r "$last_unixtime")
+  fi
   source "$dotfiles_dir/scripts/lib/prompt.sh"
   local date
-  ask_for_input date "Commit date: " "$(date "+%Y-%m-%d %H:%M:%S")"
+  ask_for_input date "Commit date: " "$(date "${date_opts[@]}" "+%Y-%m-%d %H:%M:%S")"
   git commit -s --date "$date" "${args[@]}"
 }
