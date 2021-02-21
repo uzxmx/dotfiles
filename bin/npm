@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+npm_dir="$dotfiles_dir/scripts/npm"
+
+usage() {
+  cat <<-EOF
+Wrapper for npm utility.
+
+Subcommands:
+  mirror     - manage(show/enable/disable) mirrors
+  i, install - override to add default options
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  mirror | i | install)
+    case "$1" in
+      i)
+        name="install"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$npm_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    npm "$@"
+    ;;
+  *)
+    npm "$@"
+    ;;
+esac
