@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+usage() {
+  cat <<-EOF
+Usage: $0 user@host
+
+Dump tables by Spring Data JPA.
+
+Options:
+  -a all tables
+EOF
+  exit 1
+}
+
+all_tables=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -a)
+      all_tables=1
+      ;;
+    -*)
+      usage
+      ;;
+  esac
+  shift
+done
+
+source "$dotfiles_dir/scripts/lib/gradle.sh"
+
+file="dump_$(date "+%Y%m%d%H%M%S").sql"
+if [ "$all_tables" = "1" ]; then
+  run_task spring_jpa_schema_dumper.gradle bootRun -Pargs="-o $(realpath $file)" -q
+else
+  output="$(run_task spring_jpa_schema_dumper.gradle bootRun -Pargs="-l" -q)"
+  tables=($(echo "$output" | fzf -m))
+  source "$dotfiles_dir/scripts/lib/utils/join.sh"
+  run_task spring_jpa_schema_dumper.gradle bootRun -Pargs="-o $(realpath $file) -t $(join_by , "${tables[@]}")" -q
+fi
+echo "Successfully dumped to $file"
