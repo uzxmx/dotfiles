@@ -2,39 +2,104 @@
 #
 # This file should be sourced.
 
+set -eo pipefail
+
+usage() {
+  cat <<-EOF
+Configure JAVA_HOME environment variable.
+
+Options:
+  --android-studio use Android Studio bundled Java
+EOF
+  exit 1
+}
+
 no_java_version_found() {
   echo 'Not found any Java version managed by asdf. You may need to install a
 Java version by `$dotfiles_dir/scripts/install/java` or `asdf install java <version>`.'
   exit
 }
 
-if ! asdf_java_path="$(exit 0)" || [ -z "$asdf_java_path" ]; then
-  if ! version="$(asdf list java | fzf +m --select-1 --prompt "Select a Java version> " | "$dotfiles_dir/bin/trim")" || [ -z "$version" ]; then
+get_java_path_by_android_studio() {
+  local variable_name="$1"
+
+  local path
+  source "$dotfiles_dir/scripts/lib/system.sh"
+  if is_mac; then
+    path="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
+  elif is_wsl; then
+    path="/mnt/d/android_studio/jre"
+  else
+    echo "Unsupported system"
+    exit 1
+  fi
+  if [ ! -e "$path" ]; then
+    echo "Default Android Studio Home directory $path doesn't exist."
+    exit 1
+  fi
+  eval $variable_name=\"$path\"
+}
+
+get_java_path_by_asdf() {
+  local variable_name="$1"
+  local version asdf_java_path
+  version="$(asdf list java | fzf +m --select-1 --prompt "Select a Java version> " | "$dotfiles_dir/bin/trim")"
+  if [ -z "$version" ]; then
     no_java_version_found
   fi
   asdf_java_path="$(asdf where java "$version")"
-fi
 
-[ -n "$asdf_java_path" ] || no_java_version_found
+  [ -n "$asdf_java_path" ] || no_java_version_found
 
-source "$dotfiles_dir/scripts/lib/prompt.sh"
-if [ -n "$JAVA_HOME" ] && [ ! "$JAVA_HOME" = "$asdf_java_path" ]; then
-  echo "Old JAVA_HOME: $JAVA_HOME"
-  echo "New JAVA_HOME: $asdf_java_path"
-  reply="$(yesno "Are you sure you want to update to the new one? (y/N)" "no")"
-elif [ "$JAVA_HOME" = "$asdf_java_path" ]; then
-  echo "JAVA_HOME has already been $asdf_java_path."
-  reply="$(yesno "Do you still want to configure it again? (y/N)" "no")"
-else
-  reply="yes"
-fi
+  local reply
+  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  if [ -n "$JAVA_HOME" ] && [ ! "$JAVA_HOME" = "$asdf_java_path" ]; then
+    echo "Old JAVA_HOME: $JAVA_HOME"
+    echo "New JAVA_HOME: $asdf_java_path"
+    reply="$(yesno "Are you sure you want to update to the new one? (y/N)" "no")"
+  elif [ "$JAVA_HOME" = "$asdf_java_path" ]; then
+    echo "JAVA_HOME has already been $asdf_java_path."
+    reply="$(yesno "Do you still want to configure it again? (y/N)" "no")"
+  else
+    reply="yes"
+  fi
 
-if [ "$reply" = "yes" ]; then
-  [ -f ~/.zshrc.local ] || touch ~/.zshrc.local
-  echo export JAVA_HOME=$asdf_java_path >>~/.zshrc.local
-  echo export JAVA_HOME=$asdf_java_path >&3
-  echo JAVA_HOME has been changed to "$asdf_java_path"
-  exit 102
-else
-  echo Cancelled.
-fi
+  if [ "$reply" = "yes" ]; then
+    eval $variable_name=\"$asdf_java_path\"
+  else
+    echo Cancelled.
+    exit
+  fi
+}
+
+configure_java_home_env() {
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --android-studio)
+        android_studio=1
+        ;;
+      *)
+        usage
+        ;;
+    esac
+    shift
+  done
+
+  local new_java_home
+  if [ "$android_studio" = "1" ]; then
+    get_java_path_by_android_studio new_java_home
+  else
+    get_java_path_by_asdf new_java_home
+  fi
+
+  if [ -n "$new_java_home" ]; then
+    if [ -z "$android_studio" ]; then
+      [ -f ~/.zshrc.local ] || touch ~/.zshrc.local
+      echo export JAVA_HOME=\"$new_java_home\" >>~/.zshrc.local
+    fi
+
+    echo export JAVA_HOME=\"$new_java_home\" >&3
+    echo JAVA_HOME has been changed to "$new_java_home"
+    exit 102
+  fi
+}

@@ -33,7 +33,8 @@ Benchmark vim startup time\texit_100 \"$dotfiles_dir/scripts/misc/benchmark_vim_
 Decompile dex files to java sources\trun_with_arguments $dotfiles_dir/scripts/misc/decompile_dex
 Mac OSX mount NTFS read-write\t$dotfiles_dir/bin/diskutil ntfs_rw -q
 Switch to en-US locale\texit_102 export LANG=en_US.UTF-8
-Configure JAVA_HOME environment variable\tsource $dotfiles_dir/scripts/misc/configure_java_home_env
+Configure JAVA_HOME environment variable globally\tsource $dotfiles_dir/scripts/misc/configure_java_home_env && configure_java_home_env
+Configure JAVA_HOME environment variable to Android Studio bundled\tsource $dotfiles_dir/scripts/misc/configure_java_home_env && configure_java_home_env --android-studio
 Convert png to jpg, and vice versa\t$dotfiles_dir/scripts/misc/convert_image
 Edit /etc/hosts as sudoer. For WSL, we edit hosts file at C drive.\t$dotfiles_dir/scripts/misc/edit_hosts"
 
