@@ -13,12 +13,12 @@ It tries to find a gradle wrapper first. If not found, it resorts to gradle
 command.
 
 Subcommands:
-  help    - show gradle help
-  tasks   - show all tasks
-  bootRun - run spring-boot based project
-  mirror  - manage(show/enable/disable) maven mirrors
-  android - android related utilities
-  test    - override to add default options
+  help     - show gradle help
+  tasks    - show all tasks
+  boot_run - run spring-boot based project
+  mirror   - manage(show/enable/disable) maven mirrors
+  android  - android related utilities
+  test     - override to add default options
 
 Tasks:
   showRepos                - show repositories
@@ -47,6 +47,8 @@ alias_cmd() {
   "
 }
 
+source "$dotfiles_dir/scripts/lib/gradle.sh"
+
 remainder=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -61,11 +63,6 @@ while [ "$#" -gt 0 ]; do
 done
 set - "${remainder[@]}"
 
-if [ -z "$gradle_bin" ]; then
-  source "$dotfiles_dir/scripts/lib/utils/find.sh"
-  gradle_bin="$(find_file_hierarchical gradlew)"
-fi
-
 run() {
   local cmd="$1"
   shift
@@ -75,21 +72,6 @@ run() {
       ;;
   esac
   "cmd_$cmd" "$@"
-}
-
-run_task() {
-  local script="$1"
-  local task="$2"
-  shift 2
-  local initdir="$HOME/.gradle/init.d"
-  mkdir -p "$initdir"
-  tmpfile="$initdir/$(basename "$script")-$(date +%Y%m%d%H%M%S).gradle"
-  handle_exit() {
-    [ -e "$tmpfile" ] && rm "$tmpfile"
-  }
-  trap handle_exit EXIT
-  cp "$dotfiles_dir/gradle/lib/$script" "$tmpfile"
-  "$gradle_bin" "$task" "$@"
 }
 
 def_task_cmds() {
@@ -105,7 +87,7 @@ def_task_cmds() {
 }
 
 case "$1" in
-  tasks | bootRun | mirror | android | test)
+  tasks | boot_run | mirror | android | test)
     source "$gradle_dir/$1.sh"
     run "$@"
     ;;

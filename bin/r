@@ -36,7 +36,9 @@ Switch to en-US locale\texit_102 export LANG=en_US.UTF-8
 Configure JAVA_HOME environment variable globally\tsource $dotfiles_dir/scripts/misc/configure_java_home_env && configure_java_home_env
 Configure JAVA_HOME environment variable to Android Studio bundled\tsource $dotfiles_dir/scripts/misc/configure_java_home_env && configure_java_home_env --android-studio
 Convert png to jpg, and vice versa\t$dotfiles_dir/scripts/misc/convert_image
-Edit /etc/hosts as sudoer. For WSL, we edit hosts file at C drive.\t$dotfiles_dir/scripts/misc/edit_hosts"
+Edit /etc/hosts as sudoer. For WSL, we edit hosts file at C drive.\t$dotfiles_dir/scripts/misc/edit_hosts
+Spring JPA dump all tables (only support for gradle)\t$dotfiles_dir/scripts/misc/spring_jpa_dump_tables -a
+Spring JPA dump specific tables (only support for gradle)\t$dotfiles_dir/scripts/misc/spring_jpa_dump_tables"
 
 if [ "$#" -gt 0 ]; then
   usage

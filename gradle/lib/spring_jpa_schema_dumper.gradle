@@ -1,0 +1,33 @@
+// Invoke gradle as below shown:
+//   gradle bootRun -Pargs="-l" -q
+//   gradle bootRun -Pargs="-o /tmp/foo.sql" -q
+//   gradle bootRun -Pargs="-o /tmp/foo.sql -t table1,table2" -q
+allprojects {
+    apply plugin: 'java'
+
+    dependencies {
+        implementation files("${System.getProperty('user.home')}/javatools/javatools.jar")
+    }
+
+    afterEvaluate {
+        springBoot {
+            mainClassName = "me.uzxmx.tools.SpringJPASchemaDumper"
+        }
+
+        bootRun {
+            def ary = ["--src-dirs", sourceSets.main.java.srcDirs.join(":")]
+            if (project.hasProperty('args')) {
+                // TODO parse as shell
+                project.args.split(' ').each { e -> ary << e }
+            }
+            args ary
+        }
+
+        configurations {
+            compile {
+                // Exclude spring-boot-devtools to avoid restarting main method.
+                exclude module: 'spring-boot-devtools'
+            }
+        }
+    }
+}

@@ -1,6 +1,6 @@
-usage_bootRun() {
+usage_boot_run() {
   cat <<-EOF
-Usage: gradle bootRun
+Usage: gradle boot_run
 
 Run spring-boot based project. To run this command successfully, you must
 specify 'org.springframework.boot' plugin in your build.gradle.
@@ -28,7 +28,8 @@ EOF
   exit 1
 }
 
-cmd_bootRun() {
+# TODO the auto-restart is slow to perform and may not work every time.
+cmd_boot_run() {
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -p)
@@ -36,15 +37,16 @@ cmd_bootRun() {
         profile="$1"
         ;;
       *)
-        usage_bootRun
+        usage_boot_run
         ;;
     esac
     shift
   done
 
-  if [ -n "$TMUX" ]; then
-    tmux split-window -h "$gradle_bin" build --continuous
-  fi
+  # if [ -n "$TMUX" ]; then
+  #   # Skip test
+  #   tmux split-window -h "$gradle_bin" build --continuous -x test
+  # fi
 
   "$gradle_bin" bootRun --args="--spring.profiles.active=${profile:-dev}"
 }
