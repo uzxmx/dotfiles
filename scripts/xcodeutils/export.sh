@@ -66,7 +66,6 @@ show_archives() {
         ;;
     esac
   done
-
 }
 
 select_archive() {
@@ -140,13 +139,15 @@ cmd_export() {
   export EXPORT_METHOD="$method"
   export EXPORT_PROVISION_PROFILE_KEY="$bundle_id"
   export EXPORT_PROVISION_PROFILE_VALUE="$profile"
-  local export_options_path="$(mktemp)"
-  "$dotfiles_dir/bin/gen" openssl_conf - -f "$export_options_path" --overwrite >/dev/null
+  export_options_path="$(mktemp)"
+  handle_exit() {
+    [ -e "$export_options_path" ] && rm "$export_options_path"
+  }
+  trap handle_exit EXIT
+  "$dotfiles_dir/bin/gen" xcode_export_options - -f "$export_options_path" --overwrite
 
   xcodebuild -exportArchive -archivePath "$archive_path" \
     -exportOptionsPlist "$export_options_path" \
     -exportPath "$export_path"
-
-  rm "$export_options_path"
 }
 alias_cmd e export

@@ -42,7 +42,9 @@ EOF
 cmd_archive() {
   local scheme archive_path sdk log_path
   local -a actions
-  process_common_options
+
+  source "$xcodeutils_dir/common_options.sh"
+
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -s)

@@ -1,27 +1,5 @@
 DEFAULT_ARCHIVES_DIR="$HOME/Library/Developer/Xcode/Archives"
 
-process_common_options() {
-  local -a remainder
-  while [ "$#" -gt 0 ]; do
-    case "$1" in
-      -w)
-        shift
-        workspace_path="$2"
-        ;;
-      -p)
-        shift
-        project_path="$2"
-        ;;
-      *)
-        remainder+=("$1")
-        ;;
-    esac
-    shift
-  done
-
-  set - "${remainder[@]}"
-}
-
 # Params:
 #   $1: do not exit if workspace cannot be found
 check_workspace() {

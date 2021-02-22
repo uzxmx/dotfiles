@@ -19,7 +19,9 @@ EOF
 cmd_show() {
   local show_type="project"
   local -a opts
-  process_common_options
+
+  source "$xcodeutils_dir/common_options.sh"
+
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -t)
