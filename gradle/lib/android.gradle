@@ -1,8 +1,10 @@
 allprojects {
     task showFlavors {
         doLast {
-            android.productFlavors.all { flavor ->
-                println flavor.name
+            if (project.plugins.hasPlugin('com.android.application')) {
+                android.productFlavors.all { flavor ->
+                    println flavor.name
+                }
             }
         }
     }
