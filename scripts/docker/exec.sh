@@ -15,10 +15,7 @@ cmd_exec() {
   else
     local id="$(select_container)"
     [ -z "$id" ] && exit
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
-    local cmd
-    ask_for_input cmd "Command: " sh
-    docker exec -it "$id" "$cmd"
+    docker exec -it "$id" bash
   fi
 }
 alias_cmd e exec
