@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for column utility.
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    column "$@"
+    ;;
+  *)
+    column -t -s $'\t' "$@"
+    ;;
+esac
