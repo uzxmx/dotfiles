@@ -19,6 +19,7 @@ Subcommands:
   show_commit     - show files of a commit by fzf and tmux
   rm_from_history - remove files from git history
   update_commit   - change the last commit message (the commit has not been pushed)
+  init_hooks      - initialize git hooks and trigger post-checkout hook
 EOF
   exit 1
 }
@@ -38,7 +39,7 @@ case "$1" in
   "")
     git status .
     ;;
-  cl | d | l | show_commit | pt | rm_from_history | update_commit | ignore | cm)
+  cl | d | l | show_commit | pt | rm_from_history | update_commit | ignore | cm | init_hooks)
     case "$1" in
       cl)
         name="clone"
