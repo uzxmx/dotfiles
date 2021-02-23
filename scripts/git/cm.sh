@@ -15,7 +15,12 @@ cmd_cm() {
   local last_unixtime="$(git log -n 1 --format="%at" 2>/dev/null)"
   local -a date_opts
   if [ -n "$last_unixtime" ]; then
-    date_opts=(-r "$last_unixtime")
+    source "$dotfiles_dir/scripts/lib/system.sh"
+    if is_mac; then
+      date_opts=(-r "$last_unixtime")
+    else
+      date_opts=(--date "@$last_unixtime")
+    fi
   fi
   source "$dotfiles_dir/scripts/lib/prompt.sh"
   local date
