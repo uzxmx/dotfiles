@@ -82,7 +82,8 @@ endfunction
 
 command! Gen call s:gen()
 
-function! s:get_visual_selection(delimiter)
+function! s:get_visual_selection(...)
+  let delimiter = a:0 > 0 ? a:1 : "\n"
   let [line_start, column_start] = getpos("'<")[1:2]
   let [line_end, column_end] = getpos("'>")[1:2]
   let lines = getline(line_start, line_end)
@@ -91,7 +92,7 @@ function! s:get_visual_selection(delimiter)
   endif
   let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
   let lines[0] = lines[0][column_start - 1:]
-  return join(lines, a:delimiter)
+  return join(lines, delimiter)
 endfunction
 
 function! s:Base64(decode) range
@@ -111,3 +112,49 @@ endfunction
 
 command! -range Base64Encode <line1>,<line2>call s:Base64(0)
 command! -range Base64Decode <line1>,<line2>call s:Base64(1)
+
+function! s:escape(...) range
+  let escape = a:0 > 0 ? a:1 : 1
+
+  let selection = s:get_visual_selection()
+  let len = strlen(selection)
+  let i = 0
+  let backslash = 0
+  let chars = []
+  while i < len
+    let char = nr2char(strgetchar(selection, i))
+    let i = i + 1
+
+    if escape
+      if char == '\' || char == '"' || char == "\n"
+        call add(chars, '\')
+        if char == "\n" | call add(chars, 'n') | continue | endif
+      endif
+      call add(chars, char)
+    else
+      if backslash
+        if char == '\' || char == '"'
+          call add(chars, char)
+        elseif char == 'n'
+          call add(chars, "\n")
+        else
+          throw 'Unsupported character: ' . char
+        endif
+        let backslash = 0
+        continue
+      endif
+
+      if char == '\'
+        let backslash = 1
+      else
+        call add(chars, char)
+      endif
+    endif
+  endwhile
+
+  new | setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile
+  call setline(1, split(join(chars, ''), "\n"))
+endfunction
+
+command! -range Escape <line1>,<line2>call s:escape()
+command! -range EscapeReverse <line1>,<line2>call s:escape(0)
