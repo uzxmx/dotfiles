@@ -9,7 +9,7 @@
 # @example
 #   join_by $'\n' a b c
 #   join_by ',' a b c
-#   arr=(foo bar baz); join_by $'\n' $arr
+#   arr=(foo bar baz); join_by $'\n' "${arr[@]}"
 join_by() {
   local IFS="$1"
   shift
