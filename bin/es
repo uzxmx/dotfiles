@@ -14,8 +14,9 @@ The default url used is http://localhost:9200, you can change it by exporting
 ES_URL environment variable.
 
 Subcommands:
-  s, show   - show resources of a type
-  d, delete - delete index
+  c, cat, show - show resources of a type
+  d, delete    - delete index
+  s, search    - search documents
 EOF
   exit 1
 }
@@ -66,13 +67,16 @@ while [[ "$1" =~ ^-.* ]]; do
 done
 
 case "$1" in
-  s | show | d | delete)
+  c | cat | show | d | delete | s | search)
     case "$1" in
-      s)
+      c | cat)
         name="show"
         ;;
       d)
         name="delete"
+        ;;
+      s)
+        name="search"
         ;;
       *)
         name="$1"
