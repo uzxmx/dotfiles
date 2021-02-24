@@ -59,9 +59,14 @@ get_profiles() {
         shift
         filter_app_id="$1"
         ;;
+      --valid)
+        valid=1
+        ;;
     esac
     shift
   done
+
+  source "$dotfiles_dir/scripts/lib/date.sh"
 
   local decoded_profile aps_environment app_id
   local profile
@@ -71,11 +76,18 @@ get_profiles() {
     if [ -z "$filter_aps_environment" -o "$aps_environment" = "$filter_aps_environment" ]; then
       app_id="$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
       if [ -z "$filter_app_id" -o "$app_id" = "$filter_app_id" ]; then
+        if [ "$valid" = "1" ]; then
+          local expire_date="$(/usr/libexec/PlistBuddy -c "Print :ExpirationDate" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
+          if [ -z "$expire_date" -o "$(convert_en_US_to_unix_time "$expire_date")" -le "$(date "+%s")" ]; then
+            continue
+          fi
+        fi
         local str="$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
         if [ "$format" = "simple" ]; then
           profiles+=("$str")
         else
-          profiles+=("$str!${aps_environment:-" "}!$app_id")
+          local created_at="$(/usr/libexec/PlistBuddy -c "Print :CreationDate" /dev/stdin 2>/dev/null <<<"$decoded_profile")"
+          profiles+=("$str!${aps_environment:-" "}!$app_id!created at $created_at")
         fi
       fi
     fi
