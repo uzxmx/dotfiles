@@ -2,6 +2,10 @@
 
 . $(dirname "$BASH_SOURCE")/../lib/utils.sh
 
+if ! is_linux; then
+  echo "Only linux system supported." && exit 1
+fi
+
 if [ -z "$USER" ]; then
   abort '$USER is empty.'
 fi

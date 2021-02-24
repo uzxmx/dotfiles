@@ -4,9 +4,11 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
 while read plugin; do
-  dir=~/.tmux/plugins/$(basename $plugin)
-  if [ -z "$(ls $dir 2>/dev/null || true)" ]; then
-    git clone --depth 1 https://github.com/$plugin $dir
+  dir="$HOME/.tmux/plugins/$(basename "$plugin")"
+  if [ -z "$(ls "$dir" 2>/dev/null || true)" ]; then
+    git clone --depth 1 "https://github.com/$plugin" "$dir"
   fi
-done < <(cat ~/.dotfiles/tmux.conf | grep '^set-option -g @plugin' | cut -d ' ' -f 4 | sed "s/'//g")
+done < <(cat "$dotfiles_dir/tmux.conf" | grep '^set-option -g @plugin' | cut -d ' ' -f 4 | sed "s/'//g")
