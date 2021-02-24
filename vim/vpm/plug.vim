@@ -74,11 +74,17 @@ Plug 'junegunn/fzf.vim', { 'branch': '48a2d80' }
 
 Plug 'janko/vim-test'
 Plug 'HerringtonDarkholme/yats.vim'
+Plug 'maxmellon/vim-jsx-pretty'
 Plug 'udalov/kotlin-vim'
 
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 
 Plug 'airblade/vim-rooter'
+
+" A collection of language packs (syntax, indentation, etc.) for Vim.
+" In my case, the performance is a bit worse than only importing specific
+" language plugins. So as a reference, we keep this plugin as a comment.
+" Plug 'sheerun/vim-polyglot'
 
 call plug#end()
 
