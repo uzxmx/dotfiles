@@ -6,14 +6,19 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF
-Search filenames and file contents from docs and dotfiles directories.
+Search filenames and file contents from docs and dotfiles dirs.
 EOF
   exit 1
 }
 
 case "$1" in
   "")
-    s --filename ~/.docs/src "$dotfiles_dir"
+    dirs=()
+    if [ -d ~/.docs/src ]; then
+      dirs+=(~/.docs/src)
+    fi
+    dirs+=("$dotfiles_dir")
+    s --filename "${dirs[@]}"
     ;;
   *)
     usage
