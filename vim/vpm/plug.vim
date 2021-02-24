@@ -16,7 +16,7 @@ Plug 'posva/vim-vue', { 'for': 'vue' }
 Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'keith/swift.vim', { 'for': 'swift' }
 Plug 'digitaltoad/vim-pug', { 'for': 'pug' }
-Plug 'tpope/vim-fugitive', { 'tag': 'v2.3' }
+Plug 'tpope/vim-fugitive', { 'tag': 'v3.3' }
 Plug 'airblade/vim-gitgutter'
 Plug 'vim-ruby/vim-ruby', { 'for': 'ruby' } " TODO make this faster
 Plug 'uzxmx/vim-rails', { 'for': 'ruby' }
