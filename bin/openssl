@@ -9,6 +9,11 @@ usage() {
   cat <<-EOF
 Wrapper for openssl utility. Use 'openssl help' to get the original help.
 
+PKCS#12: (with .p12 or .pfx extension)
+  A container file format commonly used to store private keys with accompanying
+  public key certificates, protected with a password-based symmetric key.
+  For more info, please visit https://en.wikipedia.org/wiki/PKCS
+
 Subcommands:
   e, exp      - show expiration info of a cert (source can be a host, file or pipe)
   v, verify   - verify a host
@@ -21,6 +26,7 @@ Subcommands:
   g, gen      - generate private key, CA, certificate, etc.
   s, show     - show the content of a PEM file (cert, csr, privkey)
   rsa         - RSA key utilities
+  p12         - PKCS#12 utilities
 EOF
   exit 1
 }
@@ -71,7 +77,7 @@ run_fallback() {
 case "$1" in
   e | exp | v | verify | pubkey | cert |\
   chain | tlsversions | ocsp_req | rm_pass |\
-  g | gen | s | show)
+  g | gen | s | show | p12)
     case "$1" in
       e)
         name="exp"
