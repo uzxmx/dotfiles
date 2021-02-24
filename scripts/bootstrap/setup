@@ -6,21 +6,27 @@ usage() {
   cat <<-EOF
 Utility to setup dotfiles repository in current system.
 
-A type predefines which tools will be installed. Supported types include:
+This script tries to leave footprints as less as possible, which is a much
+safer way when setting up in a machine shared with other users. This means you
+need to specify something explicitly to enable it.
 
-* minimal: only essential tools
-* full: all tools, default type
+A pod represents the smallest unit of the setup. You can find all the pods in
+'pods' file. A type represents a predefined collection of pods. Supported types
+include:
+
+* minimal: only essential pods
+* full: all pods
 
 Options:
   -p, --proxy <proxy> http proxy
   -v, --verbose show verbose output
   --update-repo fetch new updates from remote before setting up
-  -t, --type setup type, e.g. minimal, full. Default is full
+  -t, --type setup type, e.g. minimal, full
 EOF
   exit 1
 }
 
-setup_type="full"
+pods=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -p | --proxy)
@@ -37,8 +43,11 @@ while [ "$#" -gt 0 ]; do
       shift
       setup_type="$1"
       ;;
-    *)
+    -*)
       usage
+      ;;
+    *)
+      pods+=("$1")
       ;;
   esac
   shift
@@ -66,22 +75,6 @@ run_with_proxy() {
     unset http_proxy HTTP_PROXY https_proxy HTTPS_PROXY
   fi
 }
-
-case "$setup_type" in
-  full)
-    export setup_coc_python=1
-    export setup_java=1
-    export setup_coc_java=1
-    export setup_maven=1
-    export setup_go=1
-    export setup_gopls=1
-    ;;
-  minimal)
-    ;;
-  *)
-    usage
-    ;;
-esac
 
 if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(dirname $(dirname "$BASH_SOURCE"))")" = "scripts" ]; then
   # Download and execute stage0 script.
@@ -129,11 +122,57 @@ fi
 # Do real setup.
 cd "$DOTFILES_ROOT"
 
+build_pods_for_type() {
+  local file
+  if [ "$1" = "full" ]; then
+    file="$DOTFILES_ROOT/scripts/bootstrap/pods"
+  else
+    file="$DOTFILES_ROOT/scripts/bootstrap/$1_pods"
+  fi
+  while read pod; do
+    pods+=("$pod")
+  done < <(cat "$file")
+}
+
+check_pod() {
+  if ! grep -Fx "$1" "$DOTFILES_ROOT/scripts/bootstrap/pods" &>/dev/null; then
+    echo "Pod $1 doesn't exist"
+    exit 1
+  fi
+}
+
+enable_pod() {
+  export pod_$1=1
+}
+
+is_pod_enabled() {
+  [ "$(eval echo "\$pod_$1")" = "1" ]
+}
+export -f is_pod_enabled
+
+case "$setup_type" in
+  full | minimal)
+    build_pods_for_type "$setup_type"
+    ;;
+  .*)
+    echo "Unsupported setup type: $setup_type"
+    exit 1
+    ;;
+esac
+
+if [ "${#pods[@]}" -eq 0 ]; then
+  echo "No pod specified."
+  exit 1
+fi
+
+for pod in "${pods[@]}"; do
+  check_pod "$pod"
+  enable_pod "$pod"
+done
+
 source ./scripts/lib/utils.sh
 
-if is_vagrant; then
-  run ./scripts/misc/set_sudo_nopasswd
-fi
+is_pod_enabled sudo_nopasswd && run ./scripts/misc/set_sudo_nopasswd
 
 if [ -n "$user_http_proxy" ]; then
   # Create a symlink for gitconfig, so git http proxy can be shown correctly.
@@ -146,9 +185,9 @@ if [ -n "$user_http_proxy" ]; then
   trap pd EXIT
 fi
 
-run ./scripts/misc/setup_system_repo_mirror
+is_pod_enabled system_repo_mirror && run ./scripts/misc/setup_system_repo_mirror
 
-deps=(
+pods=(
   prerequisites
   rcm
   zsh
@@ -158,10 +197,12 @@ deps=(
   asdf
 )
 
-for dep in "${deps[@]}"; do
-  run "./scripts/install/$dep"
+for pod in "${pods[@]}"; do
+  is_pod_enabled "$pod" || continue
 
-  case "$dep" in
+  run "./scripts/install/$pod"
+
+  case "$pod" in
     rcm)
       run rcup
 
@@ -171,4 +212,59 @@ for dep in "${deps[@]}"; do
   esac
 done
 
-zsh -c "source ~/.zshrc; $DOTFILES_ROOT/scripts/bootstrap/inc/post-setup"
+[ -f ~/.asdf/asdf.sh ] && source ~/.asdf/asdf.sh
+
+export GOPATH="$HOME/go"
+export GO111MODULE=on
+export GOPROXY="https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct"
+
+pods=(
+  nvim
+  tmux
+  bc
+  socat
+  fzf
+  fd
+  rg
+)
+
+for pod in "${pods[@]}"; do
+  is_pod_enabled "$pod" || continue
+  run "./scripts/install/$pod"
+
+  case "$pod" in
+    nvim)
+      run ./scripts/install/coc_extensions ultisnips
+
+      is_pod_enabled coc_python && run ./scripts/install/coc_extensions python
+
+      is_pod_enabled java && run ./scripts/install/java
+
+      if is_pod_enabled coc_java; then
+        run ./scripts/install/coc_extensions java
+        run ./scripts/install/lombok
+      fi
+
+      is_pod_enabled maven && ./scripts/install/mvn
+
+      is_pod_enabled go && run ./scripts/install/golang
+
+      is_pod_enabled gopls && run ./scripts/install/gopls
+      ;;
+    tmux)
+      run ./scripts/misc/setup_tmux
+      ;;
+  esac
+done
+
+if is_pod_enabled perl; then
+  # Required by ssh wrapper.
+  if ! perl -MJSON::PP -e 1 &>/dev/null; then
+    run ./scripts/install/perl
+  fi
+fi
+
+for pod in cpanm perl_modules; do
+  is_pod_enabled "$pod" || continue
+  run "./scripts/install/$pod"
+done
