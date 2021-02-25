@@ -4,6 +4,9 @@ Usage: curl time <url>
 
 Show time stats.
 
+Options:
+  - indicate options after this are used as curl options
+
 Example:
   $> curl time example.com
 EOF
@@ -11,7 +14,29 @@ EOF
 }
 
 cmd_time() {
-  [ -z "$1" ] && usage_time
+  local url
+  local -a remainder
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -)
+        shift
+        while [ "$#" -gt 0 ]; do
+          remainder+=("$1")
+          shift
+        done
+        break
+        ;;
+      -*)
+        usage_time
+        ;;
+      *)
+        url="$1"
+        ;;
+    esac
+    shift
+  done
+
+  [ -z "$url" ] && usage_time
 
   curl -w "\
     \n-------------------------\n\
@@ -22,5 +47,5 @@ cmd_time() {
          redirect:  %{time_redirect}s\n\
     starttransfer:  %{time_starttransfer}s\n\
     -------------------------\n\
-            total:  %{time_total}s\n" "$@"
+            total:  %{time_total}s\n" -D - -o /dev/null -s "${remainder[@]}" "$url"
 }
