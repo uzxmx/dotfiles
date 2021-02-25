@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage_tu() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 * tu:
     Convert input from current locale's encoding to unicode.
 
@@ -14,7 +16,7 @@ EOF
 }
 
 usage_fu() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 * fu:
     Convert binary input from unicode to current locale's encoding.
 
@@ -25,7 +27,7 @@ EOF
 }
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for iconv utility that converts text from one character encoding to
 another. Pass in '-' to call the original.
 
@@ -42,8 +44,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 cmd_tu() {
   local remainder=()
@@ -102,8 +104,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    iconv "$@"
+    ;;
   *)
     iconv "$@"
     ;;

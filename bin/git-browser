@@ -13,7 +13,9 @@
 
 set -e
 
-source ~/.dotfiles/scripts/lib/utils.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/utils.sh"
 
 get_host() {
   echo "$1" | sed -e "s/^git@//" -e "s/:.*$//"

@@ -4,8 +4,10 @@
 
 set -eo pipefail
 
-source ~/.dotfiles/scripts/lib/utils.sh
-source ~/.dotfiles/scripts/lib/utils/random.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/utils.sh"
+source "$dotfiles_dir/scripts/lib/utils/random.sh"
 
 file="$1"
 if [ ! -f "$file" ]; then

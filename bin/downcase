@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Change names of files to lower case. A directory whose name will be lowercased
 should be specified before any files under it.
 
@@ -62,7 +64,7 @@ rename_file() {
   fi
 }
 
-source ~/.dotfiles/scripts/lib/prompt.sh
+source "$dotfiles_dir/scripts/lib/prompt.sh"
 
 if [ "$yes_to_proceed" != "1" ]; then
   if [ ! -t 0 ]; then

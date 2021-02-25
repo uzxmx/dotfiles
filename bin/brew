@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for brew utility.
 
 Subcommands:
@@ -12,11 +14,11 @@ EOF
   exit 1
 }
 
-source "$(dirname "$BASH_SOURCE")/../scripts/lib/path.sh"
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 usage_mirror() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: brew mirror [--set | --reset] [--formular] [--bottle]
 
 Options:
@@ -109,8 +111,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    brew "$@"
+    ;;
   *)
     brew "$@"
     ;;

@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for polipo utility. Pass in '-' to call the original.
 
 Provided subcommands include:
@@ -32,8 +34,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 pid_file=$(polipo -v | grep 'pidFile ' | cut -d ' ' -f 3)
 pid_file=${pid_file:-/tmp/polipo.pid}
@@ -102,8 +104,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    polipo "$@"
+    ;;
   *)
     polipo "$@"
     ;;

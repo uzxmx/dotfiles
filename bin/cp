@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for cp utility. Pass in '-' to call the original.
 
 Provided subcommands include:
@@ -33,8 +35,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 copy_with_intermediate_paths() {
   local file="$1"
@@ -72,8 +74,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    cp "$@"
+    ;;
   *)
     cp "$@"
     ;;

@@ -10,7 +10,8 @@ set options {
 }
 set usage "- Automatic multi-factor authentication"
 
-source ~/.dotfiles/scripts/expect/cmdline.tcl
+set dotfiles_dir [file normalize [concat [file dirname $argv0] "/.."]]
+source "$dotfiles_dir/scripts/expect/cmdline.tcl"
 
 set secret_name $params(n)
 set program [lindex $argv 0]

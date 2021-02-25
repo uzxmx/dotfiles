@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for du utility that reports file system disk space usage. Pass in '-'
 to call the original.
 
@@ -14,8 +16,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH="$(new_path_exclude ~/.dotfiles/bin)"
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 case "$1" in
   -)

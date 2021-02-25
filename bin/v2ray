@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for v2ray utility. Pass in '-' to call the original.
 
 Provided subcommands include:
@@ -37,8 +39,8 @@ EOF
   exit 1
 }
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 is_mac() {
   if [[ "$OSTYPE" =~ ^darwin.* ]]; then
@@ -69,7 +71,7 @@ cmd_start() {
   if ! v2ray_is_running; then
     if is_mac; then
       if ! launchctl list | grep com.v2ray.core &>/dev/null; then
-        launchctl load ~/.dotfiles/v2ray/com.v2ray.core.plist
+        launchctl load "$dotfiles_dir/v2ray/com.v2ray.core.plist"
       fi
       launchctl start com.v2ray.core
     else
@@ -119,7 +121,7 @@ cmd_config() {
   local configfile="/usr/local/etc/v2ray/config.json"
   local old_md5
   if [ ! -e "$configfile" ]; then
-    template="$(find ~/.dotfiles/v2ray -name '*.json.sample' | fzf --prompt 'Select a template file to copy from: ')"
+    template="$(find "$dotfiles_dir/v2ray" -name '*.json.sample' | fzf --prompt 'Select a template file to copy from: ')"
     [ -z "$template" ] && exit
     sudo mkdir -p "$(dirname "$configfile")"
     sudo cp "$template" "$configfile"
@@ -148,8 +150,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    v2ray "$@"
+    ;;
   *)
     v2ray "$@"
     ;;

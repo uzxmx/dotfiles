@@ -67,8 +67,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    pod "$@"
+    ;;
   *)
     pod "$@"
     ;;

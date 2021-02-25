@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH=$(new_path_exclude ~/.dotfiles/bin)
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 if ! type totp &>/dev/null; then
-  echo 'totp not found. Please install it by running ~/.dotfiles/scripts/install/totp'
+  echo "totp not found. Please install it by running $dotfiles_dir/scripts/install/totp"
   exit 1
 fi
 

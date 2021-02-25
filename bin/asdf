@@ -6,7 +6,7 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 asdf_dir="$dotfiles_dir/scripts/asdf"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for asdf utility.
 
 Subcommands:

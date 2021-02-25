@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for top utility.
 
 Subcommands:
@@ -82,7 +82,12 @@ run() {
 
 run_fallback() {
   if [ "$#" -eq 0 ]; then
-    top -o +%MEM -c
+    source "$dotfiles_dir/scripts/lib/system.sh"
+    if is_linux; then
+      top -o +%MEM -c
+    else
+      top "$@"
+    fi
   else
     top "$@"
   fi

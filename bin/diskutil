@@ -5,7 +5,7 @@ set -eo pipefail
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for diskutil utility.
 
 Subcommands:
@@ -174,8 +174,8 @@ case "$1" in
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    diskutil "$@"
+    ;;
   *)
     diskutil "$@"
     ;;
