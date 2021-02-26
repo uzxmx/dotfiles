@@ -35,6 +35,9 @@ This requires a remote http proxy is listening at 8123 on the remote server.
 Port 8123 is used as the v2ray http proxy port, where all trafic will
 go to a same outbound (no whitelist).
 
+Options:
+  -d dry run, currently output commands for enabling HTTP proxy in a shell
+
 Examples:
   $> pe          # Enable proxy of default types.
   $> pe docker   # Enable docker proxy.
@@ -72,7 +75,7 @@ test_proxy() {
   nc -z -w 5 "$host" "$port" &>/dev/null
 }
 
-while getopts 'hp:' opt; do
+while getopts 'hp:d' opt; do
   case "$opt" in
     p)
       if [ "$subcommand" = "enable" ]; then
@@ -84,6 +87,10 @@ while getopts 'hp:' opt; do
       else
         usage
       fi
+      ;;
+    d)
+      subcommand="enable"
+      dry_run=1
       ;;
     *)
       usage
@@ -117,33 +124,41 @@ if [ "$subcommand" = "enable" ]; then
   fi
 fi
 
-if [ "$#" -eq 0 ]; then
+if [ "$dry_run" = "1" ]; then
   target_http=1
-  target_git=1
-  target_curl=1
-  target_yum=1
-  target_scoop=1
-  if [ "$subcommand" = "info" ]; then
-    target_docker=1
-  fi
 else
-  for i in "$@"; do
-    case "$i" in
-      http | git | curl | docker | yum | scoop | all)
-        eval "target_$i=1"
-    esac
-  done
+  if [ "$#" -eq 0 ]; then
+    target_http=1
+    target_git=1
+    target_curl=1
+    target_yum=1
+    target_scoop=1
+    if [ "$subcommand" = "info" ]; then
+      target_docker=1
+    fi
+  else
+    for i in "$@"; do
+      case "$i" in
+        http | git | curl | docker | yum | scoop | all)
+          eval "target_$i=1"
+      esac
+    done
+  fi
 fi
 
 enable_http_proxy() {
-  cat <<EOF >&3
+  local commands="
 export http_proxy=http://$user_http_proxy
 export HTTP_PROXY=http://$user_http_proxy
 export https_proxy=http://$user_http_proxy
-export HTTPS_PROXY=http://$user_http_proxy
-EOF
+export HTTPS_PROXY=http://$user_http_proxy"
 
-  dump_http_proxy
+  if [ "$dry_run" = "1" ]; then
+    echo "$commands"
+  else
+    echo "$commands" >&3
+    dump_http_proxy
+  fi
 }
 
 disable_http_proxy() {
