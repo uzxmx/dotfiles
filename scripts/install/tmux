@@ -17,5 +17,8 @@ dir="/tmp/tmux"
 git_clone https://github.com/tmux/tmux.git "$dir" --branch 3.0a --depth 1
 
 cd "$dir"
-sh autogen.sh && ./configure && make && sudo make install
+sh autogen.sh
+./configure
+make
+sudo make install
 rm -rf "$dir"
