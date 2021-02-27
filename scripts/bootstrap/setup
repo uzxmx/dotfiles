@@ -22,6 +22,10 @@ Options:
   -v, --verbose show verbose output
   --update-repo fetch new updates from remote before setting up
   -t, --type setup type, e.g. minimal, full
+
+  --root <root-dir> root directory to clone to
+  --git-ssh use git ssh protocol to clone, by default https is used
+  --git-clone-args <args> arguments which are passed into git clone
 EOF
   exit 1
 }
@@ -42,6 +46,17 @@ while [ "$#" -gt 0 ]; do
     -t | --type)
       shift
       setup_type="$1"
+      ;;
+    --root)
+      shift
+      export DOTFILES_ROOT="$1"
+      ;;
+    --git-ssh)
+      export GIT_CLONE_WITH_SSH=1
+      ;;
+    --git-clone-args)
+      shift
+      export GIT_CLONE_ARGS="$1"
       ;;
     -*)
       usage
