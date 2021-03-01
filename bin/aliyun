@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+aliyun_dir="$dotfiles_dir/scripts/aliyun"
+
+usage() {
+  cat <<-EOF
+Wrapper for aliyun utility.
+
+You need to use 'profile' subcommand to add a profile before using other
+subcommands.
+
+When there exists several profiles, you have three ways to decide which one to
+use:
+
+The first way is to specify 'ALIYUN_PROFILE' as an environment variable.
+
+The second way is to specify both 'ALIYUN_ACCESS_KEY_ID' and
+'ALIYUN_ACCESS_KEY_SECRET' as environment variables.
+
+The third way is to use 'profile use' command to set a defaul profile.
+
+Subcommands:
+  p, profile - manage profiles
+  d, dns     - manage DNS
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  p | profile | d | dns)
+    case "$1" in
+      p)
+        name="profile"
+        ;;
+      d)
+        name="dns"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$aliyun_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    aliyun "$@"
+    ;;
+  *)
+    aliyun "$@"
+    ;;
+esac
