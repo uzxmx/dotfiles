@@ -29,3 +29,19 @@ run_cli() {
     aliyun "${profile_opts[@]}" "$@" | $func
   fi
 }
+
+parse_rr() {
+  local domain="$1"
+  local rr="$(echo ".$domain" | sed -E 's/^(.*)\.[^\.]+\.[^\.]+$/\1/')"
+  echo "$rr" | sed 's/^\.*//'
+}
+
+parse_primary_domain() {
+  local domain="$(echo ".$domain" | sed -E 's/^.*\.([^\.]+\.[^\.]+)$/\1/')"
+  if [ -z "$domain" ]; then
+    echo 'The domain is malformed.'
+    exit 1
+  else
+    echo "$domain"
+  fi
+}

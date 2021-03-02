@@ -6,9 +6,13 @@ Usage: aliyun dns
 
 Manage DNS.
 
+For more information, please visit
+https://help.aliyun.com/product/29697.html
+
 Subcommands:
   l, list    - list domains
   r, records - list DNS records for a domain
+  a, add     - add DNS record for a domain
 EOF
   exit 1
 }
@@ -19,13 +23,16 @@ cmd_dns() {
   [ -z "$cmd" ] && usage_dns
 
   case "$cmd" in
-    l | list | r | records)
+    l | list | r | records | a | add)
       case "$cmd" in
         l)
           cmd="list"
           ;;
         r)
           cmd="records"
+          ;;
+        a)
+          cmd="add"
           ;;
       esac
       case "$1" in
@@ -69,4 +76,51 @@ cmd_dns_records() {
   [ -z "$domain" ] && echo 'A domain is required.' && exit 1
   process_profile_opts
   run_cli process_dns_records_output alidns DescribeDomainRecords --DomainName "$domain"
+}
+
+usage_dns_add() {
+  cat <<-EOF
+Usage: aliyun dns add <domain-name>
+
+Add DNS record for a domain. RR will be parsed from the domain name.
+
+Options:
+  -t <type> record type, e.g. A, CNAME, TXT
+  -v <value> record value
+EOF
+  exit 1
+}
+
+cmd_dns_add() {
+  local record_type record_value
+  local domain
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -t)
+        shift
+        record_type="$(echo "$1" | tr a-z A-Z)"
+        ;;
+      -v)
+        shift
+        record_value="$1"
+        ;;
+      -*)
+        usage_dns_add
+        ;;
+      *)
+        domain="$1"
+        ;;
+    esac
+    shift
+  done
+
+  [ -z "$domain" ] && echo 'A domain is required.' && exit 1
+  [ -z "$record_type" ] && echo 'A record type is required.' && exit 1
+  [ -z "$record_value" ] && echo 'A record value is required.' && exit 1
+
+  local rr="$(parse_rr "$domain")"
+  domain="$(parse_primary_domain "$domain")"
+
+  process_profile_opts
+  run_cli '' alidns AddDomainRecord --DomainName "$domain" --RR "${rr:-@}" --Type "$record_type" --Value "$record_value"
 }
