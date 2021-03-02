@@ -12,6 +12,7 @@ https://help.aliyun.com/product/29697.html
 Subcommands:
   l, list    - list domains
   r, records - list DNS records for a domain
+  g, get     - get DNS record details
   a, add     - add DNS record for a domain
 EOF
   exit 1
@@ -23,13 +24,16 @@ cmd_dns() {
   [ -z "$cmd" ] && usage_dns
 
   case "$cmd" in
-    l | list | r | records | a | add)
+    l | list | r | records | g | get | a | add)
       case "$cmd" in
         l)
           cmd="list"
           ;;
         r)
           cmd="records"
+          ;;
+        g)
+          cmd="get"
           ;;
         a)
           cmd="add"
@@ -75,7 +79,46 @@ cmd_dns_records() {
   local domain="$1"
   [ -z "$domain" ] && echo 'A domain is required.' && exit 1
   process_profile_opts
-  run_cli process_dns_records_output alidns DescribeDomainRecords --DomainName "$domain"
+  run_cli process_dns_records_output alidns DescribeDomainRecords --DomainName "$domain" --
+}
+
+usage_dns_get() {
+  cat <<-EOF
+Usage: aliyun dns get <domain-name>
+
+Get a DNS record details.
+
+Options:
+  -t <type> record type, e.g. A, CNAME, TXT
+EOF
+  exit 1
+}
+
+cmd_dns_get() {
+  local -a opts
+  local domain
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -t)
+        shift
+        opts+=(--TypeKeyWord "$(echo "$1" | tr a-z A-Z)")
+        ;;
+      -*)
+        usage_dns_add
+        ;;
+      *)
+        domain="$1"
+        ;;
+    esac
+    shift
+  done
+
+  [ -z "$domain" ] && echo 'A domain is required.' && exit 1
+
+  local rr="$(parse_rr "$domain")"
+  domain="$(parse_primary_domain "$domain")"
+  process_profile_opts
+  run_cli '' alidns DescribeDomainRecords --DomainName "$domain" --RRKeyWord "${rr:-@}" "${opts[@]}" | jq -r ".DomainRecords.Record[] | select(.RR == \"$rr\")"
 }
 
 usage_dns_add() {
@@ -117,6 +160,13 @@ cmd_dns_add() {
   [ -z "$domain" ] && echo 'A domain is required.' && exit 1
   [ -z "$record_type" ] && echo 'A record type is required.' && exit 1
   [ -z "$record_value" ] && echo 'A record value is required.' && exit 1
+
+  local result="$(cmd_dns_get "$domain" -t "$record_type")"
+  if [ -n "$result" ]; then
+    echo -e "Current record details are:\n$result"
+    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    [ "$(yesno "Still want to update?(y/N)" "no")" = "no" ] && echo Cancelled && exit 1
+  fi
 
   local rr="$(parse_rr "$domain")"
   domain="$(parse_primary_domain "$domain")"
