@@ -23,8 +23,9 @@ The second way is to specify both 'ALIYUN_ACCESS_KEY_ID' and
 The third way is to use 'profile use' command to set a defaul profile.
 
 Subcommands:
-  p, profile - manage profiles
-  d, dns     - manage DNS
+  p, profile         - manage profiles
+  d, dns             - manage DNS
+  sg, security_group - manage security groups
 EOF
   exit 1
 }
@@ -57,13 +58,16 @@ run() {
 }
 
 case "$1" in
-  p | profile | d | dns)
+  p | profile | d | dns | sg | security_group)
     case "$1" in
       p)
         name="profile"
         ;;
       d)
         name="dns"
+        ;;
+      sg)
+        name="security_group"
         ;;
       *)
         name="$1"
