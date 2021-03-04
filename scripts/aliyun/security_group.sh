@@ -133,6 +133,7 @@ Options:
   -d <description>
 
   -t <service-types> service types separated by comma
+  --not-print-list do not print the list in the end
 EOF
   exit 1
 }
@@ -143,6 +144,7 @@ _common_scripts_for_security_group_entry() {
   local security_group_id security_group_name
   local source_ip port
   local protocol="TCP"
+  local not_print_list
   while [ "\$#" -gt 0 ]; do
     case "\$1" in
       -n)
@@ -160,6 +162,9 @@ _common_scripts_for_security_group_entry() {
       --protocol)
         shift
         protocol="\$1"
+        ;;
+      --not-print-list)
+        not_print_list=1
         ;;
       -*)
         $other_opts_process_scripts
@@ -180,8 +185,6 @@ _sanitize_ip() {
   local ip="$1"
   if [ "$ip" = "0.0.0.0" ]; then
     echo "$ip/0"
-  elif [ "$ip" = "${ip%/*}" ]; then
-    echo "$ip/32"
   else
     echo "$ip"
   fi
@@ -191,9 +194,8 @@ _sanitize_port() {
   local port="$1"
   if [ "$port" = "${port%/*}" ]; then
     port="$port/$port"
-  else
-    echo "$port"
   fi
+  echo "$port"
 }
 
 _common_scripts_for_checking_source_ip() {
@@ -220,6 +222,7 @@ _common_scripts_for_getting_security_group_id() {
     security_group_id="$(get_security_group_id_by_name)"
     [ -z "$security_group_id" ] && echo "Cannot find the security group id for $security_group_name" && exit 1
   fi
+  true
 EOF
 }
 
@@ -268,7 +271,7 @@ esac
     done
   fi
 
-  cmd_security_group_list "$security_group_id"
+  [ "$not_print_list" = "1" ] || cmd_security_group_list "$security_group_id"
 }
 
 usage_security_group_revoke() {
@@ -282,25 +285,42 @@ Options:
   -s <source-ip> the source CIDR IP
   -p <port-range> port range, e.g. 443
   --protocol <protocol> TCP by default
+  -d <description> revoke by description
+
+  --not-print-list do not print the list in the end
 EOF
   exit 1
 }
 
 cmd_security_group_revoke() {
+  local description
   local other_opts_process_scripts="
 case "\$1" in
+  -d)
+    shift
+    description="\$1"
+    ;;
   -*)
     usage_security_group_revoke
     ;;
 esac
 "
   eval "$(_common_scripts_for_security_group_entry "$other_opts_process_scripts")"
-  eval "$(_common_scripts_for_checking_source_ip_and_port)"
+  if [ -z "$description" ]; then
+    eval "$(_common_scripts_for_checking_source_ip_and_port)"
+  fi
   eval "$(_common_scripts_for_getting_security_group_id)"
 
-  run_cli '' ecs RevokeSecurityGroup --SecurityGroupId "$security_group_id" --IpProtocol "$protocol" --PortRange "$port" --SourceCidrIp "$source_ip" >/dev/null
+  if [ -z "$description" ]; then
+    run_cli '' ecs RevokeSecurityGroup --SecurityGroupId "$security_group_id" --IpProtocol "$protocol" --PortRange "$port" --SourceCidrIp "$source_ip" >/dev/null
+  else
+    local list="$(cmd_security_group_list "$security_group_id" -d "$description" | jq -r ".[] | (.IpProtocol, .PortRange, .SourceCidrIp)")"
+    while read protocol; read port; read ip; do
+      run_cli '' ecs RevokeSecurityGroup --SecurityGroupId "$security_group_id" --IpProtocol "$protocol" --PortRange "$(_sanitize_port "$port")" --SourceCidrIp "$(_sanitize_ip "$ip")" >/dev/null
+    done < <(echo "$list")
+  fi
 
-  cmd_security_group_list "$security_group_id"
+  [ "$not_print_list" = "1" ] || cmd_security_group_list "$security_group_id"
 }
 
 usage_security_group_update_by_desp() {
@@ -358,8 +378,10 @@ cmd_security_group_update_by_desp() {
 
   while read protocol; read port; read ip; do
     if [ ! "$source_ip" = "$(_sanitize_ip "$ip")" ]; then
-      cmd_security_group_revoke "$security_group_id" -s "$ip" -p "$port" --protocol "$protocol"
-      cmd_security_group_authorize "$security_group_id" -s "$source_ip" -p "$port" --protocol "$protocol" -d "$description"
+      cmd_security_group_revoke "$security_group_id" -s "$ip" -p "$port" --protocol "$protocol" --not-print-list
+      cmd_security_group_authorize "$security_group_id" -s "$source_ip" -p "$port" --protocol "$protocol" -d "$description" --not-print-list
     fi
   done < <(echo "$list")
+
+  cmd_security_group_list "$security_group_id"
 }
