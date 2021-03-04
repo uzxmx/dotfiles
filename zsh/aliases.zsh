@@ -25,7 +25,6 @@ alias gaa="git add -A"
 alias gb='git branch -v'
 alias gbr="git browser"
 alias gc='git commit -s'
-alias gcb='git cleanb'
 alias gcm='git commit -s -m'
 alias gco="git checkout"
 alias gcl="git clone"

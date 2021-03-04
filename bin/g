@@ -20,6 +20,7 @@ Subcommands:
   rm_from_history - remove files from git history
   update_commit   - change the last commit message (the commit has not been pushed)
   init_hooks      - initialize git hooks and trigger post-checkout hook
+  cleanb          - clean local branches that are gone on the remote
 EOF
   exit 1
 }
@@ -39,7 +40,7 @@ case "$1" in
   "")
     git status .
     ;;
-  cl | d | l | show_commit | pt | rm_from_history | update_commit | ignore | cm | init_hooks)
+  cl | d | l | show_commit | pt | rm_from_history | update_commit | ignore | cm | init_hooks | cleanb)
     case "$1" in
       cl)
         name="clone"
