@@ -1,8 +1,3 @@
-if exists('g:loaded_term')
-  finish
-endif
-let g:loaded_term = 1
-
 let s:is_win = has('win32') || has('win64')
 if s:is_win
   function! s:call(fn, ...)
@@ -144,7 +139,7 @@ function! s:split(dict)
   endtry
 endfunction
 
-function! TermExecute(dict, command) abort
+function! utils#term#exec(dict, command) abort
   let temps  = { 'result': s:tempname()  }
   let winrest = winrestcmd()
   let pbuf = bufnr('')
