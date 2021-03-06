@@ -75,6 +75,7 @@ wrap_executable() {
 }
 
 wrap_executable ssh ~/.dotfiles/scripts/bin/ssh
+wrap_executable sshuttle ~/.dotfiles/scripts/bin/sshuttle
 wrap_executable rsync ~/.dotfiles/scripts/bin/rsync
 wrap_executable va ~/.dotfiles/scripts/bin/vagrant
 
