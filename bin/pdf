@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+pdf_dir="$dotfiles_dir/scripts/pdf"
+
+usage() {
+  cat <<-EOF
+Utility to manage pdf.
+
+Subcommands:
+  i, info         - show pdf info
+  fi, from_images - convert images to a pdf
+  m, merge        - merge multiple pdfs into one
+  e, extract      - extract one or more contiguous pages from a pdf
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  i | info | fi | from_images | m | merge | e | extract)
+    case "$1" in
+      i)
+        name="info"
+        ;;
+      fi)
+        name="from_images"
+        ;;
+      m)
+        name="merge"
+        ;;
+      e)
+        name="extract"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$pdf_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
