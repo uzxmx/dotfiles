@@ -63,7 +63,7 @@ https://partners-intl.aliyun.com/help/doc-detail/40654.html?spm=a3c0i.10721930.0
 Options:
   -i access key id
   -s access key secret
-  -r region
+  -r region, e.g. cn-shanghai, cn-shenzhen
 EOF
   exit 1
 }
