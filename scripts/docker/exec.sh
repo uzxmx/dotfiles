@@ -15,7 +15,11 @@ cmd_exec() {
   else
     local id="$(select_container)"
     [ -z "$id" ] && exit
-    docker exec -it "$id" bash
+    if [ "$(docer exec "$id" bash -c "foo" 2>&1)" = "foo" ]; then
+      docker exec -it "$id" bash
+    else
+      docker exec -it "$id" sh
+    fi
   fi
 }
 alias_cmd e exec
