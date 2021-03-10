@@ -26,6 +26,9 @@ Subcommands:
   p, profile         - manage profiles
   d, dns             - manage DNS
   sg, security_group - manage security groups
+  c, cdn             - manage CDN
+  e, ecs             - manage elastic compute service
+  v, vpc             - manage virtual private cloud
 EOF
   exit 1
 }
@@ -58,7 +61,7 @@ run() {
 }
 
 case "$1" in
-  p | profile | d | dns | sg | security_group)
+  p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn)
     case "$1" in
       p)
         name="profile"
@@ -68,6 +71,15 @@ case "$1" in
         ;;
       sg)
         name="security_group"
+        ;;
+      e)
+        name="ecs"
+        ;;
+      c)
+        name="cdn"
+        ;;
+      v)
+        name="vpc"
         ;;
       *)
         name="$1"
