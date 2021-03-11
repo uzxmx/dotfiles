@@ -112,7 +112,7 @@ cmd_dns_get() {
         opts+=(--TypeKeyWord "$(echo "$1" | tr a-z A-Z)")
         ;;
       -*)
-        usage_dns_add
+        usage_dns_get
         ;;
       *)
         domain="$1"

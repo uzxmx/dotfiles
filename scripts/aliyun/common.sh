@@ -30,18 +30,50 @@ run_cli() {
   fi
 }
 
+_top_domains=(
+  "com"
+  "cn"
+  "com.cn"
+  "net"
+  "co"
+  "info"
+  "me"
+  "org"
+)
+
+remove_top_domain() {
+  if [ -z "$_top_domains_for_sed" ]; then
+    local top_domain
+    for top_domain in "${_top_domains[@]}"; do
+      if [ -n "$_top_domains_for_sed" ]; then
+        _top_domains_for_sed="$_top_domains_for_sed|"
+      fi
+      _top_domains_for_sed="$_top_domains_for_sed$(echo ".$top_domain" | sed 's/\./\\./g')\$"
+    done
+  fi
+
+  local domain="$(echo "$1" | sed -E "s/$_top_domains_for_sed//")"
+  if [ "$domain" = "$1" ]; then
+    echo "Cannot parse domain $1, please update top domains." >&2
+    exit 1
+  fi
+  echo "$domain"
+}
+
 parse_rr() {
   local domain="$1"
-  local rr="$(echo ".$domain" | sed -E 's/^(.*)\.[^\.]+\.[^\.]+$/\1/')"
+  local rr
+  domain="$(remove_top_domain "$domain")"
+  rr="$(echo ".$domain" | sed -E 's/^(.*)\.[^\.]+$/\1/')"
   echo "$rr" | sed 's/^\.*//'
 }
 
 parse_primary_domain() {
-  local domain="$(echo ".$domain" | sed -E 's/^.*\.([^\.]+\.[^\.]+)$/\1/')"
-  if [ -z "$domain" ]; then
-    echo 'The domain is malformed.'
-    exit 1
-  else
-    echo "$domain"
+  local domain="$1"
+  local rr
+  rr="$(parse_rr "$domain")"
+  if [ -n "$rr" ]; then
+    domain="$(echo "$domain" | sed "s/^$rr\.//")"
   fi
+  echo "$domain"
 }

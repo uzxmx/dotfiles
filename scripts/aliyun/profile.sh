@@ -57,8 +57,7 @@ Usage: aliyun profile add <profile>
 
 Add profile.
 
-To find a supported region, please visit
-https://partners-intl.aliyun.com/help/doc-detail/40654.html?spm=a3c0i.10721930.0.0.748e3d98sgZdui
+To find a supported region, you can execute 'aliyun ecs regions'.
 
 Options:
   -i access key id
