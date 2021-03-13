@@ -39,7 +39,7 @@ cmd_vpc() {
 alias_cmd v vpc
 
 process_vpc_list_output() {
-  jq -r '.Vpcs.Vpc[] | "ID: \(.VpcId)\tName: \(.VpcName)\tCidrBlock: \(.CidrBlock)"' | column -t -s $'\t'
+  jq -r '.Vpcs.Vpc[] | "ID: \(.VpcId)\tName: \(.VpcName)\tCidrBlock: \(.CidrBlock)\tNatGatewayIds: \(.NatGatewayIds.NatGatewayIds[])"' | column -t -s $'\t'
 }
 
 cmd_vpc_list() {

@@ -29,6 +29,7 @@ Subcommands:
   c, cdn             - manage CDN
   e, ecs             - manage elastic compute service
   v, vpc             - manage virtual private cloud
+  n, nat             - manage NAT gateways
 EOF
   exit 1
 }
@@ -61,7 +62,7 @@ run() {
 }
 
 case "$1" in
-  p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn)
+  p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn | n | nat)
     case "$1" in
       p)
         name="profile"
@@ -80,6 +81,9 @@ case "$1" in
         ;;
       v)
         name="vpc"
+        ;;
+      n)
+        name="nat"
         ;;
       *)
         name="$1"
