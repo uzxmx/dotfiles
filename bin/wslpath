@@ -3,6 +3,8 @@
 # Override vendor wslpath because it cannot convert path in WSL rootfs
 # to Windows path, and vice-versa.
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
 usage() {
   cat <<-EOF 1>&2
 Translate a Windows path to a WSL path, and vice-versa.
@@ -36,7 +38,7 @@ done
 
 shift $(($OPTIND - 1))
 
-source ~/.dotfiles/scripts/lib/wsl.sh
+source "$dotfiles_dir/scripts/lib/wsl.sh"
 
 case $wanttype in
   unix)

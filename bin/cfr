@@ -3,7 +3,7 @@
 set -eo pipefail
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for cfr utility - a Java class decompiler.
 
 If you encounter 'java.lang.OutOfMemoryError: Java heap space', you can try to
@@ -23,15 +23,19 @@ if [ -n "$JAVA_XMX" ]; then
   jvm_options+=("-Xmx$JAVA_XMX")
 fi
 
+run_fallback() {
+  java "${jvm_options[@]}" -jar /usr/local/cfr/cfr.jar "$@"
+}
+
 case "$1" in
   -h)
     usage
     ;;
   -)
     shift
-    ;&
-    # Fall through
+    run_fallback "$@"
+    ;;
   *)
-    java "${jvm_options[@]}" -jar /usr/local/cfr/cfr.jar "$@"
+    run_fallback "$@"
     ;;
 esac

@@ -12,7 +12,7 @@ my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
 require $dotfiles_dir . '/scripts/perl/ssh.pl';
 
 check_ssh_hosts_file();
-run_original_if_required();
+run_original_if_required(1);
 
 my $s = select_host();
 
@@ -36,6 +36,12 @@ if (scalar(@ssh_args)) {
   push @command, '-e', shell_quote(@ssh_args);
 }
 
-push @command, '-r', $s->get_user_host(), '0.0.0.0/0';
+push @command, '-r', $s->get_user_host();
+
+if (scalar(@ARGV)) {
+  push @command, $_ for @ARGV;
+} else {
+  push @command, '0.0.0.0/0';
+}
 
 $s->run(@command);

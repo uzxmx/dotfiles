@@ -10,6 +10,7 @@ Wrapper for diff utility.
 
 Subcommands:
   brief - do not show file contents
+  bin   - compare binary files
 EOF
   exit 1
 }
@@ -19,6 +20,10 @@ PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 cmd_brief() {
   diff -qr "$@"
+}
+
+cmd_bin() {
+  cmp -l "$@"
 }
 
 run() {
@@ -33,7 +38,7 @@ run() {
 }
 
 case "$1" in
-  brief)
+  brief | bin)
     run "$@"
     ;;
   -h)

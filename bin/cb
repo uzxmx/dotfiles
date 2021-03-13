@@ -5,7 +5,7 @@
 set -e
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Utility to send data from the pipe to clipboard or query the clipboard for
 different systems.
 

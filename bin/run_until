@@ -4,7 +4,7 @@ max=10
 termination="success"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Run a command until termination condition is met.
 
 Usage: run_until [-e] [-s] [-m MAX COUNT] [-h] [COMMAND] [ARGS ...]
