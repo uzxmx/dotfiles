@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+kubectl_dir="$dotfiles_dir/scripts/kubectl"
+
+usage() {
+  cat <<-EOF
+Wrapper for kubectl utility. Use 'kubectl --help' to get the original help.
+
+Subcommands:
+  f, forward   - forward one or more local ports to a pod
+  g, get       - get resources
+  l, log, logs - show logs
+  e, exec      - execute command in a container
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run_cli() {
+  if [ -n "$KUBECONFIG_PATH" ]; then
+    kubectl --kubeconfig "$KUBECONFIG_PATH" "$@"
+  else
+    kubectl "$@"
+  fi
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  f | forward | g | get | l | logs? | e | exec)
+    case "$1" in
+      f)
+        name="forward"
+        ;;
+      g)
+        name="get"
+        ;;
+      l | logs)
+        name="log"
+        ;;
+      e)
+        name="exec"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$kubectl_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    run_cli "$@"
+    ;;
+  *)
+    run_cli "$@"
+    ;;
+esac
