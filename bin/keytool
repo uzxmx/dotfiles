@@ -13,7 +13,9 @@ A keystore contains one or more entries. A trust store is just a keystore that
 contains trustentry (whose certificate is trusted by the user).
 
 Subcommands:
-  l, list - list entries in a keystore or CA keystore
+  l, list   - list entries in a keystore or CA keystore
+  g, gen    - generate a keystore
+  i, import - import cert to a keystore
 EOF
   exit 1
 }
@@ -46,10 +48,16 @@ run() {
 }
 
 case "$1" in
-  l | list)
+  l | list | g | gen | i | import)
     case "$1" in
       l)
         name="list"
+        ;;
+      g)
+        name="gen"
+        ;;
+      i)
+        name="import"
         ;;
       *)
         name="$1"

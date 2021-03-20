@@ -20,8 +20,9 @@ EOF
 }
 
 cmd_list() {
-  local jks_path storetype storepass ca rfc verbose
+  local jks_path storetype ca rfc verbose
   local list_aliases alias_name
+  local storepass="$KEY_STORE_PASS"
   local -a opts
   while [ "$#" -gt 0 ]; do
     case "$1" in
