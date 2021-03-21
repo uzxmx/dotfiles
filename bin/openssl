@@ -17,7 +17,7 @@ PKCS#12: (with .p12 or .pfx extension)
 Subcommands:
   e, exp      - show expiration info of a cert (source can be a host, file or pipe)
   v, verify   - verify a host
-  pubkey      - get public key for a host
+  pubkey      - get public key for a cert (source can be a host, file or pipe)
   cert        - get certificate for a host, or its content
   chain       - get intermediate certificate for a host
   tlsversions - show supported tls versions of remote server

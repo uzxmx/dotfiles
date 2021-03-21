@@ -17,7 +17,7 @@ cmd_show() {
   local pem_file="$1"
   [ ! -f "$pem_file" ] && echo 'A PEM file is required.' && exit 1
 
-  local header="$(grep "^-----BEGIN" "$pem_file" | sed "s/^-----BEGIN\(.*\)-----/\1/" | "$dotfiles_dir/bin/trim")"
+  local header="$(grep "^-----BEGIN" "$pem_file" | sed "s/^-----BEGIN\(.*\)-----/\1/" | head -1 | "$dotfiles_dir/bin/trim")"
   case "$header" in
     "RSA PRIVATE KEY")
       openssl rsa -in "$pem_file" -text -noout
@@ -26,10 +26,11 @@ cmd_show() {
       openssl req -in "$pem_file" -text -noout
       ;;
     "CERTIFICATE")
-      openssl x509 -in "$pem_file" -text -noout -ext subjectAltName
+      openssl x509 -in "$pem_file" -text -noout
       ;;
     *)
       echo "Cannot infer the type from the header. Please check if the file contains a supported '-----BEGIN' header."
       ;;
   esac
 }
+alias_cmd s show
