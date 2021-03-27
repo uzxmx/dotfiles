@@ -21,8 +21,22 @@ Subcommands:
   update_commit   - change the last commit message (the commit has not been pushed)
   init_hooks      - initialize git hooks and trigger post-checkout hook
   cleanb          - clean local branches that are gone on the remote
+  w, worktree     - worktree utilities
 EOF
   exit 1
+}
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
 }
 
 run() {
@@ -40,7 +54,9 @@ case "$1" in
   "")
     git status .
     ;;
-  cl | d | l | show_commit | pt | rm_from_history | update_commit | ignore | cm | init_hooks | cleanb)
+  cl | d | l | show_commit | pt | rm_from_history | \
+  update_commit | ignore | cm | init_hooks | cleanb | \
+  w | worktree)
     case "$1" in
       cl)
         name="clone"
@@ -53,6 +69,9 @@ case "$1" in
         ;;
       pt)
         name="push_to"
+        ;;
+      w)
+        name="worktree"
         ;;
       *)
         name="$1"
