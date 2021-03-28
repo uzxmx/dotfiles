@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for bundle utility.
+
+Subcommands:
+  e, exec - execute a gem
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+usage_exec() {
+  cat <<-EOF
+Usage: bundle exec
+
+Execute a gem
+EOF
+  exit 1
+}
+
+cmd_exec() {
+  # Exit code 10 means 'Could not locate Gemfile or .bundle/ directory'.
+  bundle exec "$@" || ([ "$?" -eq 10 ] && \
+    echo "To resolve this error, you can switch to a directory which or whose parent directories contain a Gemfile." && \
+    echo 'Or you can call bundle with Gemfile specified: BUNDLE_GEMFILE=PATH_TO_GEMFILE bundle exec ...')
+}
+alias_cmd e exec
+
+case "$1" in
+  e | exec)
+    cmd="$1"
+    shift
+    case "$1" in
+      -h)
+        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+        ;;
+    esac
+    "cmd_$cmd" "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    bundle "$@"
+    ;;
+  *)
+    bundle "$@"
+    ;;
+esac
