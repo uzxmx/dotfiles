@@ -11,6 +11,7 @@ Utility to manage PEM.
 For more info, please see https://tools.ietf.org/html/rfc1421.
 
 Subcommands:
+  show       - show the content of a PEM file
   s, squeeze - squeeze multi-lines of a PEM file into one line
   f, fold    - fold one line into multi-lines (reverse of squeeze subcommand)
 EOF
@@ -135,6 +136,14 @@ cmd_fold() {
 }
 alias_cmd f fold
 
+usage_show() {
+  "$dotfiles_dir/bin/openssl" show -h
+}
+
+cmd_show() {
+  "$dotfiles_dir/bin/openssl" show "$@"
+}
+
 run() {
   local cmd="$1"
   shift
@@ -147,7 +156,7 @@ run() {
 }
 
 case "$1" in
-  s | squeeze | f | fold)
+  show | s | squeeze | f | fold)
     run "$@"
     ;;
   *)
