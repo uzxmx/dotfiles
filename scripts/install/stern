@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Multi pod and container log tailing
+
+set -eo pipefail
+
+type -p stern &> /dev/null && exit
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  platform=darwin
+elif is_linux; then
+  platform=linux
+else
+  abort "Unsupported system"
+fi
+
+version="1.11.0"
+"$dotfiles_dir/bin/cget" "https://github.com/wercker/stern/releases/download/$version/stern_${platform}_amd64" ~/bin/stern
+chmod a+x ~/bin/stern

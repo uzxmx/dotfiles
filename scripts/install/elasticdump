@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Dump and import elasticsearch data (https://github.com/elasticsearch-dump/elasticsearch-dump)
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+npm install -g elasticdump

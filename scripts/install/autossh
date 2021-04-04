@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Install autossh.
+
+set -eo pipefail
+
+type -p autossh &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install autossh
+  exit
+else
+  abort "Unsupported system"
+fi

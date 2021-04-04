@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install direnv (https://github.com/direnv/direnv)
+
+set -eo pipefail
+
+type -p direnv &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install direnv
+else
+  abort "Unsupported system"
+fi
