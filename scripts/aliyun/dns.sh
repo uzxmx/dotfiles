@@ -157,8 +157,7 @@ _common_scripts_for_dns_record() {
   if [ -z "$3" ]; then
     other_opts_process_scripts="$_usage"
   else
-    other_opts_process_scripts="$3
-$_usage"
+    other_opts_process_scripts="$3"
   fi
   cat <<EOF
   local record_type record_value
@@ -229,6 +228,8 @@ case "\$1" in
     shift
     record_id="\$1"
     ;;
+  *)
+    usage_dns_update
 esac
 "
   eval "$(_common_scripts_for_dns_record usage_dns_update 1 "$other_opts_process_scripts")"
