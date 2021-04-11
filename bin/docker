@@ -10,14 +10,15 @@ usage() {
 Wrapper for docker utility.
 
 Subcommands:
-  p         - pull image from a mirror
-  l, logs   - show logs of a container selected by fzf
-  e, exec   - execute a comand in a container selected by fzf
-  r, run    - run a docker image
-  list_tags - list image tags from dockerhub
-  pids      - show pids of containers
-  prune     - remove unused and dangling(unamed) images, and unused volumes
-  fzf       - search a command by its description and execute
+  p          - pull image from a mirror
+  l, logs    - show logs of a container selected by fzf
+  e, exec    - execute a comand in a container selected by fzf
+  r, run     - run a docker image
+  s          - manage services
+  list_tags  - list image tags from dockerhub
+  pids       - show pids of containers
+  prune      - remove unused and dangling(unamed) images, and unused volumes
+  fzf        - search a command by its description and execute
 EOF
   exit 1
 }
@@ -100,7 +101,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | logs | e | exec | p | r | run)
+  l | logs | e | exec | p | r | run | s)
     case "$1" in
       l)
         name="logs"
@@ -113,6 +114,9 @@ case "$1" in
         ;;
       r)
         name="run"
+        ;;
+      s)
+        name="service"
         ;;
       *)
         name="$1"
