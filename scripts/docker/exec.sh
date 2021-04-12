@@ -15,7 +15,7 @@ cmd_exec() {
   else
     local id="$(select_container)"
     [ -z "$id" ] && exit
-    if [ "$(docer exec "$id" bash -c "foo" 2>&1)" = "foo" ]; then
+    if [ "$(docer exec "$id" bash -c "echo foo" 2>&1)" = "foo" ]; then
       docker exec -it "$id" bash
     else
       docker exec -it "$id" sh
