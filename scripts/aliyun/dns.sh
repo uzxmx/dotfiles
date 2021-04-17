@@ -65,6 +65,10 @@ process_dns_list_output() {
   jq -r '.Domains.Domain[] | "Name: \(.DomainName)\tDNSServers: \(.DnsServers[])\tCreated at: \(.CreateTime)"' | column -t -s $'\t'
 }
 
+select_dns_domain() {
+  run_cli '' alidns DescribeDomains | jq -r '.Domains.Domain[] | .DomainName' | fzf --prompt "Select a domain> "
+}
+
 cmd_dns_list() {
   process_profile_opts
   run_cli process_dns_list_output alidns DescribeDomains
@@ -85,8 +89,12 @@ process_dns_records_output() {
 
 cmd_dns_records() {
   local domain="$1"
-  [ -z "$domain" ] && echo 'A domain is required.' && exit 1
+
   process_profile_opts
+  if [ -z "$domain" ]; then
+    domain="$(select_dns_domain)"
+  fi
+
   run_cli process_dns_records_output alidns DescribeDomainRecords --DomainName "$domain"
 }
 
