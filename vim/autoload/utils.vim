@@ -1,7 +1,3 @@
-function! utils#spring_boot_cli()
-  echomsg 'spring_boot_cli'
-endfunction
-
 " Generate files from templates
 function! utils#gen()
   call utils#term#exec({ 'down': '~40%', 'on_exit': function('s:on_gen') }, 'gen --calling-path "' . expand('%:p') . '" --print-output-path')

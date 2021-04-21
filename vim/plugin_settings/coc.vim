@@ -14,33 +14,63 @@ inoremap <silent><expr> <TAB>
     \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 
-nmap <Leader>crf <Plug>(coc-references)
+nmap <Leader>cre <Plug>(coc-references)
+nmap <Leader>ci <Plug>(coc-implementation)
+nmap <Leader>ct <Plug>(coc-type-definition)
 nmap <Leader>crn <Plug>(coc-rename)
-
 nnoremap <silent> <Leader>cfx :<C-u>CocFix<CR>
 nmap <Leader>cfm <Plug>(coc-format)
 
-nnoremap <silent> <Leader>clc :<C-u>CocList commands<CR>
-nnoremap <silent> <Leader>cld :<C-u>CocList diagnostics<CR>
-nnoremap <silent> <Leader>cle :<C-u>CocList extensions<CR>
-nnoremap <silent> <Leader>clo :<C-u>CocList outline<CR>
-nnoremap <silent> <Leader>cls :<C-u>CocList -I symbols<CR>
-nnoremap <silent> <Leader>clr :<C-u>CocListResume<CR>
-nnoremap <silent> <Leader>co :call CocAction('runCommand', 'editor.action.organizeImport')<CR>
-nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
+nmap <leader>crf <Plug>(coc-refactor)
 
-function! s:onCocStatusChange() abort
-  " Only do these mappings when coc indicates it can help.
-  au FileType c,cpp nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
-  au FileType c,cpp nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
+nmap <leader>ca  <Plug>(coc-codeaction)
+
+nnoremap <silent> <Leader>clo :<C-u>CocFzfList outline<CR>
+nnoremap <silent> <Leader>cc :<C-u>CocFzfList commands<CR>
+" Use `:CocFzfList diagnostics` to show global diagnostics.
+nnoremap <silent> <Leader>cd :<C-u>CocFzfList diagnostics --current-buf<CR>
+
+" Search workspace symbols.
+nnoremap <silent> <Leader>cls :<C-u>CocFzfList symbols<CR>
+
+nnoremap <silent> <Leader>co :call CocAction('runCommand', 'editor.action.organizeImport')<CR>
+" nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
+
+nmap <C-]> <Plug>(coc-definition)
+nnoremap K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim', 'help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
 endfunction
+
+" function! s:onCocStatusChange() abort
+"   " Only do these mappings when coc indicates it can help.
+"   au FileType c,cpp nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+"   au FileType c,cpp nnoremap <buffer> <silent> K :call s:show_documentation()<CR>
+" endfunction
 
 augroup coc_group
     au!
-    au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
-    au FileType java,go,typescript,kotlin,swift nnoremap <buffer> <silent> K :call CocAction('doHover')<CR>
-    au User CocStatusChange call s:onCocStatusChange()
+    " au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    " au User CocStatusChange call s:onCocStatusChange()
 
     au BufWritePre *.go :call CocAction('format')
     au User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup END
+
+" Map function and class text objects
+" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
+xmap if <Plug>(coc-funcobj-i)
+omap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap af <Plug>(coc-funcobj-a)
+xmap ic <Plug>(coc-classobj-i)
+omap ic <Plug>(coc-classobj-i)
+xmap ac <Plug>(coc-classobj-a)
+omap ac <Plug>(coc-classobj-a)

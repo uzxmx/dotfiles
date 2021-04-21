@@ -81,6 +81,8 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
 
 Plug 'airblade/vim-rooter'
 
+Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
+
 " A collection of language packs (syntax, indentation, etc.) for Vim.
 " In my case, the performance is a bit worse than only importing specific
 " language plugins. So as a reference, we keep this plugin as a comment.
