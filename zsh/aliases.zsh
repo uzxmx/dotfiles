@@ -22,7 +22,6 @@ alias get='wget --continue --progress=bar'
 # Git
 alias ga="git add"
 alias gaa="git add -A"
-alias gb='git branch -v'
 alias gbr="git browser"
 alias gc='git commit -s'
 alias gcm='git commit -s -m'
@@ -31,8 +30,7 @@ alias gcl="git clone"
 alias gd="g d"
 alias gdc="g d -c"
 alias gf="git fetch"
-alias gh="git help"
-alias gl="git log"
+alias gl="g l"
 alias gp="git pull"
 alias gps="git push"
 alias gpss="git pushs"
@@ -40,7 +38,6 @@ alias gpr="git pr"
 alias gr="git remote -v"
 alias grb="git rebase"
 alias grs="git reset"
-alias gs="git status"
 alias gsa="git stash apply"
 alias gss="git stash"
 alias gsp="git stash pop"
