@@ -41,6 +41,8 @@ done
 [[ -f ~/.zshrc.platform ]] && source ~/.zshrc.platform
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
+type -p direnv &>/dev/null && eval "$(direnv hook zsh)"
+
 # To make wrapper utilities in `~/.dotfiles/bin` work, we must add it before
 # other paths, such as `~/.asdf/shims`.
 PATH="$HOME/.local/bin:$HOME/.dotfiles/bin:$PATH"
