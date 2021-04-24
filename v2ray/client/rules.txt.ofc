@@ -10,3 +10,8 @@ git.qemu.org
 domain:googlesource.com
 chrome-infra-packages.appspot.com
 www.googleapis.com
+domain:wireshark.org
+domain:nodejs.org
+domain:download.eclipse.org
+domain:k8s.gcr.io
+domain:get.helm.sh
