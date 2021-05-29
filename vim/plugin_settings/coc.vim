@@ -36,7 +36,14 @@ nnoremap <silent> <Leader>cls :<C-u>CocFzfList symbols<CR>
 nnoremap <silent> <Leader>co :call CocAction('runCommand', 'editor.action.organizeImport')<CR>
 " nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
 
-nmap <C-]> <Plug>(coc-definition)
+nmap <silent> <Leader>ch <Plug>(coc-float-hide)
+
+" The original <C-]> mapping for navigating to a tag is useful for rails
+" projects, so we don't change its original behavior. Instead, we explicitly
+" remap it for specific file types in coc_group.
+"
+" nmap <C-]> <Plug>(coc-definition)
+
 nnoremap K :call <SID>show_documentation()<CR>
 
 function! s:show_documentation()
@@ -57,7 +64,7 @@ endfunction
 
 augroup coc_group
     au!
-    " au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
     " au User CocStatusChange call s:onCocStatusChange()
 
     au BufWritePre *.go :call CocAction('format')

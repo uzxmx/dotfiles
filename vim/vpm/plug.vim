@@ -11,7 +11,7 @@ endif
 
 call plug#begin('~/.vim/plugged')
 
-Plug 'neoclide/coc.nvim', { 'branch': 'v0.0.78' }
+Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'posva/vim-vue', { 'for': 'vue' }
 Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'keith/swift.vim', { 'for': 'swift' }
