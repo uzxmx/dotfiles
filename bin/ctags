@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for ctags utility.
+
+When no argument is specified, it automatically detect current project and
+generate tags.
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+if [ "$#" -eq 0 ]; then
+  if [ -f Gemfile ]; then
+    ctags -R --languages=ruby . $(bundle list --paths)
+    exit
+  fi
+fi
+
+if [ "$#" -eq 1 -a "$1" = "-h" ]; then
+  usage
+fi
+
+ctags "$@"
