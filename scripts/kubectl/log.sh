@@ -36,7 +36,7 @@ cmd_log() {
   done
 
   check_stern
-  stern --tail="${num:-10}" "${remainder[@]}"
+  "$dotfiles_dir/bin/stern" --tail="${num:-10}" "${remainder[@]}"
 }
 alias_cmd l log
 alias_cmd logs log
