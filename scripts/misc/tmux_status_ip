@@ -10,8 +10,11 @@
 
 set -eo pipefail
 
-source ~/.dotfiles/scripts/lib/path.sh
-PATH="$(new_path_exclude ~/.dotfiles/bin)"
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/system.sh"
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 if type -p ip &>/dev/null; then
   result="$(ip -o addr | grep ': eth[[:digit:]] \+inet \|: en.\+ \+inet ')"
@@ -21,6 +24,8 @@ if type -p ip &>/dev/null; then
     line="$(echo "$result" | head -1)"
   fi
   echo "$line" | awk '{print $4}' | awk -F/ '{print $1}'
+elif [[ "$OSTYPE" =~ ^darwin.* ]]; then
+  ifconfig en0 | grep '^\s*inet ' | awk '{print $2}'
 else
   hostname
 fi
