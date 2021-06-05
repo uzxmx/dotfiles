@@ -49,3 +49,7 @@ parse_branch() {
 convert_remote_branch_to_local() {
   echo "$1" | sed "s/.* //" | sed "s#remotes/[^/]*/##"
 }
+
+remove_remotes() {
+  echo "$1" | sed "s/^.* //" | sed "s#^remotes/##"
+}

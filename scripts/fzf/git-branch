@@ -47,17 +47,17 @@ select_branch --result --prompt '(CTRL-E:NewBranch CTRL-Y:yank CTRL-D:delete)> '
 key="${result[0]}"
 selection="${result[1]}"
 if [ "$key" = "ctrl-e" ]; then
-  branch=$(parse_branch "$selection")
-  new_branch=$(rlwrap -S "From $branch, create new branch: " -o cat)
-  git checkout -b $new_branch $branch
+  branch="$(parse_branch "$selection")"
+  new_branch="$(rlwrap -S "From $branch, create new branch: " -o cat)"
+  git checkout -b "$new_branch" "$branch"
 elif [ "$key" = "ctrl-d" ]; then
-  branch=$(parse_branch "$selection")
+  branch="$(parse_branch "$selection")"
   . $(dirname "$BASH_SOURCE")/../lib/prompt.sh
   reply=$(yesno "Are you sure you want to delete this branch: $branch? (y/N)" "no")
   [ "$reply" != "yes" ] && echo 'Cancelled' && exit
   git branch -D "$branch"
 elif [ -n "$selection" ]; then
-  git checkout $(convert_remote_branch_to_local $(parse_branch "$selection"))
+  git checkout "$(remove_remotes "$(parse_branch "$selection")")"
 else
   exit 1
 fi
