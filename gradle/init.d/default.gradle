@@ -1,0 +1,13 @@
+allprojects {
+    // Though some people may think below snippet is not a good idea, but it
+    // can make the tests run always, and more importantly, it's only
+    // configured on my local development machine. So I think this is
+    // acceptable.
+    //
+    // For more info, see:
+    //   https://stackoverflow.com/questions/29427020/how-to-run-gradle-test-when-all-tests-are-up-to-date
+    //   https://blog.gradle.org/stop-rerunning-tests
+    tasks.withType(Test) {
+        outputs.upToDateWhen { false }
+    }
+}
