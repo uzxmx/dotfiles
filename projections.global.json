@@ -47,9 +47,9 @@
       ]
     }
   },
-  "pom.xml": {
+  "build.gradle|pom.xml": {
     "src/main/java/*.java": {
-      "alternate": "src/test/java/{}Tests.java"
+      "alternate": "src/test/java/{}Test.java"
     },
     "src/test/java/*Tests.java": {
       "alternate": "src/main/java/{}.java",

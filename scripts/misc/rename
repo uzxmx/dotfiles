@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+file="$(ls | fzf)"
+
+source "$dotfiles_dir/scripts/lib/prompt.sh"
+ask_for_input name "New file name: "
+
+mv "$file" "$name"
