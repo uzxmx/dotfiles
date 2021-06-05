@@ -25,7 +25,7 @@ for script in ruby python nodejs; do
 done
 
 if ! type -p nvim &> /dev/null; then
-  version="v0.3.8"
+  version="v0.4.4"
 
   install_from_prebuilt() {
     local path_to_save="/tmp/nvim-$version.tar.gz"
