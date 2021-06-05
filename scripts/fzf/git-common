@@ -37,19 +37,36 @@ select_branch() {
     local branches="$(get_branches "$branch_opt")"
     call_fzf_tmux result "${remainder[@]}" <<<"$branches"
   else
-    parse_branch "$(get_branches "$branch_opt" | fzf "${remainder[@]}")"
+    sanitize_branch "$(get_branches "$branch_opt" | fzf "${remainder[@]}")"
   fi
 }
 
-parse_branch() {
+sanitize_branch() {
   # Strip off '*' when current branch selected.
-  echo "$1" | sed "s/^* //" | awk '{print $1}'
+  echo "$1" | sed "s/^ *\* *//" | awk '{print $1}'
 }
 
-convert_remote_branch_to_local() {
-  echo "$1" | sed "s/.* //" | sed "s#remotes/[^/]*/##"
+parse_branch() {
+  local branch="$(sanitize_branch "$1")"
+  local keep_origin="$2"
+  if is_remote_branch "$branch"; then
+    if [ "$keep_origin" = "1" ]; then
+      echo "$branch" | sed "s#^remotes/##"
+    else
+      echo "$branch" | sed "s#^remotes/[^/]*/##"
+    fi
+  else
+    echo "$branch"
+  fi
 }
 
-remove_remotes() {
-  echo "$1" | sed "s/^.* //" | sed "s#^remotes/##"
+is_remote_branch() {
+  local origin
+  origin="$(parse_origin_from_branch "$1")"
+  [ -n "$origin" ] && git remote | grep -Fx "$origin" &>/dev/null
+}
+
+# The name must follow such format: remotes/origin/name
+parse_origin_from_branch() {
+  sanitize_branch "$1" | sed 's#remotes/\([^/]*\)/.*#\1#'
 }

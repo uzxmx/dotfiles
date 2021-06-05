@@ -111,7 +111,7 @@ cmd_worktree_remove() {
 
   source "$dotfiles_dir/scripts/lib/prompt.sh"
   if [ "$(yesno "Are you sure you want to delete the worktree at $worktree_path? (y/N)" "no")" = "yes" ]; then
-    git worktree remove "$worktree_path"
+    git worktree remove "$worktree_path" -f
   else
     echo Cancelled
   fi
