@@ -4,66 +4,119 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 
-check_link() {
-  [ ! -d ~/bin ] && mkdir ~/bin
+. "$dotfiles_dir/scripts/lib/install.sh"
 
-  # Link vi to nvim.
-  local nvim_path="$(which nvim)"
-  is_link ~/bin/vi "$nvim_path" || create_link ~/bin/vi "$nvim_path"
+usage() {
+  cat <<-EOF
+Install nvim.
+
+Options:
+  -v <version>
+  -n install a nightly build version
+  --non-primary if primary, then only install when nvim is not in PATH, otherwise it checks if
+                there is a version in user home directory and installs one if there is no one
+  --do-all-steps whether to do all the steps, by default it only installs the binary
+  --from-source install from source
+EOF
+  exit 1
 }
 
-install_plugins() {
-  # See https://github.com/junegunn/vim-plug/issues/225#issuecomment-583541912
-  nvim --headless "+PlugInstall" "+qa!"
-  echo 'Installing plugins finished'
-}
-
-for script in ruby python nodejs; do
-  "$(dirname "$BASH_SOURCE")/$script"
+version="v0.4.4"
+from_source="$INSTALL_FROM_SOURCE"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -v)
+      shift
+      version="$1"
+      ;;
+    -n)
+      version="nightly"
+      ;;
+    --non-primary)
+      non_primary=1
+      ;;
+    --do-all-steps)
+      do_all_steps=1
+      ;;
+    --from-source)
+      from_source=1
+      ;;
+  esac
+  shift
 done
 
-if ! type -p nvim &> /dev/null; then
-  version="v0.4.4"
+check_link() {
+  local always_make="$1"
+  [ ! -d ~/bin ] && mkdir ~/bin
 
-  install_from_prebuilt() {
-    local path_to_save="/tmp/nvim-$version.tar.gz"
-    local platform
-    if is_linux; then
-      platform="linux64"
-    else
-      abort "Unsupported system"
-    fi
+  if [ -z "$nvim_path" ]; then
+    nvim_path="$(which nvim)"
+  fi
+  [ "$always_make" = "1" -a -e ~/bin/vi ] && rm ~/bin/vi
+  [ -e ~/bin/vi ] || create_link ~/bin/vi "$nvim_path"
+  [ "$always_make" = "1" -a -e ~/bin/nvim ] && rm ~/bin/nvim
+  [ -e ~/bin/vi ] || create_link ~/bin/nvim "$nvim_path"
+}
 
-    ~/.dotfiles/bin/cget "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
+if [ "$do_all_steps" = "1" ]; then
+  for script in ruby python nodejs; do
+    "$(dirname "$BASH_SOURCE")/$script"
+  done
+fi
 
-    tar zxf "$path_to_save" -C /usr --strip-components=1
-    rm -rf "$path_to_save"
-  }
+install_from_prebuilt() {
+  local path_to_save="/tmp/nvim-$version.tar.gz"
+  local platform dest_dir
+  if is_linux; then
+    platform="linux64"
+    dest_dir="/usr"
+  elif is_mac; then
+    platform="macos"
+    dest_dir="$HOME/nvim-$version"
+    nvim_path="$dest_dir/bin/nvim"
+  else
+    abort "Unsupported system"
+  fi
 
-  install_from_source() {
-    dir="/tmp/nvim"
-    git_clone "https://github.com/neovim/neovim" "$dir" -b "$version" --depth 1
+  "$dotfiles_dir/bin/cget" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
 
-    if has_yum; then
-      sudo yum install -y cmake gcc-c++ patch libtool
-    elif has_apt; then
-      sudo apt-get install -y cmake g++ pkg-config libtool-bin
-    fi
+  mkdir -p "$dest_dir"
+  tar zxf "$path_to_save" -C "$dest_dir" --strip-components=1
+  rm -rf "$path_to_save"
+}
 
-    (cd "$dir"; make CMAKE_BUILD_TYPE=Release; sudo make install; rm -rf "$dir")
-  }
+install_from_source() {
+  local dir="/tmp/nvim"
+  git_clone "https://github.com/neovim/neovim" "$dir" -b "$version" --depth 1
 
-  if [ "${INSTALL_FROM_SOURCE:-1}" = "1" ]; then
+  if has_yum; then
+    sudo yum install -y cmake gcc-c++ patch libtool
+  elif has_apt; then
+    sudo apt-get install -y cmake g++ pkg-config libtool-bin
+  fi
+
+  (cd "$dir"; make CMAKE_BUILD_TYPE=Release; sudo make install; rm -rf "$dir")
+}
+
+if [ "$non_primary" = "1" ] || ! type -p nvim &> /dev/null; then
+  if [ "$from_source" = "1" ]; then
+    is_mac && abort "Mac OSX doesn't support installation from source"
     install_from_source
   else
     install_from_prebuilt
   fi
+  check_link 1
+else
+  check_link
 fi
 
-"$(dirname "$BASH_SOURCE")/../misc/gen_vimrc"
-"$(dirname "$BASH_SOURCE")/../misc/gen_coc_settings"
+if [ "$do_all_steps" = "1" ]; then
+  "$(dirname "$BASH_SOURCE")/../misc/gen_vimrc"
+  "$(dirname "$BASH_SOURCE")/../misc/gen_coc_settings"
 
-check_link
-install_plugins
+  # See https://github.com/junegunn/vim-plug/issues/225#issuecomment-583541912
+  nvim --headless "+PlugInstall" "+qa!"
+  echo 'Installing plugins finished'
+fi
