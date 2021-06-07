@@ -15,6 +15,11 @@ path_to_save="/tmp/git-$version.tar.xz"
 cd /tmp
 tar Jxf "$path_to_save"
 
+if has_yum; then
+  sudo yum install -y curl-devel expat-devel gettext-devel \
+    openssl-devel perl-devel zlib-devel
+fi
+
 cd "git-$version"
 ./configure
 make
