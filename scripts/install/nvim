@@ -43,6 +43,9 @@ while [ "$#" -gt 0 ]; do
     --from-source)
       from_source=1
       ;;
+    *)
+      usage
+      ;;
   esac
   shift
 done
@@ -71,7 +74,12 @@ install_from_prebuilt() {
   local platform dest_dir
   if is_linux; then
     platform="linux64"
-    dest_dir="/usr"
+    if [ "$non_primary" = "1" ]; then
+      dest_dir="$HOME/nvim-$version"
+      nvim_path="$dest_dir/bin/nvim"
+    else
+      dest_dir="/usr"
+    fi
   elif is_mac; then
     platform="macos"
     dest_dir="$HOME/nvim-$version"
