@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for mysqldump utility.
+
+When no executable is found and docker is available, it will be run by docker.
+Specify 'SELECT_VERSION=1' to select a version when there are multiple images.
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+source "$dotfiles_dir/scripts/lib/prompt.sh"
+source "$dotfiles_dir/scripts/lib/docker.sh"
+
+cmd="$(check_cmd_with_docker_fallback mysqldump mysql mysql:5.7.32)"
+
+run() {
+  $cmd "$@"
+}
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  *)
+    run "$@"
+    ;;
+esac
