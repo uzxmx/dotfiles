@@ -25,4 +25,4 @@ cd "git-$version"
 make
 sudo make install
 
-rm -rf "$path_to_save" "git-$version"
+rm -rf "$path_to_save" "/tmp/git-$version"
