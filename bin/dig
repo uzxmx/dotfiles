@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Wrapper for dig utility.
+
+Examples:
+
+dig @nameserver hostname
+dig hostname MX
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+if [ "$#" -eq 1 -a "$1" = "-h" ]; then
+  usage
+fi
+dig "$@"
