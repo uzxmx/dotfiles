@@ -7,14 +7,15 @@ mysql_dir="$dotfiles_dir/scripts/mysql"
 
 usage() {
   cat <<-EOF
-Wrapper for mysqldump utility.
+Wrapper for mysql utility.
 
 When no executable is found and docker is available, it will be run by docker.
 Specify 'SELECT_VERSION=1' to select a version when there are multiple images.
 
 Subcommands:
-  nodata - dump a complete database without data
-  data   - dump specifc tables data
+  s, source          - source a sql file
+  c, connect         - connect to the server
+  sv, server_version - show server version
 EOF
   exit 1
 }
@@ -25,7 +26,18 @@ PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 source "$dotfiles_dir/scripts/lib/prompt.sh"
 source "$dotfiles_dir/scripts/lib/docker.sh"
 
-mysqldump="$(check_cmd_with_docker_fallback mysqldump mysql mysql:5.7.32)"
+_run_cli() {
+  local prefix="$1"
+  shift
+  if [ -z "$cli" ]; then
+    cli="$(check_cmd_with_docker_fallback mysql mysql mysql:5.7.32)"
+  fi
+  $prefix $cli "$@"
+}
+
+run_cli() {
+  _run_cli '' "$@"
+}
 
 alias_cmd() {
   local new_name="$1"
@@ -52,10 +64,10 @@ run() {
 }
 
 case "$1" in
-  nodata | data)
+  s | source | c | connect | sv | server_version)
     case "$1" in
       *)
-        name="dump"
+        name="mysql"
     esac
     source "$mysql_dir/$name.sh"
     run "$@"
@@ -64,6 +76,8 @@ case "$1" in
     usage
     ;;
   *)
-    $mysqldump "$@"
+    # Run connect by default.
+    source "$mysql_dir/mysql.sh"
+    run connect "$@"
     ;;
 esac
