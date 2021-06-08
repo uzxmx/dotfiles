@@ -26,7 +26,7 @@ check_cmd_with_docker_fallback() {
         version="$(echo "$version" | head -1)"
       fi
     fi
-    echo "docker run --rm --network host $version $cmd"
+    echo "docker run ${docker_extra_opts[@]} --rm --network host $version $cmd"
   else
     # Still return the cmd even if it fails.
     echo "$cmd"
