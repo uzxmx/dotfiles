@@ -20,8 +20,12 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/cget" "https://github.com/coredns/coredns/releases/download/v1.8.0/coredns_${version}_${platform}_amd64.tgz" "$path_to_save"
+"$dotfiles_dir/bin/cget" "https://github.com/coredns/coredns/releases/download/$version/coredns_${version}_${platform}_amd64.tgz" "$path_to_save"
 
-sudo tar zxf "$path_to_save" -C /usr/bin
+if is_mac; then
+  tar zxf "$path_to_save" -C ~/bin
+elif is_linux; then
+  sudo tar zxf "$path_to_save" -C /usr/bin
+fi
 
 rm -f "$path_to_save"
