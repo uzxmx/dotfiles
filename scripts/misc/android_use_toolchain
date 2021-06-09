@@ -2,6 +2,8 @@
 #
 # Switch Android NDK toolchain, create symlinks and append them to PATH to
 # reduce keystrokes.
+#
+# Usage: capture_source_and_signal $0
 
 set -eo pipefail
 

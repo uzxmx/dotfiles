@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Usage: capture_source_and_signal $0
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+
+# AOSP depends on `openssl`, it may change PATH, which causes `openssl` cannot
+# be found in the wrapper script. So we remove wrapper from the PATH.
+echo "PATH=$(new_path_exclude "$dotfiles_dir/bin"); source build/envsetup.sh" >&3
