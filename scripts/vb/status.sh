@@ -18,3 +18,4 @@ cmd_status() {
     echo $vm is NOT running
   fi
 }
+alias_cmd s status

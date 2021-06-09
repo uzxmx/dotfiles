@@ -25,6 +25,19 @@ EOF
   exit 1
 }
 
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
 check_vboxmanage() {
   if type -p VBoxManage &>/dev/null; then
     VBOXMANAGE=VBoxManage
@@ -48,7 +61,7 @@ run() {
 }
 
 case "$1" in
-  status | start | show | ssh | add_pubkey | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
+  s | status | start | show | ssh | add_pubkey | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
     case "$1" in
       s)
         name="status"
