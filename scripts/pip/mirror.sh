@@ -30,7 +30,7 @@ cmd_mirror() {
   done
 
   if [ "$action" = "enable" ]; then
-    pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+    pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
   elif [ "$action" = "disable" ]; then
     pip config unset global.index-url
   fi
