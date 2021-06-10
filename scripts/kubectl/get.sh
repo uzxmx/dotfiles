@@ -19,7 +19,7 @@ cmd_get() {
   local -a remainder
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      -*)
+      -h)
         usage_get
         ;;
       *)
