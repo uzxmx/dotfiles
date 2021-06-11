@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Simply and securely transfer files and folders (https://github.com/schollz/croc)
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install croc
+else
+  curl https://getcroc.schollz.com | bash
+fi
