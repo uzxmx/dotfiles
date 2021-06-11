@@ -86,6 +86,8 @@ done
 if [ "$use_cwd" = "1" ]; then
   directories="$(find . -maxdepth 2 -type d ! -path .)"
 else
+  [ -d ~/.private ] || mkdir ~/.private
+  [ -d ~/vagrant_boxes ] || mkdir ~/vagrant_boxes
   [ -d ~/projects ] || mkdir ~/projects
   directories="\
 $dotfiles_dir
