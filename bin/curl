@@ -9,6 +9,8 @@ usage() {
   cat <<-EOF
 Wrapper for curl utility.
 
+Use '--insecure' if you want to skip SSL verification.
+
 Subcommands:
   time     - show time stats
   cors     - check if CORS is allowed
