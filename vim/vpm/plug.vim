@@ -83,6 +83,8 @@ Plug 'airblade/vim-rooter'
 
 Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
 
+Plug 'uzxmx/vim-widgets'
+
 " A collection of language packs (syntax, indentation, etc.) for Vim.
 " In my case, the performance is a bit worse than only importing specific
 " language plugins. So as a reference, we keep this plugin as a comment.
