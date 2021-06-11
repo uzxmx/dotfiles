@@ -26,6 +26,7 @@ Options:
   -p <profile> profile to use, default is dev
   --extra-profiles <profiles> extra profiles to use, separated by comma
   --boot-properties <properties> spring boot properties
+  -d enable jvm debug, this will make jvm listen at 5005 to wait for debug
   -- delimit the start for java args
 EOF
   exit 1
@@ -34,6 +35,7 @@ EOF
 # TODO the auto-restart is slow to perform and may not work every time.
 cmd_boot_run() {
   local extra_profiles boot_properties
+  local -a opts
   local -a java_args
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -48,6 +50,9 @@ cmd_boot_run() {
       --boot-properties)
         shift
         boot_properties="$1"
+        ;;
+      -d)
+        opts+=(--debug-jvm)
         ;;
       --)
         shift
@@ -73,5 +78,5 @@ cmd_boot_run() {
   if [ -n "$extra_profiles" ]; then
     profiles="$profiles,$extra_profiles"
   fi
-  "$gradle_bin" bootRun --args="--spring.profiles.active=$profiles $boot_properties ${java_args[*]}"
+  "$gradle_bin" bootRun --args="--spring.profiles.active=$profiles $boot_properties "${opts[@]}" ${java_args[*]}"
 }
