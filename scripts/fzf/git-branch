@@ -64,6 +64,13 @@ elif [ "$key" = "ctrl-d" ]; then
     git branch -D "$branch"
   fi
 elif [ -n "$selection" ]; then
+  if is_remote_branch "$selection"; then
+    local_branch="$(parse_branch "$selection")"
+    if ! has_local_branch "$local_branch"; then
+      git checkout -b "$local_branch" "$(parse_branch "$selection" 1)"
+      exit
+    fi
+  fi
   git checkout "$(parse_branch "$selection" 1)"
 else
   exit 1

@@ -70,3 +70,7 @@ is_remote_branch() {
 parse_origin_from_branch() {
   sanitize_branch "$1" | sed 's#remotes/\([^/]*\)/.*#\1#'
 }
+
+has_local_branch() {
+  git branch -l --format "%(refname:short)" | grep -Fx "$1"
+}
