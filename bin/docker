@@ -11,7 +11,7 @@ Wrapper for docker utility.
 
 Subcommands:
   p          - pull image from a mirror
-  l, logs    - show logs of a container selected by fzf
+  l          - show logs of a container selected by fzf
   e, exec    - execute a comand in a container selected by fzf
   r, run     - run a docker image
   s          - manage services
@@ -101,7 +101,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | logs | e | exec | p | r | run | s)
+  l | e | exec | p | r | run | s)
     case "$1" in
       l)
         name="logs"
