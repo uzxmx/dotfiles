@@ -9,6 +9,7 @@ Manage services.
 Subcommands:
   l, ls, list - list services
   ps          - list the tasks of a service
+  log, logs   - show logs of a service
 EOF
   exit 1
 }
@@ -19,10 +20,13 @@ cmd_service() {
   [ -z "$cmd" ] && usage_service
 
   case "$cmd" in
-    l | ls | list | ps)
+    l | ls | list | ps | log | logs)
       case "$cmd" in
         l | ls)
           cmd="list"
+          ;;
+        logs)
+          cmd=log
           ;;
       esac
       case "$1" in
@@ -65,4 +69,24 @@ cmd_service_ps() {
   local service="$(select_service)"
   [ -z "$service" ] && exit
   docker service ps "$service" --no-trunc
+}
+
+usage_service_log() {
+  cat <<-EOF
+Usage: docker s log
+
+Show logs of a service. Extra arguments will be passed to the original intact
+EOF
+  exit 1
+}
+
+cmd_service_log() {
+  local service="$(select_service)"
+  [ -z "$service" ] && exit
+
+  if [ "$#" -gt 0 ]; then
+    docker service logs "$service" "$@"
+  else
+    docker service logs "$service" -f -n 10
+  fi
 }
