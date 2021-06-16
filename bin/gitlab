@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+gitlab_dir="$dotfiles_dir/scripts/gitlab"
+
+usage() {
+  cat <<-EOF
+Gitlab utility.
+
+You need to export 'GITLAB_URL' and 'GITLAB_TOKEN' before using these commands.
+
+Subcommands:
+  g, group   - manage groups
+  p, project - manage projects
+  u, user    - manage users
+  imp_token  - manage impersonation tokens
+  ssh_key    - manage ssh keys
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+req() {
+  [ -z "$GITLAB_URL" ] && echo "Environment variable GITLAB_URL should be set." >&2 && exit 1
+  [ -z "$GITLAB_TOKEN" ] && echo "Environment variable GITLAB_TOKEN should be set." >&2 && exit 1
+
+  local path="$1"
+  shift
+  curl "${GITLAB_URL%/}/${path#/}" -H "Authorization: Bearer $GITLAB_TOKEN" -s "$@"
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  g | group | p | project | u | user | imp_token | ssh_key)
+    case "$1" in
+      g)
+        name="group"
+        ;;
+      p)
+        name="project"
+        ;;
+      u)
+        name="user"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$gitlab_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
