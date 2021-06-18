@@ -14,16 +14,22 @@ EOF
 
 cmd_delete() {
   local index
-  index="$(select_index)"
+  index="$(select_index -m --prompt "Select indices: ")"
   if [ -z "$index" ]; then
     echo "There is no index available"
     exit 1
   fi
   source "$dotfiles_dir/scripts/lib/prompt.sh"
-  if [ "$(yesno "Confirm to delete this index: $index? (y/N)" "no")" = "no" ]; then
+  echo "Confirm to delete below index: "
+  echo "$index"
+  if [ "$(yesno "(y/N): " "no")" = "no" ]; then
     echo "Cancelled"
     exit
   fi
-  req "/$index" -XDELETE
+  for i in $index; do
+    echo "Deleting index: $i"
+    req "/$i" -XDELETE
+    echo
+  done
 }
 alias_cmd d delete
