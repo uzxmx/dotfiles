@@ -1,5 +1,5 @@
 select_index() {
-  req "/_cat/indices?h=index" -s | fzf --select-1 -0 --prompt "Select an index: " || true
+  req "/_cat/indices?h=index" -s | fzf --select-1 -0 --prompt "Select an index: " "$@" || true
 }
 
 remainder=()
