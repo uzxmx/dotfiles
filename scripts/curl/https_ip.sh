@@ -52,16 +52,17 @@ cmd_https_ip() {
   [ -n "$domain" ] || (echo 'Domain name is required.' && exit 1)
 
   local regexp="^(https:\\/\\/)?([0-9.]+)(:([0-9]+))?(.*)$"
-  if ! echo "$url" | sed -E "/$regexp/!{q1}" &>/dev/null; then
+  source "$dotfiles_dir/scripts/lib/gsed.sh"
+  if ! echo "$url" | $SED -E "/$regexp/!{q1}" &>/dev/null; then
     echo "Invalid URL: $url"
     echo "URL should match the regular expression: $regexp"
     exit 1
   fi
 
-  local ip="$(echo "$url" | sed -E "s;$regexp;\2;")"
-  local port="$(echo "$url" | sed -E "s;$regexp;\4;")"
-  local remainder="$(echo "$url" | sed -E "s;$regexp;\5;")"
-  cmd=(curl "https://$domain$remainder" --resolve "$domain:${port:-443}:$ip" "$@")
+  local ip="$(echo "$url" | $SED -E "s;$regexp;\2;")"
+  local port="$(echo "$url" | $SED -E "s;$regexp;\4;")"
+  local remainder="$(echo "$url" | $SED -E "s;$regexp;\5;")"
+  cmd=(curl "https://$domain$remainder:${port:-443}" --resolve "$domain:${port:-443}:$ip" "$@")
   [ -z "$verbose" ] || echo "${cmd[@]}"
   "${cmd[@]}"
 }
