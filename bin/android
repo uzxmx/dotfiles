@@ -9,9 +9,15 @@ usage() {
   cat <<-EOF
 Wrapper for android utility.
 
+NOTE:
+  When using such commands, you may need to configure the 'JAVA_HOME' to be
+  android studio bundled, otherwise, you may suffer some errors. See
+  $dotfiles_dir/scripts/misc/configure_java_home_env
+
 Subcommands:
-  build - build apks of release version (can also build only one flavor)
-  zip   - zip apks under build/outputs/apk directory
+  build  - build apks of release version (can also build only one flavor)
+  zip    - zip apks under build/outputs/apk directory
+  a, avd - manage android virtual devices
 EOF
   exit 1
 }
@@ -44,8 +50,15 @@ run() {
 }
 
 case "$1" in
-  build | zip)
-    source "$android_dir/$1.sh"
+  build | zip | a | avd)
+    case "$1" in
+      a)
+        name="avd"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$android_dir/$name.sh"
     run "$@"
     ;;
   -h)
