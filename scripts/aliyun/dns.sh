@@ -160,7 +160,7 @@ EOF
 
 _common_scripts_for_dns_record() {
   local _usage="$1"
-  local value_required="${2:-1}"
+  local check="${2:-1}"
   local other_opts_process_scripts
   if [ -z "$3" ]; then
     other_opts_process_scripts="$_usage"
@@ -190,9 +190,9 @@ _common_scripts_for_dns_record() {
     shift
   done
 
-  [ -z "\$domain" ] && echo 'A domain is required.' && exit 1
-  [ -z "\$record_type" ] && echo 'A record type is required.' && exit 1
-  [ "$value_required" = "1" -a -z "\$record_value" ] && echo 'A record value is required.' && exit 1
+  [ "$check" = "1" -a -z "\$domain" ] && echo 'A domain is required.' && exit 1
+  [ "$check" = "1" -a -z "\$record_type" ] && echo 'A record type is required.' && exit 1
+  [ "$check" = "1" -a -z "\$record_value" ] && echo 'A record value is required.' && exit 1
   true
 EOF
 }
@@ -258,29 +258,48 @@ esac
 
 usage_dns_delete() {
   cat <<-EOF
-Usage: aliyun dns delete <domain-name>
+Usage: aliyun dns delete [domain-name]
 
 Delete DNS record for a domain.
 
 Options:
+  -i <record-id>
   -t <type> record type, e.g. A, CNAME, TXT
+  -f delete without confirmation
 EOF
   exit 1
 }
 
 cmd_dns_delete() {
-  eval "$(_common_scripts_for_dns_record usage_dns_delete 0)"
+  local record_id no_confirm
+  local other_opts_process_scripts="
+case "\$1" in
+  -i)
+    shift
+    record_id="\$1"
+    ;;
+  -f)
+    no_confirm=1
+    ;;
+  *)
+    usage_dns_update
+esac
+"
+  eval "$(_common_scripts_for_dns_record usage_dns_delete 0 "$other_opts_process_scripts")"
 
-  local record_id="$(cmd_dns_get "$domain" -t "$record_type" | jq -r ".RecordId")"
+  if [ -z "$record_id" ]; then
+    record_id="$(cmd_dns_get "$domain" -t "$record_type" | jq -r ".RecordId")"
+  fi
+
   if [ -z "$record_id" ]; then
     echo "DNS record was not found."
-  else
+    exit 1
+  elif [ -z "$no_confirm" ]; then
     source "$dotfiles_dir/scripts/lib/prompt.sh"
     if [ "$(yesno "Are you sure you want to delete?(y/N)" no)" = "no" ]; then
       echo Cancelled
       exit 1
     fi
-
-    run_cli '' alidns DeleteDomainRecord --RecordId "$record_id"
   fi
+  run_cli '' alidns DeleteDomainRecord --RecordId "$record_id"
 }
