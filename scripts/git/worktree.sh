@@ -97,7 +97,7 @@ cmd_worktree_add() {
 
 usage_worktree_remove() {
   cat <<-EOF
-Usage: g worktree remove
+Usage: g worktree remove [path]
 
 Remove worktree.
 EOF
@@ -105,9 +105,18 @@ EOF
 }
 
 cmd_worktree_remove() {
-  local result="$(cmd_worktree_list | fzf)"
-  [ -z "$result" ] && exit
-  local worktree_path="$(echo "$result" | awk '{print $1}')"
+  local worktree_path="$1"
+
+  if [ -z "$worktree_path" ]; then
+    local result="$(cmd_worktree_list | fzf)"
+    [ -z "$result" ] && exit
+    worktree_path="$(echo "$result" | awk '{print $1}')"
+  fi
+
+  if [ ! -e "$worktree_path" ]; then
+    echo "The worktree path $worktree_path doesn't exist."
+    exit 1
+  fi
 
   source "$dotfiles_dir/scripts/lib/prompt.sh"
   if [ "$(yesno "Are you sure you want to delete the worktree at $worktree_path? (y/N)" "no")" = "yes" ]; then
