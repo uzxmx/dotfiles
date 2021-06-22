@@ -1,11 +1,15 @@
 usage_l() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: g l [commit]
 
 Enhanced log utility by fzf.
 
 Options:
   -r, --range use range mode. This will ask you to select a start and end commit.
+
+Commit format:
+  commit1..commit2: This will show you commits that can be reached from
+                    commit2, but not from commit1. (a.k.a between)
 EOF
   exit 1
 }
@@ -80,6 +84,11 @@ cmd_l() {
       select_commit "$start_commit~1..$end_commit"
     fi
   else
-    select_commit $commit
+    local commit="$(select_commit --select $commit)"
+    if [ -n "$commit" ]; then
+      source "$dotfiles_dir/scripts/lib/prompt.sh"
+      [ "$(yesno "Checkout $commit? (Y/n)" "yes")" = "no" ] && echo "Cancelled" && exit
+      git checkout "$commit"
+    fi
   fi
 }
