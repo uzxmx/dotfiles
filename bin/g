@@ -10,6 +10,7 @@ usage() {
 Wrapper for git utility.
 
 Subcommands:
+  a               - archive
   cl              - clone with depth 1
   d               - enhanced diff utility by fzf
   ignore          - output .gitignore contents for some topic
@@ -54,10 +55,13 @@ case "$1" in
   "")
     git status .
     ;;
-  cl | d | l | show_commit | pt | rm_from_history | \
+  a | cl | d | l | show_commit | pt | rm_from_history | \
   update_commit | ignore | cm | init_hooks | cleanb | \
   w | worktree)
     case "$1" in
+      a)
+        name="archive"
+        ;;
       cl)
         name="clone"
         ;;
