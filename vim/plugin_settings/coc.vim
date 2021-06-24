@@ -30,8 +30,10 @@ nnoremap <silent> <Leader>cc :<C-u>CocFzfList commands<CR>
 " Use `:CocFzfList diagnostics` to show global diagnostics.
 nnoremap <silent> <Leader>cd :<C-u>CocFzfList diagnostics --current-buf<CR>
 
-" Search workspace symbols.
-nnoremap <silent> <Leader>cls :<C-u>CocFzfList symbols<CR>
+" Search workspace symbols. Use CocList instead of CocFzfList, because the
+" former is faster.
+" nnoremap <silent> <Leader>cls :<C-u>CocFzfList symbols<CR>
+nnoremap <silent> <Leader>cls :<C-u>CocList symbols<CR>
 
 nnoremap <silent> <Leader>co :call CocAction('runCommand', 'editor.action.organizeImport')<CR>
 " nnoremap <silent> g1 :call CocAction('diagnosticInfo')<CR>
