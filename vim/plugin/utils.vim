@@ -32,6 +32,8 @@ command! PutRelativeParentPath put =expand('%:h')
 command! PutAbsolutePath put =expand('%:p')
 command! PutAbsoluteParentPath put =expand('%:p:h')
 
+command! CopyPath call setreg('*', expand('%:p'))
+
 command! Gen call utils#gen()
 
 command! -range Base64Encode <line1>,<line2>call utils#base64#encode()
