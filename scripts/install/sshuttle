@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Install sshuttle (https://sshuttle.readthedocs.io/en/stable/installation.html)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+type -p sshuttle &> /dev/null && exit
+
+source "$dotfiles_dir/scripts/lib/install.sh"
+
+version="v1.0.5"
+dir="/tmp/sshuttle"
+git_clone "https://github.com/sshuttle/sshuttle" "$dir" -b "$version" --depth 1
+
+(cd "$dir"; ./setup.py install)
+rm -rf "$dir"
