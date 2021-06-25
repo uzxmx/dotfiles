@@ -16,10 +16,12 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$dotfiles_dir/scripts/lib/bin_wrapper.sh"
 
 if [ "$#" -eq 1 -a "$1" = "-h" ]; then
   usage
 fi
+
+ensure_origin_exists dig network_tools
+
 dig "$@"
