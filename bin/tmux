@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+tmux_dir="$dotfiles_dir/scripts/tmux"
+
+usage() {
+  cat <<-EOF
+Wrapper for tmux utility.
+
+Subcommands:
+  s, start - start a tmux session by selecting a tmuxinator project
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  s | start)
+    case "$1" in
+      s)
+        name="start"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$tmux_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    tmux "$@"
+    ;;
+  *)
+    tmux "$@"
+    ;;
+esac
