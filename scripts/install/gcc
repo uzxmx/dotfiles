@@ -10,14 +10,12 @@ set -eo pipefail
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
-if [ ! -d /tmp/gcc ] || ! (cd /tmp/gcc; git status &> /dev/null) ; then
-  rm -rf /tmp/gcc
-  tag=${1:-releases/gcc-10.1.0}
-  # https://mirrors.tuna.tsinghua.edu.cn/help/gcc.git/
-  ~/.dotfiles/bin/gcld https://mirrors.tuna.tsinghua.edu.cn/git/gcc.git $tag /tmp/gcc
-fi
+dir="/tmp/gcc"
+tag="${1:-releases/gcc-10.1.0}"
+# https://mirrors.tuna.tsinghua.edu.cn/help/gcc.git/
+git_clone https://mirrors.tuna.tsinghua.edu.cn/git/gcc.git "$dir" --branch "$tag" --depth 1
 
-cd /tmp/gcc
+cd "$dir"
 mkdir -p build && cd build
 
 if has_yum; then
@@ -38,3 +36,5 @@ sudo ln -s /usr/local/bin/gcc /usr/local/bin/cc
 #
 # Ref: https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html
 sudo ln -sf /usr/local/lib64/libstdc++.so.6 /lib64/libstdc++.so.6
+
+rm -rf "$dir"
