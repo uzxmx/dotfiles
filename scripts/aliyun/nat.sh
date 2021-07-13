@@ -40,7 +40,7 @@ cmd_nat() {
       ;;
   esac
 }
-alias_cmd v nat
+alias_cmd n nat
 
 process_nat_list_output() {
   jq -r '.NatGateways.NatGateway[] | "ID: \(.NatGatewayId)\tName: \(.Name)\tDescription: \(.Description)\tStatus: \(.Status)\tVPC ID: \(.VpcId)"' | column -t -s $'\t'
