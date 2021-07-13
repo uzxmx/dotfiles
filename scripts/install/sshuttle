@@ -19,3 +19,5 @@ git_clone "https://github.com/sshuttle/sshuttle" "$dir" -b "$version" --depth 1
 
 (cd "$dir"; ./setup.py install)
 rm -rf "$dir"
+
+echo 'Installation finished. If sshuttle still cannot be found, you may need to run `asdf reshim`.'
