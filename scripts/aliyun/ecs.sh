@@ -47,7 +47,7 @@ cmd_ecs() {
 alias_cmd e ecs
 
 process_ecs_list_output() {
-  jq -r '.Instances.Instance[] | "ID: \(.InstanceId)\tDescription: \(.Description)\tPrivate IP: \(.VpcAttributes.PrivateIpAddress.IpAddress[])\tPublic IP: \(.PublicIpAddress.IpAddress[])\tVPC ID: \(.VpcAttributes.VpcId)\tSecurityGroup: \(.SecurityGroupIds.SecurityGroupId[])"' | column -t -s $'\t'
+  jq -r '.Instances.Instance[] | "ID: \(.InstanceId)\tDescription: \(.Description)\tPrivate IP: \(.VpcAttributes.PrivateIpAddress.IpAddress)\tPublic IP: \(.PublicIpAddress.IpAddress)\tVPC ID: \(.VpcAttributes.VpcId)\tSecurityGroup: \(.SecurityGroupIds.SecurityGroupId[])"' | column -t -s $'\t'
 }
 
 cmd_ecs_list() {
