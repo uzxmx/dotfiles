@@ -4,6 +4,11 @@
 
 set -eo pipefail
 
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
 type -p tmux &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
