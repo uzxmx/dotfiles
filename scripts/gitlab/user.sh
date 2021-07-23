@@ -7,6 +7,8 @@ Manage users.
 Subcommands:
   l, list - list users
   g, get  - get a user or show current user
+  block   - block a user
+  unblock - unblock a user
 EOF
   exit 1
 }
@@ -17,7 +19,7 @@ cmd_user() {
   [ -z "$cmd" ] && usage_user
 
   case "$cmd" in
-    l | list | g | get)
+    l | list | g | get | block | unblock)
       case "$cmd" in
         l)
           cmd="list"
@@ -59,7 +61,7 @@ cmd_user_list() {
 
 usage_user_get() {
   cat <<-EOF
-Usage: gitlab user get <domain-name>
+Usage: gitlab user get
 
 Get a user or show current user.
 
@@ -90,4 +92,45 @@ cmd_user_get() {
     req_path="/api/v4/users/$user"
   fi
   req "$req_path"
+}
+
+usage_user_block() {
+  cat <<-EOF
+Usage: gitlab user block <user_id>
+
+Block a user.
+EOF
+  exit 1
+}
+
+block_user() {
+  local action
+  if [ "$1" = "1" ]; then
+    action="block"
+  else
+    action="unblock"
+  fi
+  shift
+
+  local user_id="$1"
+  [ -z "$user_id" ] && echo "A user id is required" && exit 1
+
+  req "/api/v4/users/$user_id/$action" -XPOST
+}
+
+cmd_user_block() {
+  block_user 1 "$@"
+}
+
+usage_user_unblock() {
+  cat <<-EOF
+Usage: gitlab user unblock <user_id>
+
+Unblock a user.
+EOF
+  exit 1
+}
+
+cmd_user_unblock() {
+  block_user 0 "$@"
 }
