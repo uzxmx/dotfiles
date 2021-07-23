@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+lldb_dir="$dotfiles_dir/scripts/lldb"
+
+usage() {
+  cat <<-EOF
+Wrapper for lldb utility.
+
+Subcommands:
+  e, entrypoint - show entrypoint address
+  s, start      - start lldb and stop at the entrypoint
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+alias_cmd() {
+  local new_name="$1"
+  local old_name="$2"
+  eval "
+    usage_$new_name() {
+      usage_$old_name \"\$@\"
+    }
+    cmd_$new_name() {
+      cmd_$old_name \"\$@\"
+    }
+  "
+}
+
+run() {
+  local cmd="$1"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
+
+case "$1" in
+  e | entrypoint | s | start)
+    case "$1" in
+      e)
+        name="entrypoint"
+        ;;
+      s)
+        name="start"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$lldb_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    lldb "$@"
+    ;;
+  *)
+    lldb "$@"
+    ;;
+esac
