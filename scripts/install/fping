@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install fping (https://fping.org/).
+
+set -eo pipefail
+
+type -p fping &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install fping
+else
+  abort "Unsupported system"
+fi
