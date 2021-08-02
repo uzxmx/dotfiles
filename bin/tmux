@@ -15,8 +15,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$dotfiles_dir/scripts/lib/bin_wrapper.sh"
 
 alias_cmd() {
   local new_name="$1"
@@ -60,9 +59,9 @@ case "$1" in
     ;;
   -)
     shift
-    tmux "$@"
+    run_origin "$@"
     ;;
   *)
-    tmux "$@"
+    run_origin "$@"
     ;;
 esac

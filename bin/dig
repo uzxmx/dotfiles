@@ -24,4 +24,4 @@ fi
 
 ensure_origin_exists dig network_tools
 
-dig "$@"
+run_origin "$@"
