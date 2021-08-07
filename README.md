@@ -27,9 +27,9 @@ For a list of available pods, please visit [here](scripts/bootstrap/pods).
 $ curl -s "https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/setup" \
     | bash -s -- -h
 
-# Install the repository into ~/tmp/dotfiles.
+# Install the repository into ~/tmp/dotfiles with shallow clone.
 $ curl -s "https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/setup" \
-    | bash -s -- --root ~/tmp/dotfiles
+    | bash -s -- --root /tmp/.dotfiles --git-clone-args "--depth 1"
 
 # Setup tmux.
 $ curl -s "https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/bootstrap/setup" \
