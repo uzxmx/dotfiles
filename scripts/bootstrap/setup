@@ -222,7 +222,7 @@ for pod in "${pods[@]}"; do
       run rcup
 
       # Fix bad permissions.
-      chmod 600 ~/.ssh/config
+      [ -f ~/.ssh/config ] && chmod 600 ~/.ssh/config
       ;;
   esac
 done
