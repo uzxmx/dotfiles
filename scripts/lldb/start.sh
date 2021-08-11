@@ -59,7 +59,11 @@ cmd_start() {
 
   local lldb_commands="$(cat <<EOF
 command script import $dotfiles_dir/lldb_extra
-command script import $dotfiles_dir/lldb_extra/commands.py
+$(
+  for file in $(find $dotfiles_dir/lldb_extra/commands -name 'cmd_*.py'); do
+    echo "command script import $file"
+  done
+)
 process launch --stop-at-entry -i "${stdin:-/dev/null}" -o "${stdout:-/dev/null}" -e "${stderr:-/dev/null}"
 $lldbinit_post
 dis -p
