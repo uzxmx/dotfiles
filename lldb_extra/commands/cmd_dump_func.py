@@ -6,15 +6,15 @@ import tempfile
 import re
 
 def __lldb_init_module(debugger, internal_dict):
-    debugger.HandleCommand('command script add -f cmd_dump_function.dump_function dump_function')
-    print('The "dump_function" command has been installed.')
+    debugger.HandleCommand('command script add -f cmd_dump_func.dump_func dump_func')
+    print('The "dump_func" command has been installed.')
 
-def dump_function(debugger, command, result, internal_dict):
+def dump_func(debugger, command, result, internal_dict):
     usage = '''usage: %prog <address> [-d <directory>] [-f <file>]
 
 When no file is specified, the file will be named by the function name.
 When no directory is specified, current working directory will be used.'''
-    parser = optparse.OptionParser(prog='dump_function', usage=usage)
+    parser = optparse.OptionParser(prog='dump_func', usage=usage)
     parser.add_option('-d', '--dir', dest='dir', help='directory to store the generated file')
     parser.add_option('-f', '--file', dest='file', help='path to the generated file, can be used w/o `-d` option')
 
