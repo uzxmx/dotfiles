@@ -4,6 +4,7 @@ import optparse
 import shlex
 import tempfile
 import re
+import utils
 
 def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('command script add -f cmd_dump_func.dump_func dump_func')
@@ -38,13 +39,7 @@ When no directory is specified, current working directory will be used.'''
         file = tempfile.TemporaryFile(mode='w+')
 
     new_output = lldb.SBFile.Create(file)
-    saved_output = debugger.GetOutputFile()
-    saved_use_color = debugger.GetUseColor()
-    debugger.SetUseColor(False)
-    debugger.SetOutputFile(new_output)
-    debugger.HandleCommand('disassemble -a "%s" --force' % args[0])
-    debugger.SetOutputFile(saved_output)
-    debugger.SetUseColor(saved_use_color)
+    utils.handle_command(debugger, 'disassemble -a "%s" --force' % args[0], new_output)
 
     if file_is_tmp:
         file.seek(0)

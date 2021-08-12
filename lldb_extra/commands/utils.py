@@ -56,3 +56,18 @@ def get_script(path, options):
             _loaded_scripts[path] = string.Template(f.read())
 
     return _loaded_scripts[path].substitute(options)
+
+def get_pointer_size():
+    return getTarget().addr_size
+
+def handle_command(debugger, cmd, output=None):
+    if output is None:
+        debugger.HandleCommand(cmd)
+    else:
+        saved_output = debugger.GetOutputFile()
+        saved_use_color = debugger.GetUseColor()
+        debugger.SetUseColor(False)
+        debugger.SetOutputFile(output)
+        debugger.HandleCommand(cmd)
+        debugger.SetOutputFile(saved_output)
+        debugger.SetUseColor(saved_use_color)
