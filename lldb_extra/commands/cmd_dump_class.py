@@ -10,11 +10,16 @@ def __lldb_init_module(debugger, internal_dict):
 
 def dump_class(debugger, command, exe_ctx, result, internal_dict):
     '''
-    Dump a class. The class inherit from a NSObject class.
+    Dump a class. The class should inherit from NSObject class.
 
 Examples:
     dump_class NSView
-    dump_class UIView
+
+    # Dump variables and methods for instance and class.
+    dump_class -a UIView
+
+    # Dump the class to a file.
+    dump_class -a NSViewController -f NSViewController.txt
     '''
 
     stopped_by_us = False
@@ -34,7 +39,9 @@ Examples:
         result.SetError('You need to specify a class name.')
         return
 
-    script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_class.mm'), { 'class_name': args[0] })
+    opts = { 'class_name': args[0], 'enable_class': 1 if options.all else 0 }
+
+    script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_class.mm'), opts)
 
     expr_options = lldb.SBExpressionOptions()
     expr_options.SetIgnoreBreakpoints(True)
@@ -53,7 +60,12 @@ Examples:
         result.SetError("Failed to dump class: %s" % str(expr_sbvalue.error))
         return
 
-    print(str(expr_sbvalue.GetObjectDescription()))
+    if options.file is None:
+        print(str(expr_sbvalue.GetObjectDescription()))
+    else:
+        file = open(options.file, 'w')
+        file.write(str(expr_sbvalue.GetObjectDescription()))
+        file.close()
 
     if stopped_by_us:
         print('The process was automatically interrupted. Please resume it manually.')
@@ -61,4 +73,14 @@ Examples:
 def generate_option_parser():
     usage = "usage: %prog <class-name>"
     parser = optparse.OptionParser(usage=usage, prog='dump_class')
+    parser.add_option('-a', '--all',
+                      action='store_true',
+                      default=False,
+                      dest='all',
+                      help='Dump variables and methods for instance and class. By default only dump for instance')
+
+    parser.add_option('-f', '--file',
+                      dest='file',
+                      help='File to output')
+
     return parser
