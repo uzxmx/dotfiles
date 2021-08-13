@@ -10,9 +10,12 @@ def __lldb_init_module(debugger, internal_dict):
 
 def dump_class(debugger, command, exe_ctx, result, internal_dict):
     '''
-    Dump a class. The class should inherit from NSObject class.
+    Dump a class or a list of classes. The class should inherit from NSObject class.
 
 Examples:
+    # Dump all loaded classes.
+    dump_class -l
+
     dump_class NSView
 
     # Dump variables and methods for instance and class.
@@ -36,12 +39,13 @@ Examples:
         return
 
     if len(args) == 0:
-        result.SetError('You need to specify a class name.')
-        return
-
-    opts = { 'class_name': args[0], 'enable_class': 1 if options.all else 0 }
-
-    script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_class.mm'), opts)
+        if not options.list_all_classes:
+            result.SetError('You need to specify a class name or `-l` option.')
+            return
+        script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_all_classes.mm'))
+    else:
+        opts = { 'class_name': args[0], 'enable_class': 1 if options.all else 0 }
+        script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_class.mm'), opts)
 
     expr_options = lldb.SBExpressionOptions()
     expr_options.SetIgnoreBreakpoints(True)
@@ -57,11 +61,11 @@ Examples:
     expr_sbvalue = utils.getTarget().EvaluateExpression(script, expr_options)
 
     if not expr_sbvalue.error.success:
-        result.SetError("Failed to dump class: %s" % str(expr_sbvalue.error))
+        result.SetError("Failed to dump: %s" % str(expr_sbvalue.error))
         return
 
     if options.file is None:
-        print(str(expr_sbvalue.GetObjectDescription()))
+        utils.print_max_lines(str(expr_sbvalue.GetObjectDescription()))
     else:
         file = open(options.file, 'w')
         file.write(str(expr_sbvalue.GetObjectDescription()))
@@ -78,6 +82,12 @@ def generate_option_parser():
                       default=False,
                       dest='all',
                       help='Dump variables and methods for instance and class. By default only dump for instance')
+
+    parser.add_option('-l', '--list',
+                      action='store_true',
+                      default=False,
+                      dest='list_all_classes',
+                      help='List currently loaded classes')
 
     parser.add_option('-f', '--file',
                       dest='file',
