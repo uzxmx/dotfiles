@@ -214,7 +214,7 @@ gen() {
   fi
 }
 
-[ -e "$templates_dir" ] || git clone https://github.com/uzxmx/templates "$templates_dir" --depth 1
+[ -e "$templates_dir/scripts/gen" ] || git clone https://github.com/uzxmx/templates "$templates_dir" --depth 1
 source "$templates_dir/scripts/gen"
 
 while [ "$#" -gt 0 ]; do
