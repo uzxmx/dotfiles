@@ -37,7 +37,7 @@ alias_cmd() {
 
 req() {
   if [ -z "$BITBUCKET_USER" -o -z "$BITBUCKET_PASSWORD" ]; then
-    echo "Both BITBUCKET_USER and BITBUCKET_PASSWORD environment variables must be specified."
+    echo "Both BITBUCKET_USER and BITBUCKET_PASSWORD environment variables must be specified." >&2
     exit 1
   fi
   local curl_opts=(--user "$BITBUCKET_USER:$BITBUCKET_PASSWORD")
