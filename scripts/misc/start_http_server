@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+usage() {
+  cat <<-EOF
+Usage: $0
+
+This script runs a simple HTTP server for experiment or test purpose.
+
+Options:
+  -H <host> the host to bind to, default is 0.0.0.0
+  -p <port> the port to bind to, default is 8010
+EOF
+  exit 1
+}
+
+host="0.0.0.0"
+port="8010"
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -H)
+      shift
+      host="$1"
+      ;;
+    -p)
+      shift
+      port="$1"
+      ;;
+    *)
+      usage
+  esac
+  shift
+done
+
+run_go_http_server() {
+  source "$dotfiles_dir/scripts/lib/tmpfile.sh"
+
+  create_tmpdir tmpdir
+  cat <<EOF >"$tmpdir/main.go"
+package main
+
+import "fmt"
+import "net/http"
+
+func main() {
+  fmt.Println("Running server at $host:$port")
+  http.ListenAndServe("$host:$port", http.FileServer(http.Dir(".")))
+}
+EOF
+
+  go run "$tmpdir/main.go"
+}
+
+if type -p go &>/dev/null; then
+  run_go_http_server
+else
+  echo "Cannot find a proper way to start an HTTP server"
+fi
