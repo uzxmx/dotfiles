@@ -55,8 +55,16 @@ EOF
   go run "$tmpdir/main.go"
 }
 
+run_ruby_http_server() {
+  ruby -r webrick -e "WEBrick::HTTPServer.new(BindAddress: '$host', Port: $port, DocumentRoot: Dir.pwd).start"
+}
+
 if type -p go &>/dev/null; then
   run_go_http_server
+elif type -p ruby &>/dev/null; then
+  run_ruby_http_server
+elif type -p python3 &>/dev/null; then
+  python3 -m http.server --bind "$host" $port
 else
   echo "Cannot find a proper way to start an HTTP server"
 fi
