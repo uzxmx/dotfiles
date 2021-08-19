@@ -50,7 +50,7 @@ def attrStr(msg, color='black'):
 
 _loaded_scripts = {}
 
-def get_script(path, options):
+def get_script(path, options={}):
     if path not in _loaded_scripts:
         with open(path, 'r') as f:
             _loaded_scripts[path] = string.Template(f.read())
@@ -71,3 +71,11 @@ def handle_command(debugger, cmd, output=None):
         debugger.HandleCommand(cmd)
         debugger.SetOutputFile(saved_output)
         debugger.SetUseColor(saved_use_color)
+
+def print_max_lines(s, max_lines=100):
+    lines = s.splitlines()
+    total_lines = len(lines)
+    for line in lines[:min(total_lines, max_lines)]:
+        print(line)
+    if total_lines > max_lines:
+        print('The output is large (%d lines), only %d lines are printed. To print all lines, use a file instead.' % (total_lines, max_lines))

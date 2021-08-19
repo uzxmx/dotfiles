@@ -24,7 +24,7 @@ if (c) {
         Ivar *vars = class_copyIvarList(cls, &varCount); \
         for (unsigned int i = 0; i < varCount; i++) { \
             Ivar var = vars[i]; \
-            NSString *varName = [NSString stringWithFormat:@"%s %s\n", ivar_getName(var), ivar_getTypeEncoding(var)]; \
+            NSString *varName = [NSString stringWithFormat:@"%s %s %d\n", ivar_getName(var), ivar_getTypeEncoding(var), ivar_getOffset(var)]; \
             [retstr appendString:varName]; \
         } \
         free(vars); \
