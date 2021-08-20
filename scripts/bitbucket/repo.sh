@@ -151,7 +151,9 @@ cmd_repo_create() {
 }")"
   local slug="$(echo "$resp" | jq -r '.slug')"
   if [ "$slug" = "$name" ]; then
-    git_url_from_full_name "$(echo "$resp" | jq -r '.full_name')"
+    local remote_url="$(git_url_from_full_name "$(echo "$resp" | jq -r '.full_name')")"
+    source "$dotfiles_dir/scripts/lib/git.sh"
+    git_try_initial_push "$remote_url" origin bitbucket
   else
     echo "$resp" >&2
     exit 1

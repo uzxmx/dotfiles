@@ -16,3 +16,41 @@ git_clone() {
     git clone "$@" "$url" "$dir"
   fi
 }
+
+# This function tries to find a proper remote name that doesn't exist in the
+# local repo. If all exist, an empty name will be output.
+#
+# @params
+#   VARARGS: candidate remote names
+git_try_remote_names() {
+  local name
+  for name in "$@"; do
+    if ! git remote | grep -Fx "$name" &>/dev/null; then
+      echo "$name"
+      exit
+    fi
+  done
+}
+
+# This function tries to find a proper remote name that doesn't exist in the
+# local repo. If one is found, it pushes to the remote. If this is the first
+# remote, it also tracks it as upstream.
+#
+# @params
+#   $1: the remote url
+#   VARARGS: candidate remote names
+git_try_initial_push() {
+  local remote_url="$1"
+  shift
+  local remote_name="$(git_try_remote_names "$@")"
+  if [ -z "$remote_name" ]; then
+    echo "All candidate remote names exist. Please push to $remote_url manually." >&2
+  else
+    local -a opts
+    if [ -z "$(git remote)" ]; then
+      opts+=("-u")
+    fi
+    git remote add "$remote_name" "$remote_url"
+    git push "${opts[@]}" "$remote_name" "refs/heads/*" --tags
+  fi
+}
