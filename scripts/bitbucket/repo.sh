@@ -105,7 +105,7 @@ cmd_repo_get() {
 
   if [ -z "$name" ]; then
     source "$dotfiles_dir/scripts/lib/prompt.sh"
-    ask_for_input name "Name for which repo to get: "
+    ask_for_input name "Name for the repo to get: "
   fi
   local resp="$(req "repositories/$workspace/$name")"
   local slug="$(echo "$resp" | jq -r '.slug')"
@@ -142,7 +142,7 @@ cmd_repo_create() {
   local name="$1"
   if [ -z "$name" ]; then
     source "$dotfiles_dir/scripts/lib/prompt.sh"
-    ask_for_input name "Name for which repo to create: "
+    ask_for_input name "Name for the repo to create: "
   fi
   local resp="$(req "repositories/$workspace/$name" -XPOST -H "Content-Type: application/json" -d"{
   \"scm\": \"git\",
@@ -177,7 +177,7 @@ cmd_repo_delete() {
   local name="$1"
   source "$dotfiles_dir/scripts/lib/prompt.sh"
   if [ -z "$name" ]; then
-    ask_for_input name "Name for which repo to delete: "
+    ask_for_input name "Name for the repo to delete: "
   fi
   if cmd_repo_get "$name" >/dev/null; then
     local confirm
