@@ -42,4 +42,9 @@ repo_path="$(get_repo_path $origin_url)"
 branch="$1"
 test -z "$branch" && branch="$(git symbolic-ref --short HEAD)"
 
-open_url "https://$host/$repo_path/tree/$branch"
+if [ "$host" = "bitbucket.org" ]; then
+  url="https://$host/$repo_path/src/$branch"
+else
+  url="https://$host/$repo_path/tree/$branch"
+fi
+open_url "$url"
