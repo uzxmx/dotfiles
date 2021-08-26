@@ -6,6 +6,29 @@
 
 if is_wsl; then
   "$(dirname "$BASH_SOURCE")/../../bin/scoop" install wireshark
+elif has_yum; then
+  sudo yum install -y wireshark
 else
   abort 'Unsupported system'
 fi
+
+https://www.wireshark.org/download/src/wireshark-3.4.0.tar.xz
+
+gcld https://gitlab.com/wireshark/wireshark.git wireshark v3.4.0
+
+get https://github.com/Kitware/CMake/releases/download/v3.19.1/cmake-3.19.1-Linux-x86_64.tar.gz
+sudo mv cmake-3.19.1-Linux-x86_64 /usr/local/
+echo "PATH=/usr/local/bin/cmake-3.19.1-Linux-x86_64/bin" > zshrc.local
+
+see https://gitlab.com/wireshark/wireshark/-/blob/master/INSTALL
+
+mkdir build
+sudo yum install -y glib2 ??
+sudo yum install -y glib2-devel
+sudo yum install -y libgcrypt-devel
+sudo yum install -y c-ares-devel flex
+sudo yum install -y libssh-devel libpcap-devel systemd-devel
+
+# We don't have Qt installed, so we disable wireshark.
+cmake -DBUILD_wireshark=OFF ..
+make
