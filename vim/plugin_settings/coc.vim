@@ -1,3 +1,6 @@
+" Uncomment below if you want to start coc server manually by `:CocStart`.
+" let g:coc_start_at_startup = 0
+
 " You will have bad experience for diagnostic messages when it's default 4000.
 set updatetime=300
 
