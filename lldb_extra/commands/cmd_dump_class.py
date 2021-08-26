@@ -16,6 +16,10 @@ Examples:
     # Dump all loaded classes.
     dump_class -l
 
+    # Dump all loaded classes which inherit NSViewController.
+    dump_class -l -p NSViewController
+
+    # Dump a class.
     dump_class NSView
 
     # Dump variables and methods for instance and class.
@@ -42,7 +46,8 @@ Examples:
         if not options.list_all_classes:
             result.SetError('You need to specify a class name or `-l` option.')
             return
-        script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_all_classes.mm'))
+        opts = { 'parent_class_name': options.filter_by_parent_class, 'filter_by_parent_class': 1 if options.filter_by_parent_class else 0 }
+        script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_all_classes.mm'), opts)
     else:
         opts = { 'class_name': args[0], 'enable_class': 1 if options.all else 0 }
         script = utils.get_script(os.path.join(os.path.dirname(__file__), 'dump_class.mm'), opts)
@@ -88,6 +93,10 @@ def generate_option_parser():
                       default=False,
                       dest='list_all_classes',
                       help='List currently loaded classes')
+
+    parser.add_option('-p', '--parent',
+                      dest='filter_by_parent_class',
+                      help='Filter by parent class, must be used with -l option')
 
     parser.add_option('-f', '--file',
                       dest='file',
