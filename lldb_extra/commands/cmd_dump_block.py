@@ -2,7 +2,7 @@ import os
 import lldb
 import optparse
 import shlex
-import utils
+from lldb_extra import utils
 
 def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('command script add -f cmd_dump_block.dump_block dump_block')
