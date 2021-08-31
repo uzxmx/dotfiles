@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+qiniu_dir="$dotfiles_dir/scripts/qiniu"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to manage qiniu resources.
+
+To authenticate, you can export environment variables (QINIU_ACCESS_KEY,
+QINIU_SECRET_KEY, QINIU_BUCKET), or pass options.
+
+Subcommands:
+  u, upload - upload files to qiniu
+EOF
+  exit 1
+}
+
+case "$1" in
+  u | upload)
+    case "$1" in
+      u)
+        name="upload"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$qiniu_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
