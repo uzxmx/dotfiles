@@ -69,7 +69,6 @@ cmd_upload() {
 
     if [ -n "$fetch_from_remote" ]; then
       create_tmpfile tmpfile
-      echo "$tmpfile"
       curl -s -L -k -o "$tmpfile" "$file"
       file="$tmpfile"
     fi
