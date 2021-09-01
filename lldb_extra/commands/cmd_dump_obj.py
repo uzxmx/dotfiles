@@ -37,7 +37,7 @@ Examples:
         result.SetError('You need to specify an address.')
         return
 
-    expr_sbvalue = dump_obj.dump_obj(args[0])
+    expr_sbvalue = dump_obj.dump_obj(args[0], options.no_ivars)
 
     if not expr_sbvalue.error.success:
         result.SetError("Failed to dump object: %s" % str(expr_sbvalue.error))
@@ -59,5 +59,11 @@ def generate_option_parser():
     parser.add_option('-f', '--file',
                       dest='file',
                       help='File to output')
+
+    parser.add_option('', '--no-ivars',
+                      action='store_true',
+                      default=False,
+                      dest='no_ivars',
+                      help='Do not output instance variables')
 
     return parser

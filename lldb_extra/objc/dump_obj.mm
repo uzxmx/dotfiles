@@ -2,6 +2,7 @@
 @import ObjectiveC;
 
 #define OBJ_POINTER $obj_pointer
+#define NO_IVARS $no_ivars
 
 id obj = (id) OBJ_POINTER;
 
@@ -21,6 +22,8 @@ if (!cls) {
         superClass = @"No super class\n";
     }
     [retstr appendString:superClass];
+
+#if !NO_IVARS
 
     // Visit https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html#//apple_ref/doc/uid/TP40008048-CH100
     // to get all type encodings.
@@ -46,6 +49,7 @@ if (!cls) {
         }
 
     GET_IVARS(Instance)
+#endif
 }
 
 retstr;
