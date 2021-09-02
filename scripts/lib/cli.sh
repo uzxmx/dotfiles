@@ -2,6 +2,9 @@
 
 source "$(dirname "$BASH_SOURCE")/utils.sh"
 
+source "$(dirname "$BASH_SOURCE")/path.sh"
+PATH="$(new_path_exclude "$(realpath "$(dirname "$BASH_SOURCE")/../..")/bin")"
+
 alias_cmd() {
   local new_name="$1"
   local old_name="$2"
