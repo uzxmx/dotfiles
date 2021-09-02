@@ -18,6 +18,9 @@ Examples:
 
     # Dump to a file.
     dump_obj 0x103d82480 -f obj.txt
+
+    # Dump an object returned by an expression.
+    dump_obj "[(NSTouchBarViewController *) 0x103f463d0 touchBarView]"
     '''
 
     stopped_by_us = False
@@ -54,7 +57,7 @@ Examples:
         print('The process was automatically interrupted. Please resume it manually.')
 
 def generate_option_parser():
-    usage = "usage: %prog <obj-address>"
+    usage = "usage: %prog <obj-address | expression>"
     parser = optparse.OptionParser(usage=usage, prog='dump_obj')
     parser.add_option('-f', '--file',
                       dest='file',
