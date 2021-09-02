@@ -5,14 +5,24 @@ set -e
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for hexdump utility.
+
+If only one argument is specified, and neither it is an option nor a
+subcommand, then it will be the text to be dumped in hexadecimal.
 
 Subcommands:
   hex - display the input in hexadecimal by ascii
   decimal - display the input in decimal by ascii
   oct - display the input in octal by ascii
   bin - display the input integer in binary
+
+Example:
+  # Dump a string
+  hexdump foo
+
+  # Dump a binary file
+  hexdump - file.bin
 EOF
   exit 1
 }
@@ -31,7 +41,7 @@ execute_hexdump() {
 }
 
 usage_hex() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hexdump hex <text>
 
 Display the input (from argument or pipe) in hexadecimal by ascii.
@@ -47,7 +57,7 @@ cmd_hex() {
 }
 
 usage_decimal() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hexdump decimal <text>
 
 Display the input (from argument or pipe) in decimal by ascii.
@@ -63,7 +73,7 @@ cmd_decimal() {
 }
 
 usage_oct() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hexdump oct <text>
 
 Display the input (from argument or pipe) in octal by ascii.
@@ -79,7 +89,7 @@ cmd_oct() {
 }
 
 usage_bin() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Usage: hexdump bin <integer>
 
 Display the input integer (from argument or pipe) in binary.
