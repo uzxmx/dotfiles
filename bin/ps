@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for ps utility.
+
+If no argument is specified, it will ask you to select a process by fzf. When a
+process is selected, it outputs the process details.
+EOF
+  exit 1
+}
+
+if [ "$#" -eq 0 ]; then
+  source "$dotfiles_dir/scripts/lib/ps.sh"
+  pid="$(ps_fzf_select_pid)"
+  [ -z "$pid" ] && exit
+  echo "pid: $pid"
+  echo "ppid: $(ps -p "$pid" -o ppid | sed 1d)"
+  echo "command and arguments: $(ps -p "$pid" -o command | sed 1d)"
+  echo "time started: $(ps -p "$pid" -o start | sed 1d)"
+  echo "elapsed running time: $(ps -p "$pid" -o etime | sed 1d)"
+  echo "full name of control terminal: $(ps -p "$pid" -o tty | sed 1d)"
+  exit
+fi
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ps "$@"
+    ;;
+  *)
+    ps "$@"
+    ;;
+esac
