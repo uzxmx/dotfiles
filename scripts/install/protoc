@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Install protoc (https://github.com/protocolbuffers/protobuf).
+
+set -eo pipefail
+
+type -p protoc &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="3.17.3"
+path_to_save="/tmp/protoc-$version.tgz"
+if is_mac; then
+  platform="osx"
+elif is_linux; then
+  platform="linux"
+else
+  abort "Unsupported system"
+fi
+
+"$dotfiles_dir/bin/cget" "https://github.com/protocolbuffers/protobuf/releases/download/v$version/protoc-$version-$platform-x86_64.zip" "$path_to_save"
+unzip "$path_to_save" bin/protoc -d "$HOME"
+rm -rf "$path_to_save"
