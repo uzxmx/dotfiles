@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+protoc_dir="$dotfiles_dir/scripts/protoc"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for protoc utility.
+
+Subcommands:
+  d, decode - decode protocol message
+EOF
+  exit 1
+}
+
+case "$1" in
+  d | decode)
+    case "$1" in
+      d)
+        name="decode"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$protoc_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    protoc "$@"
+    ;;
+  *)
+    protoc "$@"
+    ;;
+esac
