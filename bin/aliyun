@@ -5,6 +5,8 @@ set -eo pipefail
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 aliyun_dir="$dotfiles_dir/scripts/aliyun"
 
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
 usage() {
   cat <<-EOF
 Wrapper for aliyun utility.
@@ -30,39 +32,14 @@ Subcommands:
   e, ecs             - manage elastic compute service
   v, vpc             - manage virtual private cloud
   n, nat             - manage NAT gateways
+  o, oss             - manage OSS (Object Storage Service)
 EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
-
 case "$1" in
-  p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn | n | nat)
+  p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn | n | nat | \
+  o | oss)
     case "$1" in
       p)
         name="profile"
@@ -84,6 +61,9 @@ case "$1" in
         ;;
       n)
         name="nat"
+        ;;
+      o)
+        name="oss"
         ;;
       *)
         name="$1"
