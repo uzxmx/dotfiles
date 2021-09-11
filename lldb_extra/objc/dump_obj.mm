@@ -41,6 +41,14 @@ if (!cls) {
                         [retstr appendString:[NSString stringWithFormat:@" : %@", object_getIvar(obj, var)]]; \
                     } else if (typeEncodings[0] == '@') { \
                         [retstr appendString:[NSString stringWithFormat:@" : %p", object_getIvar(obj, var)]]; \
+                    } else if (!strcmp(typeEncodings, "I")) { \
+                        [retstr appendString:[NSString stringWithFormat:@" : %u (0x%02x)", object_getIvar(obj, var), object_getIvar(obj, var)]]; \
+                    } else if (!strcmp(typeEncodings, "i")) { \
+                        [retstr appendString:[NSString stringWithFormat:@" : %d (0x%02x)", object_getIvar(obj, var), object_getIvar(obj, var)]]; \
+                    } else if (typeEncodings[0] == 'b') { \
+                        [retstr appendString:[NSString stringWithFormat:@" : %u (0x%02x)", object_getIvar(obj, var), object_getIvar(obj, var)]]; \
+                    } else if (!strcmp(typeEncodings, "Q")) { \
+                        [retstr appendString:[NSString stringWithFormat:@" : %llu (0x%02x)", object_getIvar(obj, var), object_getIvar(obj, var)]]; \
                     } \
                 } \
                 [retstr appendString:@"\n"]; \
@@ -50,6 +58,11 @@ if (!cls) {
 
     GET_IVARS(Instance)
 #endif
+
+    if ([(NSObject *) obj isKindOfClass:[NSData class]]) {
+        NSData *data = (NSData *) obj;
+        [retstr appendFormat:@"\nDescription:\n%@\n", data.description];
+    }
 }
 
 retstr;
