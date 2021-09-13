@@ -1,6 +1,7 @@
 import lldb
 import os
 import string
+from six import StringIO as SixStringIO
 
 def isXcode():
     if "unknown" == os.environ.get("TERM", "unknown"):
@@ -95,7 +96,7 @@ def evaluate_objc(script):
     expr_options.SetTryAllThreads(False)
     expr_options.SetTrapExceptions(False)
     expr_options.SetUnwindOnError(True)
-    expr_options.SetGenerateDebugInfo(True)
+    expr_options.SetGenerateDebugInfo(False)
     expr_options.SetLanguage(lldb.eLanguageTypeObjC_plus_plus)
     expr_options.SetCoerceResultToId(True)
     return getTarget().EvaluateExpression(script, expr_options)
@@ -137,3 +138,175 @@ def resume_execution(frame):
     '''Resume the execution.
     '''
     frame.GetThread().GetProcess().Continue()
+
+def delete_breakpoint(name):
+    res = lldb.SBCommandReturnObject()
+    getTarget().GetDebugger().GetCommandInterpreter().HandleCommand('break delete %s' % name, res)
+    if res.Succeeded() != True:
+        print(res.GetError())
+
+def get_module_names(thread):
+    '''
+    Return a sequence of module names from the stack frames of this thread.
+    '''
+    def GetModuleName(i):
+        return thread.GetFrameAtIndex(
+            i).GetModule().GetFileSpec().GetFilename()
+
+    return list(map(GetModuleName, list(range(thread.GetNumFrames()))))
+
+def get_function_names(thread):
+    '''
+    Return a sequence of function names from the stack frames of this thread.
+    '''
+    def GetFuncName(i):
+        return thread.GetFrameAtIndex(i).GetFunctionName()
+
+    return list(map(GetFuncName, list(range(thread.GetNumFrames()))))
+
+def get_symbol_names(thread):
+    '''
+    Return a sequence of symbols for this thread.
+    '''
+    def GetSymbol(i):
+        return thread.GetFrameAtIndex(i).GetSymbol().GetName()
+
+    return list(map(GetSymbol, list(range(thread.GetNumFrames()))))
+
+def get_filenames(thread):
+    '''
+    Return a sequence of file names from the stack frames of this thread.
+    '''
+    def GetFilename(i):
+        return thread.GetFrameAtIndex(
+            i).GetLineEntry().GetFileSpec().GetFilename()
+
+    return list(map(GetFilename, list(range(thread.GetNumFrames()))))
+
+def get_line_numbers(thread):
+    '''
+    Return a sequence of line numbers from the stack frames of this thread.
+    '''
+    def GetLineNumber(i):
+        return thread.GetFrameAtIndex(i).GetLineEntry().GetLine()
+
+    return list(map(GetLineNumber, list(range(thread.GetNumFrames()))))
+
+def get_pc_addresses(thread):
+    '''
+    Return a sequence of pc addresses for this thread.
+    '''
+    def GetPCAddress(i):
+        return thread.GetFrameAtIndex(i).GetPCAddress()
+
+    return list(map(GetPCAddress, list(range(thread.GetNumFrames()))))
+
+def stop_reason_to_str(enum):
+    '''Returns the stopReason string given an enum.'''
+    if enum == lldb.eStopReasonInvalid:
+        return "invalid"
+    elif enum == lldb.eStopReasonNone:
+        return "none"
+    elif enum == lldb.eStopReasonTrace:
+        return "trace"
+    elif enum == lldb.eStopReasonBreakpoint:
+        return "breakpoint"
+    elif enum == lldb.eStopReasonWatchpoint:
+        return "watchpoint"
+    elif enum == lldb.eStopReasonExec:
+        return "exec"
+    elif enum == lldb.eStopReasonSignal:
+        return "signal"
+    elif enum == lldb.eStopReasonException:
+        return "exception"
+    elif enum == lldb.eStopReasonPlanComplete:
+        return "plancomplete"
+    elif enum == lldb.eStopReasonThreadExiting:
+        return "threadexiting"
+    else:
+        return "Unknown StopReason enum"
+
+def get_args_as_string(frame, showFuncName=True):
+    '''
+    Return the args of the input frame object as a string.
+    '''
+    # arguments     => True
+    # locals        => False
+    # statics       => False
+    # in_scope_only => True
+    vars = frame.GetVariables(True, False, False, True)  # type of SBValueList
+    args = []  # list of strings
+    for var in vars:
+        args.append("(%s)%s=%s" % (var.GetTypeName(),
+                                   var.GetName(),
+                                   var.GetValue()))
+    if frame.GetFunction():
+        name = frame.GetFunction().GetName()
+    elif frame.GetSymbol():
+        name = frame.GetSymbol().GetName()
+    else:
+        name = ""
+    if showFuncName:
+        return "%s(%s)" % (name, ", ".join(args))
+    else:
+        return "(%s)" % (", ".join(args))
+
+def get_stacktrace(thread):
+    '''Get a simple stack trace of this thread.'''
+
+    output = SixStringIO()
+    target = thread.GetProcess().GetTarget()
+
+    depth = thread.GetNumFrames()
+
+    mods = get_module_names(thread)
+    funcs = get_function_names(thread)
+    symbols = get_symbol_names(thread)
+    files = get_filenames(thread)
+    lines = get_line_numbers(thread)
+    addrs = get_pc_addresses(thread)
+
+    if thread.GetStopReason() != lldb.eStopReasonInvalid:
+        desc = "stop reason=" + stop_reason_to_str(thread.GetStopReason())
+    else:
+        desc = ""
+    print(
+        "Stack trace for thread id={0:#x} name={1} queue={2} ".format(
+            thread.GetThreadID(),
+            thread.GetName(),
+            thread.GetQueueName()) + desc,
+        file=output)
+
+    for i in range(depth):
+        frame = thread.GetFrameAtIndex(i)
+        function = frame.GetFunction()
+
+        load_addr = addrs[i].GetLoadAddress(target)
+        if not function:
+            file_addr = addrs[i].GetFileAddress()
+            start_addr = frame.GetSymbol().GetStartAddress().GetFileAddress()
+            symbol_offset = file_addr - start_addr
+            print(
+                "  frame #{num}: {addr:#016x} {mod}`{symbol} + {offset}".format(
+                    num=i,
+                    addr=load_addr,
+                    mod=mods[i],
+                    symbol=symbols[i],
+                    offset=symbol_offset),
+                file=output)
+        else:
+            print(
+                "  frame #{num}: {addr:#016x} {mod}`{func} at {file}:{line} {args}".format(
+                    num=i,
+                    addr=load_addr,
+                    mod=mods[i],
+                    func='%s [inlined]' %
+                    funcs[i] if frame.IsInlined() else funcs[i],
+                    file=files[i],
+                    line=lines[i],
+                    args=get_args_as_string(
+                        frame,
+                        showFuncName=False) if not frame.IsInlined() else '()'),
+                file=output)
+
+    return output.getvalue()
