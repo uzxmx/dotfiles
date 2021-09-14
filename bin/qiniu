@@ -15,14 +15,18 @@ To authenticate, you can export environment variables (QINIU_ACCESS_KEY,
 QINIU_SECRET_KEY, QINIU_BUCKET), or pass options.
 
 Subcommands:
+  b, bucket - manage buckets
   u, upload - upload files to qiniu
 EOF
   exit 1
 }
 
 case "$1" in
-  u | upload)
+  b | bucket | u | upload)
     case "$1" in
+      b)
+        name="bucket"
+        ;;
       u)
         name="upload"
         ;;
