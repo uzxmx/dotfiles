@@ -41,3 +41,58 @@ command! -range Base64Decode <line1>,<line2>call utils#base64#decode()
 
 command! -range Escape <line1>,<line2>call utils#escape#escape()
 command! -range EscapeReverse <line1>,<line2>call utils#escape#unescape()
+
+" Delete all buffers except the current/named buffer.
+command! -nargs=? -complete=buffer -bang BufOnly :call s:bufonly('<args>', 0, '<bang>')
+" Delete all buffers except the buffers in the current tab.
+command! -nargs=0 -bang BufOnlyTab :call s:bufonly('', 1, '<bang>')
+
+function! s:bufonly(buffer, tab_mode, bang)
+  if a:tab_mode
+    silent tabonly
+    let buffers = tabpagebuflist()
+  else
+    if a:buffer == ''
+      let buffer = bufnr('%')
+    elseif (a:buffer + 0) > 0
+      let buffer = bufnr(a:buffer + 0)
+    else
+      let buffer = bufnr(a:buffer)
+    endif
+
+    if buffer == -1
+      echohl ErrorMsg
+      echomsg "No matching buffer for" a:buffer
+      echohl None
+      return
+    endif
+
+    let buffers = [buffer]
+  endif
+
+  let last_buffer = bufnr('$')
+
+  let delete_count = 0
+  let n = 1
+  while n <= last_buffer
+    if index(buffers, n) == -1 && buflisted(n)
+      if a:bang == '' && getbufvar(n, '&modified')
+        echohl ErrorMsg
+        echomsg 'No write since last change for buffer (add ! to override)'
+        echohl None
+      else
+        silent exe 'bdel' . a:bang . ' ' . n
+        if !buflisted(n)
+          let delete_count = delete_count + 1
+        endif
+      endif
+    endif
+    let n = n + 1
+  endwhile
+
+  if delete_count == 1
+    echomsg delete_count "buffer deleted"
+  elseif delete_count > 1
+    echomsg delete_count "buffers deleted"
+  endif
+endfunction
