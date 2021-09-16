@@ -3,6 +3,7 @@
 
 #define PARENT_CLASS_NAME "$parent_class_name"
 #define FILTER_BY_PARENT_CLASS $filter_by_parent_class
+#define PRE_BLOCK $pre_block
 
 NSMutableString *retstr = [NSMutableString string];
 
@@ -15,6 +16,8 @@ Class *classes = (__unsafe_unretained Class *) malloc(sizeof(Class) * classCount
 objc_getClassList(classes, classCount);
 for (int i = 0; i < classCount; i++) {
     Class cls = classes[i];
+
+    PRE_BLOCK
 
     #if FILTER_BY_PARENT_CLASS
     bool isSubclass = false;

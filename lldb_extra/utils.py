@@ -317,3 +317,9 @@ def dump_memory(addr, size):
     interpreter = getTarget().GetDebugger().GetCommandInterpreter()
     interpreter.HandleCommand('memory read %d -c %d' % (addr, size), res)
     return res.GetOutput()
+
+def get_symbol_name_by_addr(addr):
+    if type(addr) == str:
+        addr = int(addr, 16) if addr.startswith('0x') or addr.startswith('0X') else int(addr)
+    sb_addr = lldb.SBAddress(addr, getTarget())
+    return '%s`%s' % (sb_addr.module.GetFileSpec().GetFilename(), sb_addr.symbol.name)
