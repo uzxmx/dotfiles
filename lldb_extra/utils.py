@@ -251,6 +251,7 @@ def get_args_as_string(frame, showFuncName=True):
     else:
         return "(%s)" % (", ".join(args))
 
+# From https://github.com/llvm-mirror/lldb/blob/master/packages/Python/lldbsuite/test/lldbutil.py
 def get_stacktrace(thread):
     '''Get a simple stack trace of this thread.'''
 
@@ -310,3 +311,9 @@ def get_stacktrace(thread):
                 file=output)
 
     return output.getvalue()
+
+def dump_memory(addr, size):
+    res = lldb.SBCommandReturnObject()
+    interpreter = getTarget().GetDebugger().GetCommandInterpreter()
+    interpreter.HandleCommand('memory read %d -c %d' % (addr, size), res)
+    return res.GetOutput()
