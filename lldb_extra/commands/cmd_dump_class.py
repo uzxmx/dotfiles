@@ -5,6 +5,7 @@ import shlex
 from lldb_extra import utils
 from six import StringIO as SixStringIO
 import re
+from threading import Thread
 
 def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('command script add -f cmd_dump_class.dump_class dump_class')
@@ -31,7 +32,7 @@ Examples:
     dump_class -a NSViewController -f NSViewController.txt
 
     # Dump all loaded classes in a specific module into `classes` directory, one file per class.
-    dump_class -L -d classes -m UIKit
+    dump_class -L -d classes -m UIKit -a
 
     # Dump all loaded classes which inherit NSViewController, one file per class.
     dump_class -L -p NSViewController
@@ -106,10 +107,35 @@ def dump_all_classes(options, result):
         output_dir = options.output_dir if options.output_dir is not None else os.getcwd()
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        for cls in output.splitlines():
-            if cls != '':
-                options.file = os.path.join(output_dir, cls)
-                do_dump_class(cls, options, result)
+        classes = output.splitlines()
+        def execute_task(start_idx, end_idx):
+            for i in range(start_idx, end_idx):
+                print(i)
+                cls = classes[i]
+                if cls != '':
+                    options.file = os.path.join(output_dir, cls)
+                    do_dump_class(cls, options, result)
+        count = len(classes)
+        # TODO using multiple threads cannot improve the speed. (When using a single thread, ~300 classes can be dumped in one minute.)
+        # if count > 100:
+        #     thread_count = 8
+        #     print('There are %d classes in total. Spawning %d threads to dump...' % (count, thread_count))
+        #     count_per_thread = int(count / thread_count)
+        #     threads = []
+        #     for i in range(thread_count):
+        #         start_idx = i * count_per_thread
+        #         if i + 1 == thread_count:
+        #             end_idx = count
+        #         else:
+        #             end_idx = start_idx + count_per_thread
+        #         t = Thread(target=execute_task, args=(start_idx, end_idx))
+        #         threads.append(t)
+        #         t.start()
+        #     for t in threads:
+        #         t.join()
+        # else:
+        #     execute_task(0, count)
+        execute_task(0, count)
 
 def do_dump_class(name, options, result):
     opts = { 'class_name': name, 'enable_class': 1 if options.all else 0 }
