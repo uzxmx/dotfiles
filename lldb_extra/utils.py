@@ -318,8 +318,31 @@ def dump_memory(addr, size):
     interpreter.HandleCommand('memory read %d -c %d' % (addr, size), res)
     return res.GetOutput()
 
-def get_symbol_name_by_addr(addr):
+def parse_addr(addr):
+    '''
+    Convert address to int.
+    '''
     if type(addr) == str:
         addr = int(addr, 16) if addr.startswith('0x') or addr.startswith('0X') else int(addr)
-    sb_addr = lldb.SBAddress(addr, getTarget())
+    return addr
+
+def get_symbol_name_by_addr(addr):
+    sb_addr = lldb.SBAddress(parse_addr(addr), getTarget())
     return '%s`%s' % (sb_addr.module.GetFileSpec().GetFilename(), sb_addr.symbol.name)
+
+def dump_cstr(addr, max_size_to_try=1024, encoding='latin1'):
+    """
+    Return a c string at an address which terminates by NULL.
+    Instead of utf-8 encoding, latin1 is used to avoid unsupported byte.
+    """
+    error = lldb.SBError()
+    buf = getTarget().GetProcess().ReadMemory(parse_addr(addr), max_size_to_try, error)
+    if not error.Success():
+        return
+    output = bytearray()
+    for b in buf:
+        if b == 0:
+            break
+        else:
+            output.append(b)
+    return output.decode(encoding)
