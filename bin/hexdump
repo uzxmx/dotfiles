@@ -1,34 +1,32 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+hexdump_dir="$dotfiles_dir/scripts/hexdump"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
 Wrapper for hexdump utility.
 
-If only one argument is specified, and neither it is an option nor a
-subcommand, then it will be the text to be dumped in hexadecimal.
-
 Subcommands:
-  hex - display the input in hexadecimal by ascii
-  decimal - display the input in decimal by ascii
-  oct - display the input in octal by ascii
-  bin - display the input integer in binary
+  p, parse - parse hexadecimal string to binary, and vice versa
+  hex      - display the input in hexadecimal by ascii
+  decimal  - display the input in decimal by ascii
+  oct      - display the input in octal by ascii
+  bin      - display the input integer in binary
 
 Example:
-  # Dump a string
-  hexdump foo
-
   # Dump a binary file
-  hexdump - file.bin
+  hexdump file.bin
+
+  # Dump a string
+  echo -n foo | hexdump
 EOF
   exit 1
 }
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 execute_hexdump() {
   local text="$1"
@@ -118,6 +116,17 @@ case "$1" in
     esac
     "cmd_$cmd" "$@"
     ;;
+  p | parse)
+    case "$1" in
+      p)
+        name="parse"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$hexdump_dir/$name.sh"
+    run "$@"
+    ;;
   -h)
     usage
     ;;
@@ -126,13 +135,5 @@ case "$1" in
     hexdump "$@"
     ;;
   *)
-    # We got a text.
-    if [ -n "$1" ] && [ $# -eq 1 ] && [[ ! "$1" =~ ^- ]]; then
-      cmd_hex "$1"
-    elif [ "$#" -eq 0 ]; then
-      hexdump -C
-    else
-      hexdump "$@"
-    fi
-    ;;
+    hexdump -C "$@"
 esac
