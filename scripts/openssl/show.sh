@@ -7,7 +7,7 @@ otherwise it cannot infer the type.
 
 Supported types include:
   * certificate
-  * RSA private key
+  * RSA public/private key
   * certificate request
 EOF
   exit 1
@@ -19,6 +19,10 @@ cmd_show() {
 
   local header="$(grep "^-----BEGIN" "$pem_file" | sed "s/^-----BEGIN\(.*\)-----/\1/" | head -1 | "$dotfiles_dir/bin/trim")"
   case "$header" in
+    # Currently only support RSA public key.
+    "PUBLIC KEY" | "RSA PUBLIC KEY")
+      openssl rsa -in "$pem_file" -pubin -text -noout
+      ;;
     "RSA PRIVATE KEY")
       openssl rsa -in "$pem_file" -text -noout
       ;;
