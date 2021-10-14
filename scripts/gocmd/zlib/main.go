@@ -79,11 +79,11 @@ func main() {
 			}
 			hexString = string(src)
 		} else {
-			if len(args) < 2 || len(args[1]) == 0 {
+			if len(args) < 1 || len(args[0]) == 0 {
 				fmt.Println("A hexadecimal string should be specified as input.")
 				os.Exit(1)
 			}
-			hexString = args[1]
+			hexString = args[0]
 		}
 		src, err = hex.DecodeString(strings.ReplaceAll(strings.Trim(hexString, "\n"), " ", ""))
 		if err != nil {
