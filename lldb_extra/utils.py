@@ -61,10 +61,15 @@ def get_script(path, options={}):
 def get_pointer_size():
     return getTarget().addr_size
 
-def handle_command(debugger, cmd, output=None):
+def handle_command(cmd, debugger=None, frame=None, output=None):
+    if debugger is None and frame is not None:
+        debugger = frame.GetThread().GetProcess().GetTarget().GetDebugger()
+
     if output is None:
-        debugger.HandleCommand(cmd)
+        res = lldb.SBCommandReturnObject()
+        debugger.GetCommandInterpreter().HandleCommand(cmd, res)
     else:
+        # To capture the output, a better way is to call `debugger.GetCommandInterpreter().HandleCommand()`.
         saved_output = debugger.GetOutputFile()
         saved_use_color = debugger.GetUseColor()
         debugger.SetUseColor(False)
@@ -346,3 +351,25 @@ def dump_cstr(addr, max_size_to_try=1024, encoding='latin1'):
         else:
             output.append(b)
     return output.decode(encoding)
+
+__threads_attrs = {}
+
+def set_attr_for_thread(thread, name, value):
+    idx = thread.idx
+    if idx not in __threads_attrs:
+        __threads_attrs[idx] = {}
+    __threads_attrs[idx][name] = value
+
+def get_attr_for_thread(thread, name):
+    idx = thread.idx
+    if idx in __threads_attrs and name in __threads_attrs[idx]:
+        return __threads_attrs[idx][name]
+
+def get_frame_address(frame):
+    return frame.GetSymbol().GetStartAddress().GetLoadAddress(getTarget())
+
+def open_file(path, mode):
+    dirname = os.path.dirname(path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    return open(path, mode)
