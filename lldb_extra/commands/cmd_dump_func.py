@@ -11,11 +11,13 @@ def __lldb_init_module(debugger, internal_dict):
     print('The "dump_func" command has been installed.')
 
 def dump_func(debugger, command, result, internal_dict):
-    usage = '''usage: %prog <address> [-d <directory>] [-f <file>]
+    usage = '''usage: %prog [-a <address>] [-d <directory>] [-f <file>]
 
 When no file is specified, the file will be named by the function name.
 When no directory is specified, current working directory will be used.'''
     parser = optparse.OptionParser(prog='dump_func', usage=usage)
+    parser.add_option('-a', '--addr', dest='addr', help='memory address')
+    parser.add_option('-n', '--func-name', dest='func_name', help='function name')
     parser.add_option('-d', '--dir', dest='dir', help='directory to store the generated file')
     parser.add_option('-f', '--file', dest='file', help='path to the generated file, can be used w/o `-d` option')
 
@@ -24,8 +26,13 @@ When no directory is specified, current working directory will be used.'''
     except:
         return
 
-    if len(args) == 0:
-        print('You need to specify an address which is contained by the function.')
+    cmd = 'disassemble --force'
+    if options.addr is not None:
+        cmd += ' -a %s' % options.func_name
+    elif options.func_name is not None:
+        cmd += ' -n %s' % options.func_name
+    else:
+        print('You need to specify either an address by `-a` or a function name by `-n`.')
         return
 
     file = None
@@ -39,7 +46,7 @@ When no directory is specified, current working directory will be used.'''
         file = tempfile.TemporaryFile(mode='w+')
 
     new_output = lldb.SBFile.Create(file)
-    utils.handle_command(debugger, 'disassemble -a "%s" --force' % args[0], new_output)
+    utils.handle_command(cmd, debugger=debugger, output=new_output)
 
     if file_is_tmp:
         file.seek(0)
