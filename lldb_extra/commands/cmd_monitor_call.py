@@ -2,6 +2,7 @@ import lldb
 import optparse
 import shlex
 from datetime import datetime
+from lldb_extra import utils
 
 def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('command script add -f cmd_monitor_call.monitor_call monitor_call')
@@ -42,7 +43,7 @@ def monitor_call(debugger, command, result, internal_dict):
     debugger.HandleCommand('breakpoint command add -s python -o "cmd_monitor_call.dump_call(\'%s\', frame, bp_loc); return False"' % args[0])
 
 def dump_call(path, frame, bp_loc):
-    with open(path, 'a') as f:
+    with utils.open_file(path, 'a') as f:
         f.write("%s: %s\n" % (str(datetime.now()), frame.GetFunctionName()))
         bp_loc.SetEnabled(False)
 
