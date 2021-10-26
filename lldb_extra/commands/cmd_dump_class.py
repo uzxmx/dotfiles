@@ -110,7 +110,6 @@ def dump_all_classes(options, result):
         classes = output.splitlines()
         def execute_task(start_idx, end_idx):
             for i in range(start_idx, end_idx):
-                print(i)
                 cls = classes[i]
                 if cls != '':
                     options.file = os.path.join(output_dir, cls)
@@ -204,6 +203,7 @@ def generate_option_parser():
 
     parser.add_option('-d', '--output-dir',
                       dest='output_dir',
+                      default='classes',
                       help='The directory to output files, only valid when combined with `-L` option')
 
     return parser
