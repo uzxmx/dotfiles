@@ -28,9 +28,9 @@ When no directory is specified, current working directory will be used.'''
 
     cmd = 'disassemble --force'
     if options.addr is not None:
-        cmd += ' -a %s' % options.func_name
+        cmd += ' -a "%s"' % options.addr
     elif options.func_name is not None:
-        cmd += ' -n %s' % options.func_name
+        cmd += ' -n "%s"' % options.func_name
     else:
         print('You need to specify either an address by `-a` or a function name by `-n`.')
         return
