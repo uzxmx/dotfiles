@@ -234,6 +234,7 @@ export GO111MODULE=on
 export GOPROXY="https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct"
 
 pods=(
+  nodejs
   nvim
   tmux
   bc
