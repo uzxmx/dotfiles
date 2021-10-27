@@ -71,7 +71,7 @@ fi
 
 install_from_prebuilt() {
   local path_to_save="/tmp/nvim-$version.tar.gz"
-  local platform dest_dir
+  local platform dest_dir sudo_opt
   if is_linux; then
     platform="linux64"
     if [ "$non_primary" = "1" ]; then
@@ -79,6 +79,7 @@ install_from_prebuilt() {
       nvim_path="$dest_dir/bin/nvim"
     else
       dest_dir="/usr"
+      sudo_opt="sudo"
     fi
   elif is_mac; then
     platform="macos"
@@ -91,7 +92,7 @@ install_from_prebuilt() {
   "$dotfiles_dir/bin/cget" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
 
   mkdir -p "$dest_dir"
-  tar zxf "$path_to_save" -C "$dest_dir" --strip-components=1
+  $sudo_opt tar zxf "$path_to_save" -C "$dest_dir" --strip-components=1
   rm -rf "$path_to_save"
 }
 

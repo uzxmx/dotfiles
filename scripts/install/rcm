@@ -11,10 +11,13 @@ type -p rcup &> /dev/null && exit
 if is_mac; then
   brew_install rcm
 elif has_apt; then
-  sudo apt-get install -y software-properties-common
-  sudo add-apt-repository ppa:martin-frost/thoughtbot-rcm
-  sudo apt-get update
-  sudo apt-get install -y rcm
+  # For ubuntu 19.04 or later, `rcm` is already available in the official repository.
+  if ! sudo apt-get install -y rcm; then
+    sudo apt-get install -y software-properties-common
+    sudo add-apt-repository ppa:martin-frost/thoughtbot-rcm
+    sudo apt-get update
+    sudo apt-get install -y rcm
+  fi
 elif has_yum; then
   sudo wget -qO /etc/yum.repos.d/utilities_with_rcm.repo https://download.opensuse.org/repositories/utilities/RHEL_7/utilities.repo
   sudo yum install -y rcm
