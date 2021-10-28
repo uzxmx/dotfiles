@@ -26,6 +26,15 @@ change_directory() {
   exit 102
 }
 
+check_directory() {
+  if [ "$1" = ~/.resources ] && [ ! -e "$1" ]; then
+    git clone git@github.com:uzxmx/resources ~/.resources
+  else
+    [ ! -e "$1" ] && mkdir -p "$1"
+  fi
+  true
+}
+
 main_loop_with_fzf() {
   while true; do
     if [ -z "$directories" ]; then
@@ -43,7 +52,7 @@ main_loop_with_fzf() {
     result=("${result[1]}")
     case "$key" in
       ctrl-d)
-        [ ! -e "$result" ] && mkdir -p "$result"
+        check_directory "$result"
         directories="$(find "$result" -maxdepth 2 -type d)"
         if [ "$(echo "$directories" | wc -l)" -eq 1 ]; then
           echo 'No sub directories available.'
@@ -57,14 +66,13 @@ main_loop_with_fzf() {
         break
         ;;
       *)
-        [ ! -e "$result" ] && mkdir -p "$result"
+        check_directory "$result"
         change_directory "$result"
         break
         ;;
     esac
   done
 }
-
 
 use_cwd=
 while [ "$#" -gt 0 ]; do
@@ -86,18 +94,26 @@ done
 if [ "$use_cwd" = "1" ]; then
   directories="$(find . -maxdepth 2 -type d ! -path .)"
 else
-  [ -d ~/.private ] || mkdir ~/.private
   [ -d ~/vagrant_boxes ] || mkdir ~/vagrant_boxes
   [ -d ~/projects ] || mkdir ~/projects
   directories="\
 $dotfiles_dir
 $HOME/.templates
-$HOME/.resources
-$(find ~/.private -maxdepth 1 -type d)
+$HOME/.resources\
+"
+
+  if [ -d ~/.private ]; then
+    directories="$directories
+$(find ~/.private -maxdepth 1 -type d)\
+"
+  fi
+
+    directories="$directories
 $(find ~/vagrant_boxes -maxdepth 1 -type d)
 $HOME/tmp
 $(find ~/projects -maxdepth 1 -type d)\
 "
+
   if [ -f ~/.cd_paths.sh ]; then
     directories="$directories
 $(sh ~/.cd_paths.sh)\
