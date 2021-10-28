@@ -2,13 +2,30 @@ ALIYUN_CONFIG_FILE="$HOME/.aliyun/config.json"
 
 process_profile_opts() {
   profile_opts=()
-  if [ -n "$ALIYUN_PROFILE" ]; then
-    profile_opts+=("--profile" "$ALIYUN_PROFILE")
-  elif [ -n "$ALIYUN_ACCESS_KEY_ID" -a -n "$ALIYUN_ACCESS_KEY_SECRET" ]; then
+
+  if [ -n "$region" ]; then
+    ALIYUN_REGION="$region"
+  fi
+  if [ -n "$ALIYUN_REGION" ]; then
+    profile_opts+=(
+      "--region=$ALIYUN_REGION"
+    )
+  fi
+
+  if [ -n "$access_key_id" ]; then
+    ALIYUN_ACCESS_KEY_ID="$access_key_id"
+  fi
+  if [ -n "$access_key_secret" ]; then
+    ALIYUN_ACCESS_KEY_SECRET="$access_key_secret"
+  fi
+
+  if [ -n "$ALIYUN_ACCESS_KEY_ID" -a -n "$ALIYUN_ACCESS_KEY_SECRET" ]; then
     profile_opts+=(
       "--access-key-id=$ALIYUN_ACCESS_KEY_ID"
       "--access-key-secret=$ALIYUN_ACCESS_KEY_SECRET"
     )
+  elif [ -n "$ALIYUN_PROFILE" ]; then
+    profile_opts+=("--profile" "$ALIYUN_PROFILE")
   fi
 }
 
@@ -24,9 +41,9 @@ run_cli() {
   local func="$1"
   shift
   if [ -z "$func" ]; then
-    aliyun "${profile_opts[@]}" "$@"
+    aliyun "$@" "${profile_opts[@]}"
   else
-    aliyun "${profile_opts[@]}" "$@" | $func
+    aliyun "$@" "${profile_opts[@]}" | $func
   fi
 }
 

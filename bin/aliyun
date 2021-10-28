@@ -19,10 +19,16 @@ use:
 
 The first way is to specify 'ALIYUN_PROFILE' as an environment variable.
 
-The second way is to specify both 'ALIYUN_ACCESS_KEY_ID' and
-'ALIYUN_ACCESS_KEY_SECRET' as environment variables.
+The second way is to specify
+ALIYUN_ACCESS_KEY_ID/ALIYUN_ACCESS_KEY_SECRET/ALIYUN_REGION as environment
+variables.
 
 The third way is to use 'profile use' command to set a defaul profile.
+
+Common options:
+  --region <region>
+  --access-key-id <access-key-id>
+  --access-key-secret <access-key-secret>
 
 Subcommands:
   p, profile         - manage profiles
@@ -70,6 +76,7 @@ case "$1" in
         ;;
     esac
     source "$aliyun_dir/$name.sh"
+    source "$aliyun_dir/common_options.sh"
     run "$@"
     ;;
   -h)
