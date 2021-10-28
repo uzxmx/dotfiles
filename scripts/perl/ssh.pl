@@ -28,7 +28,9 @@ sub select_host {
   my $file_content = do { local $/; <FILE> };
   close(FILE);
 
-  my $json = decode_json($file_content);
+  # With relaxed mode, we can add comments in the JSON file.
+  # See https://metacpan.org/pod/JSON::PP#relaxed
+  my $json = JSON::PP->new->relaxed(1)->decode($file_content);
   my $text = '';
   $text .= "$_->{label}\n" for @$json;
 
