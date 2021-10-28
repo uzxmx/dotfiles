@@ -8,6 +8,8 @@ if is_mac; then
   brew_install ctags --HEAD
 elif has_yum; then
   sudo yum install -y ctags
+elif has_apt; then
+  sudo apt-get install -y ctags
 else
   abort "Unsupported system"
 fi
