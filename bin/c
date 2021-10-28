@@ -92,7 +92,7 @@ else
   directories="\
 $dotfiles_dir
 $HOME/.templates
-$HOME/.docs
+$HOME/.resources
 $(find ~/.private -maxdepth 1 -type d)
 $(find ~/vagrant_boxes -maxdepth 1 -type d)
 $HOME/tmp

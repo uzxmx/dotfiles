@@ -14,8 +14,11 @@ EOF
 case "$1" in
   "")
     dirs=()
-    if [ -d ~/.docs/src ]; then
-      dirs+=(~/.docs/src)
+    if [ -d ~/.resources/docs/src ]; then
+      dirs+=(~/.resources/docs/src)
+    fi
+    if [ -d ~/.resources/snippets/src ]; then
+      dirs+=(~/.resources/snippets/src)
     fi
     dirs+=("$dotfiles_dir")
     s --filename "${dirs[@]}"
