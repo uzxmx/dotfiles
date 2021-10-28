@@ -121,6 +121,11 @@ else
   check_link
 fi
 
+if has_apt; then
+  # Required for copying to system clipboard.
+  sudo apt-get install -y clip
+fi
+
 if [ "$do_all_steps" = "1" ]; then
   "$(dirname "$BASH_SOURCE")/../misc/gen_vimrc"
   "$(dirname "$BASH_SOURCE")/../misc/gen_coc_settings"

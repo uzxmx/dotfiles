@@ -18,6 +18,11 @@ if is_mac; then
   exit
 fi
 
+if has_apt; then
+  # Required for copying to system clipboard.
+  sudo apt-get install -y clip
+fi
+
 dir="/tmp/tmux"
 git_clone https://github.com/tmux/tmux.git "$dir" --branch 3.0a --depth 1
 
