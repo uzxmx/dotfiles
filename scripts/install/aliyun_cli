@@ -2,6 +2,8 @@
 #
 # Install aliyun-cli (https://github.com/aliyun/aliyun-cli)
 
+set -eo pipefail
+
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 
 source "$dotfiles_dir/scripts/lib/path.sh"
@@ -21,5 +23,6 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/cget" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" $path_to_save
-tar zxf $path_to_save -C ~/bin
+"$dotfiles_dir/bin/cget" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" "$path_to_save"
+tar zxf "$path_to_save" -C ~/bin
+rm -rf "$path_to_save"
