@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Install wabt (https://github.com/webassembly/wabt)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+type -p wat2wasm &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="1.0.24"
+path_to_save="/tmp/wabt-$version.tgz"
+if is_mac; then
+  platform="macos"
+elif is_linux; then
+  platform="ubuntu"
+else
+  abort "Unsupported system"
+fi
+
+"$dotfiles_dir/bin/cget" "https://github.com/WebAssembly/wabt/releases/download/$version/wabt-$version-$platform.tar.gz" "$path_to_save"
+tar zxf "$path_to_save" -C ~/bin --strip-components=2 --wildcards "wabt-$version/bin/*"
+rm -rf "$path_to_save"
