@@ -23,24 +23,34 @@ while [ $# -gt 0 ]; do
 done
 set - "${remainder[@]}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
-. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+. "$(dirname "$BASH_SOURCE")/../lib/install.sh"
+. "$(dirname "$BASH_SOURCE")/../lib/asdf.sh"
 
 echo 'Check and install ruby dependencies...'
 if has_yum; then
   sudo yum install -y openssl-devel readline-devel
 elif has_apt; then
-  sudo apt-get install -y libssl1.0-dev libreadline-dev
+  . "$(dirname "$BASH_SOURCE")/../lib/utils/common.sh"
+  . "$(dirname "$BASH_SOURCE")/../lib/utils/lines_to_array.sh"
+  . "$(dirname "$BASH_SOURCE")/../lib/utils/split.sh"
+  . "$(dirname "$BASH_SOURCE")/../lib/utils/version.sh"
+
+  if is_ubuntu && ! version_lt_not_constrained "$(lsb_release_number)" 20; then
+    sudo apt-get install -y libssl-dev libreadline-dev
+  else
+    sudo apt-get install -y libssl1.0-dev libreadline-dev
+  fi
 fi
 
-mirror_cmd() {
-  local package_url="$1"
-  local checksum="$2"
+. "$(dirname "$BASH_SOURCE")/../lib/tmpfile.sh"
 
-  echo "${package_url/cache.ruby-lang.org/cache.ruby-china.com}"
-}
+create_tmpfile mirror_cmd_file
+cat <<'EOF' >"$mirror_cmd_file"
+#!/usr/bin/env bash
+echo "${package_url/cache.ruby-lang.org/cache.ruby-china.com}"
+EOF
+chmod +x "$mirror_cmd_file"
 
-export -f mirror_cmd
-export RUBY_BUILD_MIRROR_CMD=mirror_cmd
+export RUBY_BUILD_MIRROR_CMD="$mirror_cmd_file"
 
 install_plugin_package ruby "$1"
