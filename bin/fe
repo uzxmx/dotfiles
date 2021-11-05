@@ -122,7 +122,7 @@ while true; do
       fi
       file="${result[0]}"
       if [ "$key" = "ctrl-d" ]; then
-        echo "cd $(dirname "$file")" >&3
+        echo "cd '$(dirname "$file")'" >&3
         exit
       elif [ "$key" = "ctrl-x" ]; then
         [ ! -x "$file" ] && echo "$file is not an executable." && exit
