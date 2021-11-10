@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install nasm (https://github.com/netwide-assembler/nasm).
+
+set -eo pipefail
+
+type -p nasm &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install nasm
+else
+  abort "Unsupported system"
+fi
