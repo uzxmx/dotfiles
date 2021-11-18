@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+vpn_dir="$dotfiles_dir/scripts/vpn"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to manage ipsec VPN from CLI.
+
+Subcommands:
+  setup_client - setup ipsec VPN for client
+  s, start     - start ipsec VPN for client
+  stop         - stop ipsec VPN for client
+  r, restart   - restart ipsec VPN for client
+  status       - show VPN status
+  l, log       - show VPN logs
+  c, config    - show VPN config files
+EOF
+  exit 1
+}
+
+check_route_command() {
+  if ! type -p route &>/dev/null; then
+    "$dotfiles_dir/scripts/install/net-tools"
+  fi
+}
+
+route() {
+  check_route_command
+  command route "$@"
+}
+
+case "$1" in
+  setup_client | start | s | stop | restart | r | config | c | log | l | status)
+    case "$1" in
+      s)
+        name="start"
+        ;;
+      c)
+        name="config"
+        ;;
+      l)
+        name="log"
+        ;;
+      r)
+        name="restart"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$vpn_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
