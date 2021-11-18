@@ -190,7 +190,8 @@ gen() {
       export FILENAME="$filename"
       case "$file" in
         $name.tpl.sh)
-          eval "echo -e \"$(cat "$file")\"" >"$tmpfile"
+          source "$dotfiles_dir/scripts/lib/template.sh"
+          render_shell_template_file "$file" >"$tmpfile"
           ;;
         $name.tpl.erb)
           erb -T - "$file" >"$tmpfile"
