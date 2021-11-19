@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+iptables_dir="$dotfiles_dir/scripts/iptables"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for iptables utility.
+
+Subcommands:
+  l, list - list all the rules for all the chains of all tables
+  clear   - delete all the rules for all the chains of all tables
+  trace   - add logs for all the chains of all tables
+  log     - tail the kernel log for packets
+EOF
+  exit 1
+}
+
+source "$dotfiles_dir/scripts/lib/user.sh"
+
+iptables() {
+  if is_root; then
+    command iptables "$@"
+  else
+    command sudo iptables "$@"
+  fi
+}
+
+case "$1" in
+  l | list | trace | clear | log)
+    case "$1" in
+      l)
+        name="list"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$iptables_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    iptables "$@"
+    ;;
+  *)
+    iptables "$@"
+    ;;
+esac
