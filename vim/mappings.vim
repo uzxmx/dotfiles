@@ -40,7 +40,9 @@ function! s:xput() range
   endif
 
   exe a:firstline . ',' . a:lastline . 'd _'
-  let lines = split(getreg('*'), "\<c-j>")
+  " The quoteplus register is synchronized with system clipboard, while the
+  " quotestar register is used to save the selection in Linux system.
+  let lines = split(getreg('+'), "\<c-j>")
   let lines[0] = pre . lines[0]
   let lines[len(lines) - 1] .= post
   if a:firstline <= 1 && line('$') <= 1
