@@ -12,15 +12,19 @@ usage() {
 Wrapper for ip utility.
 
 Subcommands:
-  my  - get the external IP for the current machine
-  geo - get the geo info for an IP address
+  l, link       - manage network devices
+  my            - get the external IP for the current machine
+  geo           - get the geo info for an IP address
 EOF
   exit 1
 }
 
 case "$1" in
-  my | geo)
+  l | link | my | geo)
     case "$1" in
+      l)
+        name="link"
+        ;;
       *)
         name="$1"
         ;;
