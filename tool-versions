@@ -3,4 +3,4 @@ ruby 2.7.1
 nodejs 12.13.0
 java adoptopenjdk-11.0.10+9
 maven 3.6.3
-golang 1.14.1
+golang 1.17.3
