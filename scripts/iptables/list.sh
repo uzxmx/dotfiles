@@ -10,7 +10,7 @@ EOF
 cmd_list() {
   for table in filter nat mangle raw; do
     echo "==== table $table ===="
-    iptables -t "$table" -L
+    iptables -t "$table" -L -n
   done
 }
 alias_cmd l list
