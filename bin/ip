@@ -13,6 +13,8 @@ Wrapper for ip utility.
 
 Subcommands:
   l, link       - manage network devices
+  rule          - manage rules in the routing policy database
+  allow_forward - allow to forward packets from one NIC to another NIC
   my            - get the external IP for the current machine
   geo           - get the geo info for an IP address
 EOF
@@ -20,7 +22,7 @@ EOF
 }
 
 case "$1" in
-  l | link | my | geo)
+  l | link | rule | allow_forward | my | geo)
     case "$1" in
       l)
         name="link"
