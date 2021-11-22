@@ -55,12 +55,54 @@ usage_link_list() {
 Usage: ip link list
 
 List network devices.
+
+Options:
+  -t <device_type> filter by device type
+  -a <address> filter by IP address
+  --output-format <format> supported formats include 'default', 'name'
 EOF
   exit 1
 }
 
 cmd_link_list() {
-  ip link
+  if [ "$#" -eq 0 ]; then
+    ip link
+  else
+    local output_format
+    local -a opts
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        -t)
+          shift
+          opts+=(-t "$1")
+          ;;
+        -a)
+          shift
+          opts+=(-a "$1")
+          ;;
+        --output-format)
+          shift
+          output_format="$1"
+          ;;
+        *)
+          usage_link
+      esac
+      shift
+    done
+
+    source "$dotfiles_dir/scripts/lib/go.sh"
+    local names
+    names="$(go_run_compiled "$ip_dir/netlink.go" list "${opts[@]}")"
+
+    if [ "$output_format" = name ]; then
+      echo "$names"
+    else
+      local name
+      while read name; do
+        [ -n "$name" ] && ip link show dev "$name"
+      done < <(echo "$names")
+    fi
+  fi
 }
 
 select_link() {
@@ -86,7 +128,8 @@ cmd_link_show() {
   sudo ip link show dev "$name"
 
   source "$dotfiles_dir/scripts/lib/go.sh"
-  type="$(go_run_compiled "$ip_dir/netlink.go" "$name")"
+  local type
+  type="$(go_run_compiled "$ip_dir/netlink.go" show_type "$name")"
 
   echo "Type: $type"
   if [ "$type" = "bridge" ]; then

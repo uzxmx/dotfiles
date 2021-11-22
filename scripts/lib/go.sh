@@ -18,7 +18,7 @@ go_run_compiled() {
   local path="$(dirname "$src_file" | sed "s:$dotfiles_dir/::")"
   local executable_path="$dotfiles_dir/tmp/gen/$path/$name"
 
-  if [ ! -e "$executable_path" ]; then
+  if [ ! -e "$executable_path" -o "$(stat -c "%Z" "$src_file")" -gt "$(stat -c "%Z" "$executable_path")" ]; then
     # For go1.17.3, when go source file depends on third party modules, `go
     # build` only works if `go.mod` exists. So here we need to generate
     # `go.mod` file.
@@ -28,7 +28,9 @@ go_run_compiled() {
     create_tmpdir tmpdir
     cp "$src_file" "$tmpdir"
 
-    cd "$tmpdir" && go mod init github.com/uzxmx/dotfiles &>/dev/null && go mod tidy &>/dev/null && go build -o "$executable_path" "$(basename "$src_file")" &>/dev/null
+    cd "$tmpdir" && go mod init github.com/uzxmx/dotfiles &>/dev/null && go mod tidy &>/dev/null && go build -o "$executable_path" "$(basename "$src_file")" >/dev/null
+    local result="$?"
+    [ "$result" -ne 0 ] && exit "$result"
   fi
 
   "$executable_path" "$@"
