@@ -29,15 +29,17 @@ capture_source_and_signal() {
   # Shell variable `result` is the captured output from fd 3.
   # Shell variable `signal` is the captured exit code.
   local result signal
-  # Syntax error for bash: { result=$("$executable" "$@" 3>&1 >&4 4>&-) } 4>&1
-  # local tmp=$(mktemp)
-  # exec 4> $tmp
-  # result=$("$executable" "$@" 3>&1 >&4)
-  # https://www.gnu.org/software/bash/manual/html_node/Command-Grouping.html
-  { result=$("$executable" "$@" 3>&1 >&4 4>&-); } 4>&1
+
+  # Below command sometimes may be stuck when running on Ubuntu.
+  #
+  # { result=$("$executable" "$@" 3>&1 >&4 4>&-); } 4>&1
+
+  local tmp="$(mktemp)"
+  "$executable" "$@" 3>"$tmp"
   signal="$?"
-  # rm $tmp
-  # cat "$tmp" && exec 4>&- && rm "$tmp"
+  result="$(cat "$tmp")"
+  rm "$tmp"
+
   if [ -n "$result" ]; then
     # There are some contents in fd 3.
     case "$signal" in
