@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Install voltron (https://github.com/snare/voltron)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+type -p voltron &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+dir="/tmp/voltron"
+git_clone https://github.com/snare/voltron "$dir" --depth 1
+
+cd "$dir"
+pip install .
+rm -rf "$dir"
