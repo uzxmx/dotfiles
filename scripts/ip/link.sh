@@ -128,10 +128,11 @@ cmd_link_show() {
   sudo ip link show dev "$name"
 
   source "$dotfiles_dir/scripts/lib/go.sh"
-  local type
-  type="$(go_run_compiled "$ip_dir/netlink.go" show_type "$name")"
+  local info
+  info="$(go_run_compiled "$ip_dir/netlink.go" show "$name")"
 
-  echo "Type: $type"
+  echo "$info"
+  local type="$(echo "$info" | grep "^Type: " | awk '{print $2}')"
   if [ "$type" = "bridge" ]; then
     echo "---- Bridge members ----"
     sudo ip link show master "$name"

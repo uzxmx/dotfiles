@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/vishvananda/netlink"
@@ -12,8 +13,8 @@ func main() {
 	switch command {
 	case "list":
 		cmdList()
-	case "show_type":
-		cmdShowType()
+	case "show":
+		cmdShow()
 	}
 }
 
@@ -58,8 +59,15 @@ func cmdList() {
 	}
 }
 
-func cmdShowType() {
+func cmdShow() {
 	if link, err := netlink.LinkByName(os.Args[2]); err == nil {
-		fmt.Println(link.Type())
+		fmt.Printf("Type: %s\n", link.Type())
+		var state string
+		if link.Attrs().Flags&net.FlagUp == 0 {
+			state = "down"
+		} else {
+			state = "up"
+		}
+		fmt.Printf("State: %s\n", state)
 	}
 }
