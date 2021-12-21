@@ -16,6 +16,7 @@ Subcommands:
   s, source          - source a sql file
   c, connect         - connect to the server
   sv, server_version - show server version
+  csv                - export data as CSV format
 EOF
   exit 1
 }
@@ -64,8 +65,11 @@ run() {
 }
 
 case "$1" in
-  s | source | c | connect | sv | server_version)
+  s | source | c | connect | sv | server_version | csv)
     case "$1" in
+      csv)
+        name="csv"
+        ;;
       *)
         name="mysql"
     esac
