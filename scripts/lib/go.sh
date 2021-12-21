@@ -18,7 +18,18 @@ go_run_compiled() {
   local path="$(dirname "$src_file" | sed "s:$dotfiles_dir/::")"
   local executable_path="$dotfiles_dir/tmp/gen/$path/$name"
 
-  if [ ! -e "$executable_path" -o "$(stat -c "%Z" "$src_file")" -gt "$(stat -c "%Z" "$executable_path")" ]; then
+  local changed
+  if [ ! -e "$executable_path" ]; then
+    changed=1
+  elif [[ "$OSTYPE" =~ ^darwin.* ]]; then
+    if [ "$(stat -f "%m" "$src_file")" -gt "$(stat -f "%m" "$executable_path")" ]; then
+      changed=1
+    fi
+  elif [ "$(stat -c "%Z" "$src_file")" -gt "$(stat -c "%Z" "$executable_path")" ]; then
+    changed=1
+  fi
+
+  if [ "$changed" = "1" ]; then
     # For go1.17.3, when go source file depends on third party modules, `go
     # build` only works if `go.mod` exists. So here we need to generate
     # `go.mod` file.
