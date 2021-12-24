@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
@@ -99,7 +99,8 @@ else
   directories="\
 $dotfiles_dir
 $HOME/.templates
-$HOME/.resources\
+$HOME/.resources
+$HOME/.pwn\
 "
 
   if [ -d ~/.private ]; then
