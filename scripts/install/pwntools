@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Install pwntools (https://docs.pwntools.com/en/stable/install.html)
+
+set -eo pipefail
+
+type -p pwn &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+pip install pwntools
+asdf reshim
