@@ -17,6 +17,8 @@ Subcommands:
   cm              - enhanced commit utility
   pt              - push a local branch to a remote branch
   l               - enhanced log utility by fzf
+  s, search       - search file contents in the git history
+  g, grep         - search file contents in the working directory, or a tree (ref)
   show_commit     - show files of a commit by fzf and tmux
   rm_from_history - remove files from git history
   update_commit   - change the last commit message (the commit has not been pushed)
@@ -56,8 +58,8 @@ case "$1" in
     git status .
     ;;
   a | cl | d | l | show_commit | pt | rm_from_history | \
-  update_commit | ignore | cm | init_hooks | cleanb | \
-  w | worktree)
+  s | search | g | grep | update_commit | ignore | cm | \
+  init_hooks | cleanb | w | worktree)
     case "$1" in
       a)
         name="archive"
@@ -73,6 +75,12 @@ case "$1" in
         ;;
       pt)
         name="push_to"
+        ;;
+      s)
+        name="search"
+        ;;
+      g)
+        name="grep"
         ;;
       w)
         name="worktree"
