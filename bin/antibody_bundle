@@ -5,10 +5,14 @@
 # Notes:
 #
 # After changing plugins branch, you must execute 'antibody purge' to remove caches, and then
-# bundle again. Also see ~/.dotfiles/bin/antibody_purge.
+# bundle again. Also see '$dotfiles_dir/bin/antibody_purge'.
 #
 # The command 'antibody update' pulls new commits from remote, so if you've specified a branch
 # in plugins.txt, you won't want to run 'antibody update' command.
 
-~/.dotfiles/bin/antibody_purge -s &>/dev/null
-antibody bundle <~/.dotfiles/zsh/plugins.txt >~/.zsh_plugins.sh
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+"$dotfiles_dir/bin/antibody_purge" -s &>/dev/null
+antibody bundle <"$dotfiles_dir/zsh/plugins.txt" >~/.zsh_plugins.sh
