@@ -18,6 +18,7 @@ Subcommands:
   build  - build apks of release version (can also build only one flavor)
   zip    - zip apks under build/outputs/apk directory
   a, avd - manage android virtual devices
+  s, sdk - wrapper for android sdk manager
 EOF
   exit 1
 }
@@ -50,10 +51,13 @@ run() {
 }
 
 case "$1" in
-  build | zip | a | avd)
+  build | zip | a | avd | s | sdk)
     case "$1" in
       a)
         name="avd"
+        ;;
+      s)
+        name="sdk"
         ;;
       *)
         name="$1"
