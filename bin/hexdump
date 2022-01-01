@@ -135,5 +135,5 @@ case "$1" in
     hexdump "$@"
     ;;
   *)
-    hexdump -C "$@"
+    hexdump "$@"
 esac
