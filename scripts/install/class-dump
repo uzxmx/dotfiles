@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Install class-dump (https://github.com/nygard/class-dump)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+type -p class-dump &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="3.5"
+path_to_save="/tmp/class-dump-$version.tgz"
+if ! is_mac; then
+  abort "Unsupported system"
+fi
+
+"$dotfiles_dir/bin/cget" "http://stevenygard.com/download/class-dump-$version.tar.gz" "$path_to_save"
+
+tar zxf "$path_to_save" -C ~/tmp/foo --strip-components=1 --wildcards "class-dump-$version/class-dump"
+rm -rf "$path_to_save"
