@@ -9,6 +9,7 @@ Optionally, you can specify a message file and a message type to decode the
 data to a message.
 
 Options:
+  -b indicate the input file is a binary file
   -p <proto_file> proto message definition file
   -t <message_type> proto message type
 EOF
@@ -16,9 +17,12 @@ EOF
 }
 
 cmd_decode() {
-  local proto_file message_type data_file
+  local proto_file message_type data_file is_binary_file
   while [ "$#" -gt 0 ]; do
     case "$1" in
+      -b)
+        is_binary_file=1
+        ;;
       -p)
         shift
         proto_file="$1"
@@ -38,7 +42,7 @@ cmd_decode() {
   done
 
   # The data file seems not a binary file, we try to convert it to binary file first.
-  if [ ! "$(file -b "$data_file")" = "data" ]; then
+  if [ ! "$is_binary_file" = "1" ] && [ ! "$(file -b "$data_file")" = "data" ]; then
     source "$dotfiles_dir/scripts/lib/tmpfile.sh"
     local tmpfile
     create_tmpfile tmpfile

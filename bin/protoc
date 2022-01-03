@@ -12,14 +12,18 @@ usage() {
 Wrapper for protoc utility.
 
 Subcommands:
-  d, decode - decode protocol message
+  c, compile - compile protocol messages to source files for some programming language
+  d, decode  - decode protocol message
 EOF
   exit 1
 }
 
 case "$1" in
-  d | decode)
+  c | compile | d | decode)
     case "$1" in
+      c)
+        name="compile"
+        ;;
       d)
         name="decode"
         ;;
