@@ -1,2 +1,5 @@
 Host *
+  # OpenSSH runs `ProxyCommand` with `$SHELL` by `execv`. So if `$SHELL`
+  # doesn't expand to an absolute path, it will fail with such error like:
+  # `bash: No such file or directory`.
   ProxyCommand ~/.dotfiles/bin/ssh-proxy %h %p
