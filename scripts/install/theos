@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#
+# Install theos (https://theos.dev/docs/installation)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install ldid xz
+else
+  abort "Unsupported system."
+fi
+
+dir="$HOME/theos"
+[ -e "$dir/binr/nic.pl" ] && exit
+
+git_clone https://github.com/theos/theos.git "$dir" --depth 1 --recursive

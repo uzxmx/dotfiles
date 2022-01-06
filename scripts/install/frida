@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Install frida (https://github.com/frida/frida)
+
+set -eo pipefail
+
+type -p frida &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+pip install frida-tools
+asdf reshim

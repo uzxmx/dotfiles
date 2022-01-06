@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install radare2 (https://github.com/radareorg/radare2)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+dir="$HOME/radare2"
+[ -e "$dir/binr/radare2/radare2" ] && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+git_clone https://github.com/radareorg/radare2 "$dir" --depth 1
+
+cd "$dir"
+./sys/install.sh
