@@ -44,6 +44,8 @@ run_cli() {
   if output="$(aliyun "$@" "${profile_opts[@]}")"; then
     if [ -n "$func" ]; then
       echo "$output" | $func
+    else
+      echo "$output"
     fi
   else
     echo "$output"
