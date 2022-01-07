@@ -39,11 +39,14 @@ select_profile() {
 
 run_cli() {
   local func="$1"
+  local output
   shift
-  if [ -z "$func" ]; then
-    aliyun "$@" "${profile_opts[@]}"
+  if output="$(aliyun "$@" "${profile_opts[@]}")"; then
+    if [ -n "$func" ]; then
+      echo "$output" | $func
+    fi
   else
-    aliyun "$@" "${profile_opts[@]}" | $func
+    echo "$output"
   fi
 }
 
