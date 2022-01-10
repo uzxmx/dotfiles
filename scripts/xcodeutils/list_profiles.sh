@@ -18,6 +18,6 @@ EOF
 
 cmd_list_profiles() {
   local -a profiles
-  get_profiles --valid
+  get_profiles --valid --format full_no_path
   (IFS=$'\n'; echo "${profiles[*]}" | column -t -s "!")
 }
