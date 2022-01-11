@@ -3,44 +3,7 @@
 # This script depends on `prompt.sh`.
 
 . $(dirname "$BASH_SOURCE")/system.sh
-
-# Show output with color.
-#
-# @params:
-#   $1: color
-#   VARARGS: variable arguments that need to output
-#
-# @ref http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html
-_color_output() {
-  local color="$1" reset='%f'
-  shift
-  # TODO add bash support
-  if [ -n "$BASH" ]; then
-    echo "$@"
-  else
-    echo "${(%)color}$@${(%)reset}"
-  fi
-}
-
-info() {
-  echo "$@"
-}
-
-warn() {
-  _color_output '%F{yellow}' "$@"
-}
-
-error() {
-  _color_output '%F{red}' "$@"
-}
-
-# Output error message to stderr, and exit.
-abort() {
-  # Here if we use /dev/stderr, nvim on WSL may raise error '/dev/stderr: no such device or address' when executing a job.
-  error "$@" >&2
-
-  exit 1
-}
+. $(dirname "$BASH_SOURCE")/color.sh
 
 # Split string by separator.
 #
@@ -126,8 +89,8 @@ is_link() {
 # Create a link.
 #
 # @params:
-#   $1: src file
-#   $2: target file
+#   $1: src file (to be created)
+#   $2: target file (to be linked to)
 create_link() {
   local src_file=$1
   local target_file=$2
