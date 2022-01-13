@@ -5,6 +5,10 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 source "$dotfiles_dir/scripts/lib/utils/find.sh"
 gradle_bin="$(find_file_hierarchical gradlew)"
 
+if [ -z "$gradle_bin" ]; then
+  gradle_bin="gradle"
+fi
+
 run_task() {
   local script="$1"
   local task="$2"
