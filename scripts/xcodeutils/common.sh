@@ -1,6 +1,6 @@
 DEFAULT_ARCHIVES_DIR="$HOME/Library/Developer/Xcode/Archives"
 
-source "$PWN_DIR/shell/lib/provisioning_profile.sh"
+source "$PWN_DIR/shell/lib/apple/provisioning_profile.sh"
 
 # Params:
 #   $1: do not exit if workspace cannot be found
