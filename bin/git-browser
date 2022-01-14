@@ -17,14 +17,6 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 source "$dotfiles_dir/scripts/lib/utils.sh"
 
-get_host() {
-  echo "$1" | sed -e "s/^git@//" -e "s/:.*$//"
-}
-
-get_repo_path() {
-  echo "$1" | sed -e "s/^.*://" -e "s/.git$//"
-}
-
 open_url() {
   if is_mac || is_wsl; then
     open "$1" 2>/dev/null
@@ -34,11 +26,24 @@ open_url() {
 }
 
 origin_url="$(git config --get remote.origin.url)"
-if ! (echo $origin_url | grep "^git@" &>/dev/null); then
-  abort "Only remote url with git protocol is supported."
+if echo "$origin_url" | grep "^git@" &>/dev/null; then
+  get_host() {
+    echo "$1" | sed -e "s/^git@//" -e "s/:.*$//"
+  }
+  get_repo_path() {
+    echo "$1" | sed -e "s/^.*://" -e "s/.git$//"
+  }
+
+  host="$(get_host $origin_url)"
+  repo_path="$(get_repo_path $origin_url)"
+elif echo "$origin_url" | grep "^https://" &>/dev/null; then
+  source "$dotfiles_dir/scripts/lib/url.sh"
+  host="$(url_get_host "$origin_url")"
+  repo_path="$(url_get_path "$origin_url" 1 | sed "s/\.git$//")"
+else
+  abort "Unsupported protocol for remote url: $origin_url"
 fi
-host="$(get_host $origin_url)"
-repo_path="$(get_repo_path $origin_url)"
+
 branch="$1"
 test -z "$branch" && branch="$(git symbolic-ref --short HEAD)"
 
