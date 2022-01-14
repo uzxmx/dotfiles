@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
@@ -24,8 +24,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$dotfiles_dir/scripts/lib/cli.sh"
 
 is_wsl() {
   [[ "$(uname -r)" =~ Microsoft$ ]]
@@ -41,7 +40,7 @@ while [ "$#" -gt 0 ]; do
     -b)
       use_browser=1
       ;;
-    -h)
+    -*)
       usage
       ;;
     *)
