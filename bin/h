@@ -6,7 +6,8 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF
-Search filenames and file contents from docs and dotfiles dirs.
+This utility shows helps by searching filenames and file contents from default
+locations, so you can quickly find a doc or run an executable script.
 EOF
   exit 1
 }
@@ -19,6 +20,9 @@ case "$1" in
     fi
     if [ -d ~/.resources/snippets/src ]; then
       dirs+=(~/.resources/snippets/src)
+    fi
+    if [ -d ~/.pwn ]; then
+      dirs+=(~/.pwn)
     fi
     dirs+=("$dotfiles_dir")
     s --filename "${dirs[@]}"
