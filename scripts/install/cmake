@@ -8,6 +8,8 @@ type -p cmake &> /dev/null && exit
 
 if has_yum; then
   sudo yum install -y cmake
+elif is_mac; then
+  brew_install cmake
 else
   abort "Unsupported system"
 fi
