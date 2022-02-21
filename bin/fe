@@ -135,6 +135,13 @@ while true; do
 done
 
 if [ "${#result[@]}" -ne 0 ]; then
+  if [[ "${#result[@]}" -eq 1 && "${result[0]}" =~ \.(png|jpg|jpeg)$ ]]; then
+    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    if [ "$(yesno "Using open utility to handle this file? (Y/n)" "yes")" = "yes" ]; then
+      open "${result[0]}"
+      exit
+    fi
+  fi
   editor=${EDITOR:-vim}
   if [ "$editor" = "vi" -o "$editor" = "vim" -o "$editor" = "nvim" ]; then
     # Invoke `Rooter` command to change to correct root directory.
