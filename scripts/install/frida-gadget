@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Install frida-gadget (https://github.com/frida/frida)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+install_gadget() {
+  local platform="$1"
+  local version="$2"
+  local extension="$3"
+  local file_name="frida-gadget-$version-$platform.$extension"
+  local file_path="$HOME/frida/$file_name"
+  if [ ! -e "$file_path" ]; then
+    echo "Install gadget for $platform@$version"
+    local path_to_save="/tmp/$file_name.xz"
+    "$dotfiles_dir/bin/cget" "https://github.com/frida/frida/releases/download/$version/$file_name.xz" "$path_to_save"
+
+    mkdir -p "$(dirname "$file_path")"
+    xz -dc "$path_to_save" >"$file_path"
+    rm -rf "$path_to_save"
+    echo "Installed."
+  else
+    echo "Gadget already installed."
+  fi
+}
+
+platforms="ios-universal
+android-arm
+android-arm64"
+
+platform="$(echo "$platforms" | fzf)"
+
+version=15.1.14
+case "$platform" in
+  ios-universal)
+    extension="dylib"
+    ;;
+  android-*)
+    extension="so"
+    ;;
+  *)
+    abort "Unsupported platform $platform"
+    ;;
+esac
+install_gadget "$platform" "$version" "$extension"

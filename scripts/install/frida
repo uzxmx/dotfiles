@@ -4,9 +4,20 @@
 
 set -eo pipefail
 
-type -p frida &> /dev/null && exit
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
-pip install frida-tools
-asdf reshim
+if ! type -p frida &> /dev/null; then
+  echo "Install frida-tools..."
+  pip install frida-tools
+  asdf reshim
+fi
+
+if ! type -p frida-compile &> /dev/null; then
+  echo "Install frida-compile..."
+  npm install -g frida-compile
+fi
