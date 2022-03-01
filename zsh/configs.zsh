@@ -116,6 +116,9 @@ export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 
 export FZF_DEFAULT_OPTS="--no-mouse --cycle --bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
+# Change default language to English for java programs.
+export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Duser.language=en"
+
 # Use a clean PATH variable
 PATH="$HOME/bin:$HOME/.cargo/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
