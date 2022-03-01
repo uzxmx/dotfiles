@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+gdb_dir="$dotfiles_dir/scripts/gdb"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for gdb utility.
+
+Subcommands:
+  allow_ptrace - allow gdb to attach to a process
+  a, attach    - attach to a running program
+  s, start     - start gdb and stop at the entrypoint
+EOF
+  exit 1
+}
+
+case "$1" in
+  a | attach | s | start | allow_ptrace)
+    case "$1" in
+      a)
+        name="attach"
+        ;;
+      s)
+        name="start"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$gdb_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    gdb "$@"
+    ;;
+  *)
+    gdb "$@"
+    ;;
+esac
