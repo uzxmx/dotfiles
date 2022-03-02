@@ -11,6 +11,10 @@ increase the initial heap size and the maximum heap size of JVM by using
 'JAVA_XMS' and 'JAVA_XMX' shell variables. For example:
 
   $> export JAVA_XMS=1g JAVA_XMX=4g
+
+Examples:
+  # Decompile foo.jar into src directory.
+  cfr foo.jar --outputdir src
 EOF
   exit 1
 }
