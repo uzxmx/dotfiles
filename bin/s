@@ -95,7 +95,7 @@ while true; do
     --query="$query" --print-query \
     --prompt "$prompt" \
     --expect "$expect" \
-    --bind 'ctrl-v:execute(tmux split-window "vi {1} \"+norm $(echo -n {2})G\"")' \
+    --bind 'ctrl-v:execute(tmux split-window "if [ -n {1} ]; then vi {1} \"+norm $(echo -n {2})G\"; else; vi {3}; fi")' \
     < <("${cmd[@]}"; [ "$search_filename" = "1" ] && fd --type f . "${files[@]}" | awk '{printf "::%s\n", $1}')
 
   [ -z "${result[*]}" ] && break
