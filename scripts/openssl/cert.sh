@@ -23,7 +23,7 @@ cmd_cert() {
     check_host "$@"
   fi
 
-  local host
+  local arg
   local options=()
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -34,10 +34,12 @@ cmd_cert() {
         usage_cert
         ;;
       *)
-        host="$1"
+        arg="$1"
         ;;
     esac
     shift
   done
-  (openssl s_client -connect "$host:443" -servername "$host" 2>/dev/null < /dev/null || true) | openssl x509 "${options[@]}"
+  local host="$(echo "$arg" | awk -F: '{print $1}')"
+  local port="$(echo "$arg" | awk -F: '{print $2}')"
+  (openssl s_client -connect "$host:${port:-443}" -servername "$host" 2>/dev/null < /dev/null || true) | openssl x509 "${options[@]}"
 }

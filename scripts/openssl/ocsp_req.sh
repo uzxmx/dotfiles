@@ -47,7 +47,7 @@ check_ocsp_cert_status() {
 }
 
 cmd_ocsp_req() {
-  local show_uri uri check_stapling verbose host
+  local show_uri uri check_stapling verbose arg
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --show-uri)
@@ -63,15 +63,17 @@ cmd_ocsp_req() {
         usage_ocsp_req
         ;;
       *)
-        host="$1"
+        arg="$1"
         ;;
     esac
     shift
   done
 
-  check_host "$host"
+  check_host "$arg"
+  local host="$(echo "$1" | awk -F: '{print $1}')"
+  local port="$(echo "$1" | awk -F: '{print $2}')"
   if [ "$check_stapling" = "1" ]; then
-    local resp="$(parse_ocsp_response "$(openssl s_client -connect "$host:443" -servername "$1" -status < /dev/null 2>/dev/null)")"
+    local resp="$(parse_ocsp_response "$(openssl s_client -connect "$host:${port:-443}" -servername "$1" -status < /dev/null 2>/dev/null)")"
     if [ -z "$resp" ]; then
       echo 'OCSP stapling is not enabled.'
     else

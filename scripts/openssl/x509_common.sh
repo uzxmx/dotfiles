@@ -5,7 +5,7 @@ Usage: openssl $cmd <host | file>
 
 $description
 
-You can specify a host or a file. The host should have port 443 open. Shell
+You can specify a host or a file. When specifying a host, the default port is 443. Shell
 pipe is also supported.
 
 Options:
@@ -50,7 +50,9 @@ common_scripts_for_x509() {
     $prefix openssl x509 -noout -in "$arg" "${x509_opts[@]}"
   else
     check_host "$arg"
-    local cmd="echo | openssl s_client -connect \"$arg:443\" -servername \"$arg\" 2>/dev/null | openssl x509 -noout "${x509_opts[@]}""
+    local host="$(echo "$arg" | awk -F: '{print $1}')"
+    local port="$(echo "$arg" | awk -F: '{print $2}')"
+    local cmd="echo | openssl s_client -connect \"$host:${port:-443}\" -servername \"$host\" 2>/dev/null | openssl x509 -noout "${x509_opts[@]}""
     ${prefix:-eval} "$cmd"
   fi
 EOF

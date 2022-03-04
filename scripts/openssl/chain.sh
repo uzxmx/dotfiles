@@ -1,6 +1,8 @@
 cmd_chain() {
   check_host "$@"
-  openssl s_client -showcerts -connect "$1:443" -servername "$1" </dev/null 2>&1 | awk '
+  local host="$(echo "$1" | awk -F: '{print $1}')"
+  local port="$(echo "$1" | awk -F: '{print $2}')"
+  openssl s_client -showcerts -connect "$host:${port:-443}" -servername "$host" </dev/null 2>&1 | awk '
 BEGIN { first_cert = 1 }
 /-----BEGIN/ { cert_section = 1 }
 { if (!first_cert && cert_section) print }
