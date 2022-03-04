@@ -13,6 +13,13 @@ This script runs a simple HTTP server for experiment or test purpose.
 Options:
   -H <host> the host to bind to, default is 0.0.0.0
   -p <port> the port to bind to, default is 8010
+  --tls use TLS
+  --cert <cert-file> the path to the certificate file
+  --priv-key <private-key-file> the path to the private key file
+
+Examples:
+  # Start https server
+  start_http_server --tls --cert cert.pem --priv-key privkey.pem
 EOF
   exit 1
 }
@@ -30,16 +37,43 @@ while [ "$#" -gt 0 ]; do
       shift
       port="$1"
       ;;
+    --tls)
+      use_tls=1
+      ;;
+    --cert)
+      shift
+      cert="$1"
+      ;;
+    --priv-key)
+      shift
+      priv_key="$1"
+      ;;
     *)
       usage
   esac
   shift
 done
 
+[ "$use_tls" = "1" ] && [ -z "$cert" -o -z "$priv_key" ] && \
+  echo "You must specify a certificate file and private key file when using TLS." && exit 1
+
 run_go_http_server() {
   source "$dotfiles_dir/scripts/lib/tmpfile.sh"
 
   create_tmpdir tmpdir
+  if [ "$use_tls" ]; then
+  cat <<EOF >"$tmpdir/main.go"
+package main
+
+import "fmt"
+import "net/http"
+
+func main() {
+  fmt.Println("Running server at $host:$port")
+  http.ListenAndServeTLS("$host:$port", "$cert", "$priv_key", http.FileServer(http.Dir(".")))
+}
+EOF
+  else
   cat <<EOF >"$tmpdir/main.go"
 package main
 
@@ -51,6 +85,7 @@ func main() {
   http.ListenAndServe("$host:$port", http.FileServer(http.Dir(".")))
 }
 EOF
+  fi
 
   go run "$tmpdir/main.go"
 }
