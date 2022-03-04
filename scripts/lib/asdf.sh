@@ -39,10 +39,6 @@ install_plugin_package() {
     esac
   fi
 
-  if [ "$plugin" = "nodejs" -a ! -e ~/.asdf/shims/node ]; then
-    ~/.asdf/plugins/nodejs/bin/import-release-team-keyring
-  fi
-
   if [ -z "$package_version" ]; then
     package_version="$(parse_package_version $plugin)"
   fi
