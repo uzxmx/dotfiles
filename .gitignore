@@ -19,3 +19,10 @@ tags
 .projections.json
 /config/projections.json
 .local
+
+# In this repo, we mostly use golang as a dynamic interpreter, so we don't care
+# about the versions of go modules. And to make golang language server give
+# completions, we need to have these files in local filesystem, but we also don't
+# want to check these kind of files in git, so we ignore them here.
+go.mod
+go.sum
