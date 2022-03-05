@@ -83,8 +83,8 @@ alias tl="ta"
 alias tn="~/.dotfiles/scripts/misc/tmuxctl new"
 alias ts="ta"
 
-alias wb="wget www.baidu.com -O- >/dev/null"
-alias wg="wget www.google.com -O- >/dev/null"
+alias wb="curl www.baidu.com"
+alias wg="curl www.google.com"
 alias zl="vi ~/.zshrc.local"
 
 case $OSTYPE in
