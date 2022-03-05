@@ -24,7 +24,7 @@
         "accounts": [
           {
             "user": "USER",
-            "password": "PASSWORD"
+            "pass": "PASSWORD"
           }
         ]
       },
@@ -34,14 +34,8 @@
           "certificates": [
             {
               "usage": "encipherment",
-              "certificate": [
-                "-----BEGIN CERTIFICATE-----",
-                "-----END CERTIFICATE-----"
-              ],
-              "key": [
-                "-----BEGIN RSA PRIVATE KEY-----",
-                "-----END RSA PRIVATE KEY-----"
-              ]
+              "certificateFile": "/usr/local/etc/v2ray/cert.pem",
+              "keyFile": "/usr/local/etc/v2ray/key.pem"
             }
           ]
         }

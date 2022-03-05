@@ -15,12 +15,12 @@
   },
 
   "inbounds": [
-    // {
-    //   "port": 8123,
-    //   "listen": "0.0.0.0",
-    //   "tag": "http-inbound",
-    //   "protocol": "http"
-    // },
+    {
+      "port": 8123,
+      "listen": "0.0.0.0",
+      "tag": "http-inbound",
+      "protocol": "http"
+    },
     {
       "port": 8125,
       "listen": "0.0.0.0",
@@ -32,16 +32,6 @@
       "listen": "0.0.0.0",
       "tag": "socks-inbound",
       "protocol": "socks"
-    },
-    {
-      "port": 11080,
-      "listen": "0.0.0.0",
-      "protocol": "shadowsocks",
-      "settings": {
-        "method": "aes-256-gcm",
-        "password": "PASSWORD"
-      },
-      "tag": "shadowsocks-inbound"
     }
   ],
 
@@ -67,6 +57,8 @@
       "streamSettings": {
         "security": "tls",
         "tlsSettings": {
+          "alpn": ["http/1.1"],
+          "allowInsecure": true
         }
       },
       "tag": "http-outbound"
@@ -76,14 +68,16 @@
   "routing": {
     "domainStrategy": "AsIs",
     "rules":[
-      // {
-      //   "type": "field",
-      //   "inboundTag": "http-inbound",
-      //   "outboundTag": "http-outbound"
-      // },
+      {
+        "type": "field",
+        "inboundTag": "http-inbound",
+        "outboundTag": "http-outbound"
+      },
       {
         "type": "field",
         "domain": [
+"domain:github.com",
+"git.qemu.org"
         ],
         "inboundTag": "http-inbound-whitelisted",
         "outboundTag": "http-outbound"

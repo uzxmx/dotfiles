@@ -15,12 +15,12 @@
   },
 
   "inbounds": [
-    // {
-    //   "port": 8123,
-    //   "listen": "0.0.0.0",
-    //   "tag": "http-inbound",
-    //   "protocol": "http"
-    // },
+    {
+      "port": 8123,
+      "listen": "0.0.0.0",
+      "tag": "http-inbound",
+      "protocol": "http"
+    },
     {
       "port": 8125,
       "listen": "0.0.0.0",
@@ -67,11 +67,6 @@
   "routing": {
     "domainStrategy": "AsIs",
     "rules":[
-      // {
-      //   "type": "field",
-      //   "inboundTag": "http-inbound",
-      //   "outboundTag": "vmess-outbound"
-      // },
       {
         "type": "field",
         "domain": [

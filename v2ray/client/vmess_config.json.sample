@@ -15,12 +15,12 @@
   },
 
   "inbounds": [
-    // {
-    //   "port": 8123,
-    //   "listen": "0.0.0.0",
-    //   "tag": "http-inbound",
-    //   "protocol": "http"
-    // },
+    {
+      "port": 8123,
+      "listen": "0.0.0.0",
+      "tag": "http-inbound",
+      "protocol": "http"
+    },
     {
       "port": 8125,
       "listen": "0.0.0.0",
@@ -32,16 +32,6 @@
       "listen": "0.0.0.0",
       "tag": "socks-inbound",
       "protocol": "socks"
-    },
-    {
-      "port": 11080,
-      "listen": "0.0.0.0",
-      "protocol": "shadowsocks",
-      "settings": {
-        "method": "aes-256-gcm",
-        "password": "PASSWORD"
-      },
-      "tag": "shadowsocks-inbound"
     }
   ],
 
@@ -72,11 +62,11 @@
   "routing": {
     "domainStrategy": "AsIs",
     "rules":[
-      // {
-      //   "type": "field",
-      //   "inboundTag": "http-inbound",
-      //   "outboundTag": "vmess-outbound"
-      // },
+      {
+        "type": "field",
+        "inboundTag": "http-inbound",
+        "outboundTag": "vmess-outbound"
+      },
       {
         "type": "field",
         "domain": [
