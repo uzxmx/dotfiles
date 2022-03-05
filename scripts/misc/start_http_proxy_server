@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/go.sh"
+go_run_compiled "$dotfiles_dir/scripts/gocmd/http_proxy_server/main.go" "$@"
