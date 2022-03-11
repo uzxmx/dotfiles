@@ -36,7 +36,9 @@ Port 8123 is used as the v2ray http proxy port, where all trafic will
 go to a same outbound (no whitelist).
 
 Options:
-  -d dry run, currently output commands for enabling HTTP proxy in a shell
+  -a Try port 8123 first
+  -d Dry run, currently output commands for enabling HTTP proxy in a shell
+  --no-check Don't check if the proxy server is running or not
 
 Examples:
   $> pe          # Enable proxy of default types.
@@ -75,48 +77,60 @@ test_proxy() {
   nc -z -w 5 "$host" "$port" &>/dev/null
 }
 
-while getopts 'hp:d' opt; do
-  case "$opt" in
-    p)
-      if [ "$subcommand" = "enable" ]; then
-        if test_proxy $OPTARG; then
-          user_http_proxy=$OPTARG
-        else
-          fatal "HTTP Proxy $OPTARG is unreachable."
-        fi
-      else
-        usage
-      fi
+remainder=()
+first_port_to_try="8125"
+last_port_to_try="8123"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -a)
+      first_port_to_try="8123"
+      last_port_to_try="8125"
       ;;
-    d)
+    -p)
+      shift
+      user_http_proxy="$1"
+      ;;
+    -d)
       subcommand="enable"
       dry_run=1
+      no_check=1
       ;;
-    *)
+    --no-check)
+      no_check=1
+      ;;
+    -*)
       usage
       ;;
+    *)
+      remainder+=("$1")
+      ;;
   esac
+  shift
 done
 
-shift $(($OPTIND - 1))
+set - "${remainder[@]}"
+
+if [ "$subcommand" = "enable" -a -z "$no_check" -a -n "$user_http_proxy" ]; then
+  test_proxy "$user_http_proxy" || fatal "HTTP Proxy $user_http_proxy is unreachable."
+fi
 
 if [ "$subcommand" = "enable" ]; then
   if [[ -z "$user_http_proxy" ]]; then
     echo 'Choosing a working proxy server...'
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       user_http_proxy="$DEFAULT_HTTP_PROXY"
-    elif test_proxy localhost:8125; then
-      user_http_proxy='localhost:8125'
+    elif test_proxy "localhost:$first_port_to_try"; then
+      user_http_proxy="localhost:$first_port_to_try"
     elif test_proxy localhost:8124; then
-      user_http_proxy='localhost:8124'
-    elif test_proxy localhost:8123; then
-      user_http_proxy='localhost:8123'
-    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8125; then
-      user_http_proxy='10.0.2.2:8125'
+      user_http_proxy="localhost:8124"
+    elif test_proxy "localhost:$last_port_to_try"; then
+      user_http_proxy="localhost:$last_port_to_try"
+    elif [ -d /home/vagrant ] && test_proxy "10.0.2.2:$first_port_to_try"; then
+      user_http_proxy="10.0.2.2:$first_port_to_try"
     elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8124; then
-      user_http_proxy='10.0.2.2:8124'
-    elif [ -d /home/vagrant ] && test_proxy 10.0.2.2:8123; then
-      user_http_proxy='10.0.2.2:8123'
+      user_http_proxy="10.0.2.2:8124"
+    elif [ -d /home/vagrant ] && test_proxy "10.0.2.2:$last_port_to_try"; then
+      user_http_proxy="10.0.2.2:$last_port_to_try"
     else
       fatal "Not found any working HTTP Proxy."
     fi
