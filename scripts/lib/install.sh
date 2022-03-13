@@ -5,3 +5,4 @@
 
 . $(dirname "$BASH_SOURCE")/utils.sh
 . $(dirname "$BASH_SOURCE")/git.sh
+. $(dirname "$BASH_SOURCE")/dmg.sh
