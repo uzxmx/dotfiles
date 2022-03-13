@@ -43,6 +43,16 @@ done
 
 type -p direnv &>/dev/null && eval "$(direnv hook zsh)"
 
-# To make wrapper utilities in `~/.dotfiles/bin` work, we must add it before
+if [ -z "$DOTFILES_DIR" ]; then
+  DOTFILES_DIR="$HOME/.dotfiles"
+fi
+export DOTFILES_DIR
+
+if [ -z "$PWN_DIR" ]; then
+  PWN_DIR="$HOME/.pwn"
+fi
+export PWN_DIR
+
+# To make wrapper utilities in `$DOTFILES_DIR/bin` work, we must add it before
 # other paths, such as `~/.asdf/shims`.
-PATH="$HOME/.local/bin:$HOME/.dotfiles/bin:$PATH"
+PATH="$HOME/.local/bin:$DOTFILES_DIR/bin:$PWN_DIR/bin:$PATH:$DOTFILES_DIR/scripts/misc"

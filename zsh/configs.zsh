@@ -116,11 +116,13 @@ export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 
 export FZF_DEFAULT_OPTS="--no-mouse --cycle --bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
 
+export THEOS="$HOME/theos"
+
 # Change default language to English for java programs.
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Duser.language=en"
 
 # Use a clean PATH variable
-PATH="$HOME/bin:$HOME/.cargo/bin:$GOPATH/bin:/usr/local/go/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+PATH="$HOME/bin:$THEOS/bin:$HOME/.cargo/bin:$GOPATH/bin:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 if [[ "$(uname -r)" =~ Microsoft$ ]]; then
   _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"
