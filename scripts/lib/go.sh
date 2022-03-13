@@ -9,14 +9,9 @@
 go_run_compiled() {
   local src_file="$1"; shift
 
-  if [ -z "$dotfiles_dir" ]; then
-    echo "dotfiles_dir must be defined."
-    exit 1
-  fi
-
   local name="$(basename "$src_file" | sed "s/\.go//")"
-  local path="$(dirname "$src_file" | sed "s:$dotfiles_dir/::")"
-  local executable_path="$dotfiles_dir/tmp/gen/$path/$name"
+  local path="$(dirname "$src_file")"
+  local executable_path="$DOTFILES_DIR/tmp/gen/$path/$name"
 
   local changed
   if [ ! -e "$executable_path" ]; then
@@ -34,7 +29,7 @@ go_run_compiled() {
     # build` only works if `go.mod` exists. So here we need to generate
     # `go.mod` file.
 
-    source "$dotfiles_dir/scripts/lib/tmpfile.sh"
+    source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
     local tmpdir
     create_tmpdir tmpdir
     cp "$src_file" "$tmpdir"

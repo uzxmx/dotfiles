@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source "$dotfiles_dir/scripts/lib/trap.sh"
+source "$DOTFILES_DIR/scripts/lib/trap.sh"
 
 _create_tmp() {
   local is_dir="$1"
