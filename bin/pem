@@ -132,7 +132,7 @@ cmd_fold() {
 
   [ -z "$str" ] || echo "-----BEGIN $str-----"
   cat "$file" | sed 's/\\n//g' | fold -w 64
-  [ -z "$str" ] || echo -e "\n-----END $str-----"
+  [ -z "$str" ] || echo -e "-----END $str-----"
 }
 alias_cmd f fold
 
