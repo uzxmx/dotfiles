@@ -11,7 +11,6 @@ EOF
 }
 
 cmd_project() {
-  source "$(dirname "$BASH_SOURCE")/common.sh"
   check_workspace
   req "workspaces/$workspace/projects" | jq -r '.values[] | "Name: \(.name)\tKey: \(.key)\tCreated at: \(.created_on)"' | column -t -s $'\t'
 }

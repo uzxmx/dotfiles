@@ -59,7 +59,6 @@ EOF
 
 # TODO add page and sort support
 cmd_repo_list() {
-  source "$(dirname "$BASH_SOURCE")/common.sh"
   check_workspace
 
   req "repositories/$workspace" | jq -r '.values[] | "Name: \(.name)\tCreated at: \(.created_on)\tUpdated at: \(.updated_on)"' | column -t -s $'\t'
@@ -84,7 +83,6 @@ git_url_from_full_name() {
 }
 
 cmd_repo_get() {
-  source "$(dirname "$BASH_SOURCE")/common.sh"
   check_workspace
 
   local name show_git_url
@@ -135,7 +133,6 @@ EOF
 }
 
 cmd_repo_create() {
-  source "$(dirname "$BASH_SOURCE")/common.sh"
   check_workspace
   check_project_key
 
@@ -173,7 +170,6 @@ EOF
 }
 
 cmd_repo_delete() {
-  source "$(dirname "$BASH_SOURCE")/common.sh"
   check_workspace
 
   local name="$1"

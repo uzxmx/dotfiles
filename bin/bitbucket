@@ -65,12 +65,15 @@ case "$1" in
         name="workspace"
         ;;
       r)
+        source "$bitbucket_dir/common.sh"
         name="repo"
         ;;
       p)
+        source "$bitbucket_dir/common.sh"
         name="project"
         ;;
       i)
+        source "$bitbucket_dir/common.sh"
         name="init"
         ;;
       *)
