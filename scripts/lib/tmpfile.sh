@@ -33,8 +33,8 @@ create_tmpfile() {
 #   $1: the shell variable name to store the created directory
 #
 # @example:
-#   local tmpfile
-#   create_tmpfile tmpfile
+#   local tmpdir
+#   create_tmpdir tmpdir
 create_tmpdir() {
   _create_tmp 1 "$1"
 }
