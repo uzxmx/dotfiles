@@ -20,6 +20,7 @@ Options:
   [--binary] Resort to grep searching binary files
   [--filename] Also search filename
   [-H | --hidden] Do not skip hidden files/directories
+  [-L | --follow] Follow symbolic links
   [-h] Show help
 
 Examples:
@@ -30,6 +31,7 @@ EOF
 }
 
 rg_options=()
+follow_links=
 
 files=()
 while [ $# -gt 0 ]; do
@@ -45,8 +47,10 @@ while [ $# -gt 0 ]; do
       search_filename=1
       ;;
     -H | --hidden)
-      search_filename=1
       rg_options+=(--hidden)
+      ;;
+    -L | --follow)
+      follow_links="$1"
       ;;
     -*)
       usage
@@ -71,7 +75,7 @@ if [ "$search_binary" = "1" ]; then
   cmd_opts=(--line-number --binary-files=text . -R "${files[@]}")
 else
   cmd_name="rg"
-  cmd_opts=(-L --line-number --with-filename "${rg_options[@]}" . "${files[@]}")
+  cmd_opts=($follow_links --line-number --with-filename "${rg_options[@]}" . "${files[@]}")
 fi
 
 export BAT_STYLE="numbers,header"
