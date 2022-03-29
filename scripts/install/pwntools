@@ -4,9 +4,11 @@
 
 set -eo pipefail
 
-type -p pwn &> /dev/null && exit
-
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+is_mac && $(dirname "$BASH_SOURCE")/binutils-for-osx
+
+type -p pwn &> /dev/null && exit
 
 pip install pwntools
 asdf reshim
