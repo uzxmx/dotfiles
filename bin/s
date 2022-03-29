@@ -11,8 +11,9 @@ Usage: s [directory-or-file]...
 Search file contents.
 
 Shortcuts:
-  <enter>: Open selected file in curren shell.
-  ctrl-v: View selected file in tmux panel.
+  <ENTER>: Open selected file in curren shell.
+  CTRL-V: View selected file in tmux panel.
+  F1: Update preview window layout (up/right, default is right).
 
 Options:
   [-t type] The file type to search, e.g. cpp
@@ -70,6 +71,7 @@ fi
 
 export BAT_STYLE="numbers,header"
 no_ignore=
+preview_window="right"
 while true; do
   unset result
 
@@ -80,11 +82,11 @@ while true; do
   fi
 
   if [ "$cmd_name" = "rg" ]; then
-    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-X:exec CTRL-R:refresh)> "
-    expect="ctrl-e,ctrl-i,ctrl-x,ctrl-r"
+    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-T:edit CTRL-I:toggle-ignore CTRL-X:exec CTRL-R:refresh)> "
+    expect="ctrl-t,ctrl-i,ctrl-x,ctrl-r,f1"
   else
-    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-E:edit CTRL-X:exec CTRL-R:refresh)> "
-    expect="ctrl-e,ctrl-x,ctrl-r"
+    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-T:edit CTRL-X:exec CTRL-R:refresh)> "
+    expect="ctrl-t,ctrl-x,ctrl-r,f1"
   fi
 
   # Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
@@ -92,6 +94,7 @@ while true; do
   #   https://github.com/junegunn/fzf#executing-external-programs
   #   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
   call_fzf result --delimiter=: --nth=3.. --preview "$dotfiles_dir/scripts/misc/preview {}" \
+    --preview-window="$preview_window" \
     --query="$query" --print-query \
     --prompt "$prompt" \
     --expect "$expect" \
@@ -106,6 +109,15 @@ while true; do
 
   [ "$key" = "ctrl-r" ] && continue
 
+  if [ "$key" = "f1" ]; then
+    if [ "$preview_window" = "right" ]; then
+      preview_window="up"
+    else
+      preview_window="right"
+    fi
+    continue
+  fi
+
   if [ -n "$selection" ]; then
     file="$(echo -E "$selection" | awk -F : '{print $1}')"
     if [ -z "$file" ]; then
@@ -117,7 +129,7 @@ while true; do
 
   if [ -n "$file" ]; then
     case "$key" in
-      ctrl-e)
+      ctrl-t)
         echo "$file" >&3
         exit 101
         ;;

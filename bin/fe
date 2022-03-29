@@ -75,8 +75,8 @@ while true; do
   fi
 
   call_fzf result --query="$query" --print-query --multi --exit-0 \
-    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-E:edit CTRL-I:toggle-ignore CTRL-D:cd CTRL-X:exec)> ' \
-    --expect="ctrl-v,ctrl-e,ctrl-i,ctrl-d,ctrl-x" \
+    --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-T:edit CTRL-I:toggle-ignore CTRL-D:cd CTRL-X:exec)> ' \
+    --expect="ctrl-v,ctrl-t,ctrl-i,ctrl-d,ctrl-x" \
     < <(fd "${fd_opts[@]}" "${pattern:-.}" "${directories[@]}")
 
   [ -z "${result[*]}" ] && break
@@ -103,7 +103,7 @@ while true; do
       result=("$target_file")
       break
       ;;
-    ctrl-e)
+    ctrl-t)
       echo "${result[0]}" >&3
       exit 101
       break

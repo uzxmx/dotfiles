@@ -17,4 +17,4 @@ if [ -z "$directories" ]; then
   exit
 fi
 
-main_loop_with_fzf --prompt "(CTRL-Y:yank CTRL-E:edit) Select a parent directory> " --expect="ctrl-e"
+main_loop_with_fzf --prompt "(CTRL-Y:yank CTRL-T:edit) Select a parent directory> " --expect="ctrl-t"

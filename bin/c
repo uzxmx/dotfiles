@@ -60,7 +60,7 @@ main_loop_with_fzf() {
           break
         fi
         ;;
-      ctrl-e)
+      ctrl-t)
         echo "$result" >&3
         exit 101
         break
@@ -122,4 +122,4 @@ $(sh ~/.cd_paths.sh)\
   fi
 fi
 
-main_loop_with_fzf --prompt "(CTRL-D:go-further CTRL-Y:yank CTRL-E:edit)> " --expect="ctrl-d,ctrl-e"
+main_loop_with_fzf --prompt "(CTRL-D:go-further CTRL-Y:yank CTRL-T:edit)> " --expect="ctrl-d,ctrl-t"
