@@ -91,10 +91,10 @@ while true; do
   fi
 
   if [ "$cmd_name" = "rg" ]; then
-    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-T:edit CTRL-I:toggle-ignore CTRL-X:exec CTRL-R:refresh)> "
+    prompt="(C-V:vsplit C-Y:yank C-T:edit C-I:toggle-ignore C-X:exec C-R:refresh)> "
     expect="ctrl-t,ctrl-i,ctrl-x,ctrl-r,f1"
   else
-    prompt="(CTRL-V:vsplit CTRL-Y:yank CTRL-T:edit CTRL-X:exec CTRL-R:refresh)> "
+    prompt="(C-V:vsplit C-Y:yank C-T:edit C-X:exec C-R:refresh)> "
     expect="ctrl-t,ctrl-x,ctrl-r,f1"
   fi
 
