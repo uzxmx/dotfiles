@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+file="$(echo "$@" | awk -F: '{print $1}')"
+line_no="$(echo "$@" | awk -F: '{print $2}')"
+if [ -n "$file" ]; then
+  tmux split-window "vi $file '+norm ${line_no}G'"
+else
+  file="$(echo "$@" | awk -F: '{print $3}')"
+  tmux split-window "vi $file"
+fi
