@@ -80,7 +80,11 @@ fi
 
 export BAT_STYLE="numbers,header"
 no_ignore=
-preview_window="right"
+if [ "$(tput cols)" -ge 160 ]; then
+  preview_window="right"
+else
+  preview_window="up"
+fi
 while true; do
   unset result
 
