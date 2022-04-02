@@ -26,13 +26,11 @@ command! -nargs=1 MoveToTab call utils#tab#open_in_tab(<q-args>, v:true)
 command! -nargs=1 OpenInTab call utils#tab#open_in_tab(<q-args>, v:false)
 
 " Reference http://vimdoc.sourceforge.net/htmldoc/cmdline.html#filename-modifiers
-command! PutFileName put =expand('%:t')
-command! PutRelativePath put =expand('%')
-command! PutRelativeParentPath put =expand('%:h')
-command! PutAbsolutePath put =expand('%:p')
-command! PutAbsoluteParentPath put =expand('%:p:h')
-
-command! CopyPath call setreg('*', expand('%:p'))
+command! CopyFilePath call setreg('*', expand('%'))
+command! CopyFileName call setreg('*', expand('%:t'))
+command! CopyFilePathAbs call setreg('*', expand('%:p'))
+command! CopyFilePathParent call setreg('*', expand('%:h'))
+command! CopyFilePathParentAbs call setreg('*', expand('%:p:h'))
 
 command! Gen call utils#gen()
 
