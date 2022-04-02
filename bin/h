@@ -6,8 +6,21 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 
 usage() {
   cat <<-EOF
-This utility shows helps by searching filenames and file contents from default
-locations, so you can quickly find a doc or run an executable script.
+Usage: h [command line...]
+
+Show help.
+
+If no argument is specified, it shows help by searching filenames and file
+contents from default locations, so you can quickly find a doc or run an
+executable script.
+
+If one or more arguments are specified, the argument(s) will be identified as a
+command line, and the help about the command line will be shown.
+
+Examples:
+  $> h
+  $> h gn
+  $> h git diff
 EOF
   exit 1
 }
@@ -27,7 +40,16 @@ case "$1" in
     dirs+=("$dotfiles_dir")
     s --filename "${dirs[@]}"
     ;;
-  *)
+  -*)
     usage
+    ;;
+  *)
+    source "$dotfiles_dir/scripts/lib/tmpfile.sh"
+    create_tmpfile tmpfile
+    "$@" --help &>"$tmpfile" || true
+    # Update the status line before the file is read.
+    # `cat` the file in a terminal so special control codes can be handled.
+    # Map `q` to `:q<enter>` to exit quickly.
+    vi --cmd "let g:airline_section_c='$* --help'" +"term cat $tmpfile" +"map q :q<enter>"
     ;;
 esac
