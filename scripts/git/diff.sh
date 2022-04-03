@@ -17,7 +17,7 @@ When a commit is given, fzf mode is used by default.
 Options:
   -c, --cached show staged changes
   -f, --fzf use fzf mode
-  --no-fzf don't use fzf mode
+  -n | --no-fzf don't use fzf mode
   -R reverse the comparasion (show differences from index or on-disk file to tree contents)
 EOF
   exit 1
@@ -37,7 +37,7 @@ cmd_d() {
       -f | --fzf)
         fzf_mode=1
         ;;
-      --no-fzf)
+      -n | --no-fzf)
         fzf_mode=0
         ;;
       -R)
@@ -75,23 +75,53 @@ cmd_d() {
 
   local cmd=(git diff "${opts[@]}" --name-status "${commits[@]}" "${paths[@]}")
   local preview_cmd="git diff ${opts[*]} "${commits[@]}" --color=always -- {2} | less -r"
-  local edit_cmd="${EDITOR:-vi} {2}"
-  local output="$("${cmd[@]}")"
-  if [ -z "$output" ]; then
-    echo 'No changes found.'
-  else
-    # Because `git diff` shows files relative to the git root, so if we are not in
-    # the git root, preview or bind command may fail to find the file. To resolve this,
-    # we change to the git root first.
-    cd "$(git rev-parse --show-toplevel)"
-    fzf --no-mouse --cycle \
-      --layout=reverse \
-      --prompt="CTRL-V:diff-file CTRL-O:open-file CTRL-S:stage-file> " \
-      --preview="$preview_cmd" \
-      --preview-window="right:50%:wrap" \
-      --bind "ctrl-v:execute(tmux new-window \"$preview_cmd\")" \
-      --bind "ctrl-o:execute(tmux new-window \"$edit_cmd\")" \
-      --bind "ctrl-s:execute-silent(git add {2})" \
-      <<<"$output"
-  fi
+  local edit_cmd="${EDITOR:-vi} +'map q :q<enter>' {2}"
+
+  source "$dotfiles_dir/scripts/lib/utils/common.sh"
+  source "$dotfiles_dir/scripts/lib/fzf.sh"
+  local query
+  while true; do
+    unset result
+
+    local output="$("${cmd[@]}")"
+    if [ -z "$output" ]; then
+      echo "No changes found."
+      break
+    else
+      # Because `git diff` shows files relative to the git root, so if we are not in
+      # the git root, preview or bind command may fail to find the file. To resolve this,
+      # we change to the git root first.
+      local old_dir="$(pwd)"
+      cd "$(git rev-parse --show-toplevel)"
+      call_fzf result --no-mouse --cycle \
+        --query="$query" --print-query \
+        --layout=reverse \
+        --prompt="C-V:diff-file C-O:open-file C-S:stage-file Enter:edit> " \
+        --preview="$preview_cmd" \
+        --preview-window="right:50%:wrap" \
+        --bind "ctrl-v:execute(tmux new-window \"$preview_cmd\")" \
+        --bind "ctrl-o:execute(tmux new-window \"$edit_cmd\")" \
+        --expect "ctrl-s" \
+        <<<"$output"
+
+      [ -z "${result[*]}" ] && break
+
+      query="${result[0]}"
+      local key="${result[1]}"
+      local selection="${result[2]}"
+      local file="$(echo "$selection" | awk '{print $2}')"
+
+      case "$key" in
+        ctrl-s)
+          git add "$file"
+          ;;
+        "")
+          ${EDITOR:-vi} "$file"
+          exit
+          ;;
+      esac
+
+      cd "$old_dir"
+    fi
+  done
 }
