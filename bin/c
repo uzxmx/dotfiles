@@ -27,7 +27,7 @@ change_directory() {
 }
 
 check_directory() {
-  if [ "$1" = ~/.resources ] && [ ! -e "$1" ]; then
+  if [[ "$1/" =~ ~/.resources/ ]] && [ ! -e ~/.resources ]; then
     git clone git@github.com:uzxmx/resources ~/.resources
   else
     [ ! -e "$1" ] && mkdir -p "$1"
@@ -99,7 +99,7 @@ else
   directories="\
 $dotfiles_dir
 $HOME/.templates
-$HOME/.resources
+$(find ~/.resources -maxdepth 1 -type d | grep -v .git)
 $HOME/.pwn\
 "
 
