@@ -7,4 +7,26 @@ dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 source "$dotfiles_dir/scripts/lib/path.sh"
 PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
-open -a /Applications/IntelliJ\ IDEA\ CE.app "$@"
+usage() {
+  cat <<-EOF
+Usage: idea [path-to-project]
+
+Utility for IntelliJ IDEA. Currently only Mac OSX is supported.
+EOF
+  exit 1
+}
+
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+open -a /Applications/IntelliJ\ IDEA\ CE.app "${remainder[@]}"
