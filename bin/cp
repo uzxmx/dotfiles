@@ -14,12 +14,13 @@ Wrapper for cp utility.
 Subcommands:
   tree         - copy files to a dir with the intermediate paths kept.
   git_modified - copy modified files in git repository to a dir with the intermediate paths kept.
+  java         - copy java package to another location with package/import statements substituted.
 EOF
   exit 1
 }
 
 case "$1" in
-  tree | git_modified)
+  tree | git_modified | java)
     case "$1" in
       *)
         name="$1"
