@@ -12,7 +12,7 @@ my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
 require $dotfiles_dir . '/scripts/perl/ssh.pl';
 
 check_ssh_hosts_file();
-run_original_if_required(1);
+run_original_if_required();
 
 my $s = select_host();
 
