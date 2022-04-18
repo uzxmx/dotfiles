@@ -44,12 +44,6 @@ case "$1" in
     usage
     ;;
   *)
-    source "$dotfiles_dir/scripts/lib/tmpfile.sh"
-    create_tmpfile tmpfile
-    "$@" --help &>"$tmpfile" || true
-    # Update the status line before the file is read.
-    # `cat` the file in a terminal so special control codes can be handled.
-    # Map `q` to `:q<enter>` to exit quickly.
-    vi --cmd "let g:airline_section_c='$* --help'" +"term cat $tmpfile" +"map q :q<enter>"
+    "$dotfiles_dir/bin/v" "$@" --help
     ;;
 esac

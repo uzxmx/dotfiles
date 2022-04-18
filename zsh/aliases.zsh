@@ -55,7 +55,6 @@ alias m="mkdir -p"
 alias migrate="bundle exec rake db:migrate"
 alias ncz="nc -z -v"
 alias vi_tiny="vi -u NONE"
-alias v='$VISUAL'
 alias vad="va destroy"
 alias vadf="va destroy -f"
 alias vah="va halt"
