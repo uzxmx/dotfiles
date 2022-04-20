@@ -32,3 +32,14 @@ run() {
   esac
   "cmd_$cmd" "$@"
 }
+
+underscore_and_run() {
+  local cmd="$(echo "$1" | tr - _)"
+  shift
+  case "$1" in
+    -h)
+      type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      ;;
+  esac
+  "cmd_$cmd" "$@"
+}
