@@ -39,6 +39,15 @@ cmd_a() {
 
   [ -z "$dest" ] && usage_a
 
+  if [ -f "$dest" ]; then
+    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    if [ "$(yesno "File already exists. Are you sure you want to overwrite it? (y/N)" no)" = "no" ]; then
+      echo Cancelled
+      exit 1
+    fi
+    rm "$dest"
+  fi
+
   if [ -z "$format" ]; then
     if [[ "$dest" =~ \.zip$ ]]; then
       format="zip"
