@@ -1,3 +1,5 @@
+source "$(dirname "$BASH_SOURCE")/../lib/utils.sh"
+
 usage_show() {
   cat <<-EOF
 Usage: openssl show <PEM-file>
@@ -22,6 +24,10 @@ cmd_show() {
     # Currently only support RSA public key.
     "PUBLIC KEY" | "RSA PUBLIC KEY")
       openssl rsa -in "$pem_file" -pubin -text -noout
+      ;;
+    "PRIVATE KEY")
+      warn "openssl doesn't support 'PRIVATE KEY' header by default. Will assume it as RSA PRIVATE KEY"
+      sed "s/PRIVATE KEY/RSA PRIVATE KEY/" "$pem_file" | openssl rsa -text -noout
       ;;
     "RSA PRIVATE KEY")
       openssl rsa -in "$pem_file" -text -noout
