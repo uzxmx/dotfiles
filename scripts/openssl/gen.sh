@@ -8,6 +8,7 @@ Usage: openssl gen
 
 Subcommands:
   rsa_key, rsa_private_key - generate a RSA private key
+  rsa_public_key           - get a RSA public key from its private key
   ca                       - generate a CA
   csr                      - generate a certificate signing request
   cert                     - generate a certificate, or sign a csr
@@ -17,7 +18,7 @@ EOF
 
 usage_gen_rsa_private_key() {
   cat <<-EOF
-Usage: openssl gen rsa_private_key [path]
+Usage: openssl gen rsa_private_key [output-path]
 
 Generate a RSA private key. The output format is PEM format. By default the
 numbits is 2048, you can change it to other value, e.g. 4096.
@@ -53,6 +54,24 @@ cmd_gen_rsa_private_key() {
   done
   [ -z "$outpath" ] && echo An output path is required. && exit 1
   openssl genrsa -out "$outpath" "${opts[@]}" "${bits:-2048}"
+}
+
+usage_gen_rsa_public_key() {
+  cat <<-EOF
+Usage: openssl gen rsa_public_key <path-to-private-key> [output-path]
+
+Get a RSA public key from its private key. The output format is PEM format.
+
+To get a public key for SSH purpose, run 'ssh-keygen -y -f privkey.pem'.
+EOF
+  exit 1
+}
+
+cmd_gen_rsa_public_key() {
+  [ -z "$1" ] && usage_gen_rsa_public_key
+  local outpath="${2:-pubkey.pem}"
+  openssl rsa -in "$1" -pubout 2>/dev/null >"$outpath"
+  echo "Generated to $outpath"
 }
 
 openssl_req_help() {
@@ -267,6 +286,7 @@ cmd_gen() {
   if [ -z "$cmd" ]; then
       cmd="$(fzf < <(cat <<EOF
 rsa_private_key
+rsa_public_key
 ca
 csr
 cert
@@ -275,7 +295,7 @@ EOF
   fi
 
   case "$cmd" in
-    rsa_key | rsa_private_key | ca | csr | cert)
+    rsa_key | rsa_private_key | rsa_public_key | ca | csr | cert)
       case "$cmd" in
         rsa_key)
           cmd="rsa_private_key"
