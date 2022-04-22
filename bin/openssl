@@ -9,11 +9,6 @@ usage() {
   cat <<-EOF
 Wrapper for openssl utility. Use 'openssl help' to get the original help.
 
-PKCS#12: (with .p12 or .pfx extension)
-  A container file format commonly used to store private keys with accompanying
-  public key certificates, protected with a password-based symmetric key.
-  For more info, please visit https://en.wikipedia.org/wiki/PKCS
-
 Subcommands:
   e, exp      - show expiration info of a cert (source can be a host, file or pipe)
   v, verify   - verify a host
