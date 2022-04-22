@@ -7,17 +7,17 @@ usage_gen() {
 Usage: openssl gen
 
 Subcommands:
-  key, private_key - generate a RSA private key
-  ca               - generate a CA
-  csr              - generate a certificate signing request
-  cert             - generate a certificate, or sign a csr
+  rsa_key, rsa_private_key - generate a RSA private key
+  ca                       - generate a CA
+  csr                      - generate a certificate signing request
+  cert                     - generate a certificate, or sign a csr
 EOF
   exit 1
 }
 
-usage_gen_private_key() {
+usage_gen_rsa_private_key() {
   cat <<-EOF
-Usage: openssl gen private_key [path]
+Usage: openssl gen rsa_private_key [path]
 
 Generate a RSA private key. The output format is PEM format. By default the
 numbits is 2048, you can change it to other value, e.g. 4096.
@@ -29,7 +29,7 @@ EOF
   exit 1
 }
 
-cmd_gen_private_key() {
+cmd_gen_rsa_private_key() {
   local bits
   local -a opts
   local outpath="privkey.pem"
@@ -43,7 +43,7 @@ cmd_gen_private_key() {
         opts+=("-des3")
         ;;
       -h)
-        usage_gen_private_key
+        usage_gen_rsa_private_key
         ;;
       *)
         outpath="$1"
@@ -64,7 +64,7 @@ Usage: openssl gen $cmd
 $description
 
 If a RSA private key is not specified, a key will be generated. You can also
-use 'openssl gen private_key' to create one beforehand.
+use 'openssl gen rsa_key' to create one beforehand.
 
 By default, it operates interactively. If you want non-interactively, you must
 specify '-subj' option.
@@ -125,7 +125,7 @@ openssl_req() {
 
   if [ -z "$key" ]; then
     key="$default_key"
-    cmd_gen_private_key "$key"
+    cmd_gen_rsa_private_key "$key"
   fi
 
   if [ "$t" = "csr" ]; then
@@ -266,7 +266,7 @@ cmd_gen() {
   shift || true
   if [ -z "$cmd" ]; then
       cmd="$(fzf < <(cat <<EOF
-private_key
+rsa_private_key
 ca
 csr
 cert
@@ -275,10 +275,10 @@ EOF
   fi
 
   case "$cmd" in
-    key | private_key | ca | csr | cert)
+    rsa_key | rsa_private_key | ca | csr | cert)
       case "$cmd" in
-        key)
-          cmd="private_key"
+        rsa_key)
+          cmd="rsa_private_key"
           ;;
       esac
       case "$1" in
