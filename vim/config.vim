@@ -31,6 +31,8 @@ set smartcase
 set incsearch
 set gdefault
 
+" Do not close any fold by using a high number.
+set foldlevel=99
 set foldlevelstart=99
 set foldmethod=indent
 
