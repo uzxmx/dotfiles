@@ -39,3 +39,9 @@ set foldmethod=indent
 " Use the below config to avoid tabstop to be overridden in
 " $VIMRUNTIME/ftpplugin/python.vim
 let g:python_recommended_style = 0
+
+" When editing a SQL file, using `ctrl-c` to go back to normal mode may cause
+" some delay, that's because `ctrl-c` is used as a prefix key by SQL ftplugin.
+" So here we disable those mappings. You can check them by `:verbose imap <buffer> <c-c>`.
+" Also see `:help ft_sql`.
+let g:omni_sql_no_default_maps=1
