@@ -5,6 +5,10 @@ Usage: gradle boot_run
 Run spring-boot based project. To run this command successfully, you must
 specify 'org.springframework.boot' plugin in your build.gradle.
 
+If you want to launch multiple instances of a same spring application, you must
+specify '--skip-compile-java' to compile java only once. Otherwise, the other
+servers will be affected when you start a new one.
+
 * Active profile
 
 It will also ask you to specify an active spring profile. This relies on gradle
@@ -27,6 +31,7 @@ Options:
   --extra-profiles <profiles> extra profiles to use, separated by comma
   --boot-properties <properties> spring boot properties
   -d enable jvm debug, this will make jvm listen at 5005 to wait for debug
+  --skip-compile-java
   -- delimit the start for java args
 EOF
   exit 1
@@ -37,6 +42,7 @@ cmd_boot_run() {
   local extra_profiles boot_properties
   local -a opts
   local -a java_args
+  local -a gradle_opts
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -p)
@@ -53,6 +59,9 @@ cmd_boot_run() {
         ;;
       -d)
         opts+=(--debug-jvm)
+        ;;
+      --skip-compile-java)
+        gradle_opts+=(-x compileJava)
         ;;
       --)
         shift
@@ -78,5 +87,5 @@ cmd_boot_run() {
   if [ -n "$extra_profiles" ]; then
     profiles="$profiles,$extra_profiles"
   fi
-  "$gradle_bin" bootRun --args="--spring.profiles.active=$profiles $boot_properties "${opts[@]}" ${java_args[*]}"
+  "$gradle_bin" bootRun --args="--spring.profiles.active=$profiles $boot_properties ${opts[@]} ${java_args[*]}" "${gradle_opts[@]}"
 }
