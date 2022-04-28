@@ -44,21 +44,40 @@ bindkey "^[[A" up-line-or-local-history
 bindkey "^N"   down-line-or-local-history
 bindkey "^[[B" down-line-or-local-history
 
-# We cannot use zsh's default search history behavior, because zsh only searches from the timestamp when the last
-# command was executed in the current session to the oldest event, new events from global history file after that
-# time won't be searched. So we use `hstr` to search history from the latest event to the oldest.
+# By default, `fc -l` only searches from the history when the terminal's
+# session starts plus the local events (executed commands in the current
+# terminal's session). This means new events from other terminal's sessions won't
+# be searched.
+#
+# Previously, we used `hstr` to read the history file, so we could resolve the
+# above issue, and get the history from other terminal's sessions. But `hstr`
+# seems not supporting multi-lines commands well. So we resort to the original
+# zshell `fc` builtin.
+#
+# We use `fc -p -a $HISTFILE` to push the current history list onto a stack,
+# read `$HISTFILE` and switch to a new history list. When the current function
+# scope is exited, this history list will be automatically popped. This way, we
+# can also search new events from other terminal's sessions.
+#
+# Below function is borrowed from [here](https://github.com/junegunn/fzf/blame/master/shell/key-bindings.zsh).
+#
+# Ref: https://zsh.sourceforge.io/Doc/Release/Shell-Builtin-Commands.html (search `fc -l`)
 _search_global_history() {
-  selected=$(HSTR_CONFIG=raw-history-view hstr -n | FZF_DEFAULT_OPTS="--height 50% $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort --query=${(qqq)LBUFFER} +m" fzf)
+  local selected num
+  setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
+  fc -p -a "$HISTFILE"
+  selected=( $(fc -rl 1 | perl -ne 'print if !$seen{(/^\s*[0-9]+\**\s+(.*)/, $1)}++' |
+    FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore  --with-nth=2.. $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" fzf) )
   local ret=$?
   if [ -n "$selected" ]; then
-    BUFFER=$selected
-    zle end-of-line
+    num=$selected[1]
+    if [ -n "$num" ]; then
+      zle vi-fetch-history -n $num
+    fi
   fi
   zle reset-prompt
   return $ret
 }
+
 zle -N _search_global_history
 bindkey "^R" _search_global_history
-
-# HISTFILE should be exported in order to be used by `hstr`.
-export HISTFILE=~/.zsh_history
