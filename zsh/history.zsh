@@ -3,12 +3,26 @@
 HISTSIZE=50000
 SAVEHIST=10000
 
-setopt extended_history       # record timestamp of command in HISTFILE
+# Save each command’s beginning timestamp (in seconds since the epoch) and the
+# duration (in seconds) to the history file. The format of this prefixed data
+# is: ': <beginning time>:<elapsed seconds>;<command>'
+#
+# Ref: https://zsh.sourceforge.io/Doc/Release/Options.html
+setopt extended_history
+
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running it
 setopt share_history          # share command history data
+
+zshaddhistory() {
+  # Do not add command to history whose length is too short (the newline char is at the end of the command).
+  if [ "${#1}" -lt 5 ]; then
+    return 1;
+  fi
+  return 0;
+}
 
 # Use ctrl-p/ctrl-n or arrow up/down to go through local history.
 # Use ctrl-r to search global history.
@@ -30,7 +44,7 @@ bindkey "^[[A" up-line-or-local-history
 bindkey "^N"   down-line-or-local-history
 bindkey "^[[B" down-line-or-local-history
 
-# We cannot use zsh default search history behavior, because zsh only searches from the timestamp when the last
+# We cannot use zsh's default search history behavior, because zsh only searches from the timestamp when the last
 # command was executed in the current session to the oldest event, new events from global history file after that
 # time won't be searched. So we use `hstr` to search history from the latest event to the oldest.
 _search_global_history() {
