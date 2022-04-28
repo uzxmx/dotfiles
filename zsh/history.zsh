@@ -11,6 +11,12 @@ SAVEHIST=10000
 setopt extended_history
 
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+
+# If a new command line being added to the history list duplicates an older
+# one, the older command is removed from the list (even if it is not the
+# previous event).
+setopt hist_ignore_all_dups
+
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running it
