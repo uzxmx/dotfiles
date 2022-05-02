@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+source "$dotfiles_dir/scripts/lib/utils.sh"
+
+target_dir="$HOME/arthas"
+if [ ! -f "$target_dir/as.sh" ]; then
+  abort "Arthas bin not found, you can install it by running $dotfiles_dir/scripts/install/arthas"
+fi
+
+"$target_dir/as.sh" "$@"

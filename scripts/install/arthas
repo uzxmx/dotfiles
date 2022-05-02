@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Install arthas (https://github.com/alibaba/arthas)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+target_dir="$HOME/arthas"
+[ -f "$target_dir/as.sh" ] && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="3.6.1"
+path_to_save="/tmp/arthas-$version.zip"
+"$dotfiles_dir/bin/cget" "https://github.com/alibaba/arthas/releases/download/arthas-all-$version/arthas-bin.zip" "$path_to_save"
+unzip -q "$path_to_save" -d "$target_dir"
+rm -rf "$path_to_save"
