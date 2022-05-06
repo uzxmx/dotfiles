@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+net_dir="$dotfiles_dir/scripts/net"
+
+source "$dotfiles_dir/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Network utilities.
+
+Subcommands:
+  d, dns - setup DNS servers
+EOF
+  exit 1
+}
+
+case "$1" in
+  d | dns)
+    case "$1" in
+      d)
+        name="dns"
+        ;;
+      *)
+        name="$1"
+    esac
+    source "$net_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
