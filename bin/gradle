@@ -17,6 +17,7 @@ Subcommands:
   tasks    - show all tasks
   boot_run - run spring-boot based project
   boot_cli - run CLI for a spring-boot based project
+  run_java - run a java main class
   mirror   - manage(show/enable/disable) maven mirrors
   android  - android related utilities
   test     - override to add default options
@@ -88,7 +89,7 @@ def_task_cmds() {
 }
 
 case "$1" in
-  tasks | boot_run | boot_cli | mirror | android | test)
+  tasks | boot_run | boot_cli | mirror | android | test | run_java)
     source "$gradle_dir/$1.sh"
     run "$@"
     ;;

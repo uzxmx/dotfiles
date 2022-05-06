@@ -1,0 +1,12 @@
+allprojects {
+    apply plugin: 'java'
+
+    afterEvaluate {
+        task runWithJavaExec(type: JavaExec) {
+            group = "Execution"
+            description = "Run java main class"
+            classpath = sourceSets.main.runtimeClasspath
+            main = project.getProperty("mainClass")
+        }
+    }
+}
