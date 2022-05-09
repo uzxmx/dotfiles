@@ -43,9 +43,12 @@ branch="$(git symbolic-ref --short HEAD)"
 target="$1"
 test -z "$target" && target="master"
 
+# TODO add support for HTTPS protocol
 if [ "$host" = "github.com" ]; then
-  upstream_url="$(git config --get remote.upstream.url)"
+  upstream_url="$(git config --get remote.upstream.url || true)"
   if [ -z "$upstream_url" ]; then
+    echo "The remote upstream url is empty. If this is a fork, you need to run below command before opening a pull request."
+    echo -e "\ngit remote add upstream git@github.com:user/repo.git"
     target_repo_path=$repo_path
   else
     target_repo_path="$(get_repo_path $upstream_url)"
