@@ -1,3 +1,7 @@
+if has('nvim')
+  unmap Y
+endif
+
 nnoremap <Leader>r :!%:p<CR>
 
 noremap <C-h> <C-w>h
