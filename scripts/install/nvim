@@ -19,17 +19,27 @@ Options:
                 there is a version in user home directory and installs one if there is no one
   --do-all-steps whether to do all the steps, by default it only installs the binary
   --from-source install from source
+
+Examples:
+  # Install a specific version only if nvim hasn't been installed.
+  $0 -v 0.7.0
+
+  # Install a specific version even if other version already exists.
+  $0 -v 0.7.0 --non-primary
 EOF
   exit 1
 }
 
-version="v0.4.4"
+version="v0.7.0"
 from_source="$INSTALL_FROM_SOURCE"
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -v)
       shift
       version="$1"
+      if [[ ! "$version" =~ ^v ]]; then
+        version="v$version"
+      fi
       ;;
     -n)
       version="nightly"
@@ -106,7 +116,9 @@ install_from_source() {
     sudo apt-get install -y cmake g++ pkg-config libtool-bin
   fi
 
-  (cd "$dir"; make CMAKE_BUILD_TYPE=Release; sudo make install; rm -rf "$dir")
+  local dest_dir="$HOME/nvim-$version"
+  nvim_path="$dest_dir/bin/nvim"
+  (cd "$dir"; make CMAKE_INSTALL_PREFIX="$dest_dir" CMAKE_BUILD_TYPE=Release; make install; rm -rf "$dir")
 }
 
 if [ "$non_primary" = "1" ] || ! type -p nvim &> /dev/null; then
@@ -118,6 +130,7 @@ if [ "$non_primary" = "1" ] || ! type -p nvim &> /dev/null; then
   fi
   check_link 1
 else
+  echo "nvim is already found at $(type -p nvim)"
   check_link
 fi
 
