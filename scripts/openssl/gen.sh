@@ -18,10 +18,13 @@ EOF
 
 usage_gen_rsa_private_key() {
   cat <<-EOF
-Usage: openssl gen rsa_private_key [output-path]
+Usage: openssl gen rsa_private_key [output-dir]
 
 Generate a RSA private key. The output format is PEM format. By default the
 numbits is 2048, you can change it to other value, e.g. 4096.
+
+It also generates another private key file with PKCS#8 syntax, and the
+corresponding public key file.
 
 Options:
   -bits <bits> default is 2048
@@ -33,7 +36,7 @@ EOF
 cmd_gen_rsa_private_key() {
   local bits
   local -a opts
-  local outpath="privkey.pem"
+  local outdir
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -bits)
@@ -47,13 +50,19 @@ cmd_gen_rsa_private_key() {
         usage_gen_rsa_private_key
         ;;
       *)
-        outpath="$1"
+        outdir="$1"
         ;;
     esac
     shift
   done
-  [ -z "$outpath" ] && echo An output path is required. && exit 1
-  openssl genrsa -out "$outpath" "${opts[@]}" "${bits:-2048}"
+  if [ -z "$outdir" ]; then
+    outdir="."
+  else
+    mkdir -p "$outdir"
+  fi
+  openssl genrsa -out "$outdir/privkey.pem" "${opts[@]}" "${bits:-2048}"
+  openssl pkcs8 -topk8 -in "$outdir/privkey.pem" -out "$outdir/privkey_pkcs8.pem" -nocrypt
+  cmd_gen_rsa_public_key "$outdir/privkey.pem" "$outdir/pubkey.pem" >/dev/null
 }
 
 usage_gen_rsa_public_key() {
@@ -144,7 +153,7 @@ openssl_req() {
 
   if [ -z "$key" ]; then
     key="$default_key"
-    cmd_gen_rsa_private_key "$key"
+    openssl genrsa -out "$key" 2048
   fi
 
   if [ "$t" = "csr" ]; then
