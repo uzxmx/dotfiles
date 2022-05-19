@@ -22,7 +22,8 @@ require $dotfiles_dir . '/scripts/perl/prompt.pl';
 
 my $upload = prompt_yes_no('Upload?', 1);
 my $local_path = glob(prompt_string('Local path', '.'));
-my $remote_path = prompt_string('Remote path');
+my $basename = basename(getcwd());
+my $remote_path = prompt_string('Remote path', '~/' . $basename);
 
 my $s = select_host();
 
