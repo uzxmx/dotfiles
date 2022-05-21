@@ -1,7 +1,6 @@
 " Check and install vim-plug automatically
-if empty(glob('~/.vim/autoload/plug.vim'))
-  !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+if empty(glob(g:vim_home . '/autoload/plug.vim'))
+  execute '!curl -fLo ' . g:vim_home . '/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   if v:shell_error
     echom 'Failed to download vim-plug.'
     cquit
@@ -9,7 +8,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-call plug#begin('~/.vim/plugged')
+call plug#begin(g:vim_home . '/plugged')
 
 Plug 'neoclide/coc.nvim', { 'branch': 'release' }
 Plug 'posva/vim-vue', { 'for': 'vue' }
@@ -67,7 +66,7 @@ Plug 'vim-scripts/VisIncr', { 'on': ['I'] }
 " This plugin causes the menu of nerdtree to show with an annoying delay.
 " Plug 'kshenoy/vim-signature'
 
-Plug 'junegunn/fzf', { 'do': './install --all' }
+Plug 'junegunn/fzf', { 'do': './install --xdg --all --no-update-rc' }
 Plug 'junegunn/fzf.vim', { 'branch': '48a2d80' }
 
 " Plug 'ctrlpvim/ctrlp.vim'

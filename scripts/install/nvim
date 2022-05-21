@@ -6,6 +6,8 @@ set -eo pipefail
 
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
 
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
 . "$dotfiles_dir/scripts/lib/install.sh"
 
 usage() {
@@ -62,15 +64,15 @@ done
 
 check_link() {
   local always_make="$1"
-  [ ! -d ~/bin ] && mkdir ~/bin
+  [ ! -d "$DOTFILES_TARGET_DIR/bin" ] && mkdir "$DOTFILES_TARGET_DIR/bin"
 
   if [ -z "$nvim_path" ]; then
-    nvim_path="$(which nvim)"
+    nvim_path="$(check_command nvim)"
   fi
-  [ "$always_make" = "1" -a -e ~/bin/vi ] && rm ~/bin/vi
-  [ -e ~/bin/vi ] || create_link ~/bin/vi "$nvim_path"
-  [ "$always_make" = "1" -a -e ~/bin/nvim ] && rm ~/bin/nvim
-  [ -e ~/bin/vi ] || create_link ~/bin/nvim "$nvim_path"
+  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/vi" ] && rm "$DOTFILES_TARGET_DIR/bin/vi"
+  [ -e "$DOTFILES_TARGET_DIR/bin/vi" ] || create_link "$DOTFILES_TARGET_DIR/bin/vi" "$nvim_path"
+  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/nvim" ] && rm "$DOTFILES_TARGET_DIR/bin/nvim"
+  [ -e "$DOTFILES_TARGET_DIR/bin/vi" ] || create_link "$DOTFILES_TARGET_DIR/bin/nvim" "$nvim_path"
 }
 
 if [ "$do_all_steps" = "1" ]; then
@@ -85,7 +87,7 @@ install_from_prebuilt() {
   if is_linux; then
     platform="linux64"
     if [ "$non_primary" = "1" ]; then
-      dest_dir="$HOME/nvim-$version"
+      dest_dir="$DOTFILES_TARGET_DIR/nvim-$version"
       nvim_path="$dest_dir/bin/nvim"
     else
       dest_dir="/usr"
@@ -93,7 +95,7 @@ install_from_prebuilt() {
     fi
   elif is_mac; then
     platform="macos"
-    dest_dir="$HOME/nvim-$version"
+    dest_dir="$DOTFILES_TARGET_DIR/nvim-$version"
     nvim_path="$dest_dir/bin/nvim"
   else
     abort "Unsupported system"
@@ -116,12 +118,12 @@ install_from_source() {
     sudo apt-get install -y cmake g++ pkg-config libtool-bin
   fi
 
-  local dest_dir="$HOME/nvim-$version"
+  local dest_dir="$DOTFILES_TARGET_DIR/nvim-$version"
   nvim_path="$dest_dir/bin/nvim"
   (cd "$dir"; make CMAKE_INSTALL_PREFIX="$dest_dir" CMAKE_BUILD_TYPE=Release; make install; rm -rf "$dir")
 }
 
-if [ "$non_primary" = "1" ] || ! type -p nvim &> /dev/null; then
+if [ "$non_primary" = "1" ] || ! check_command nvim &>/dev/null; then
   if [ "$from_source" = "1" ]; then
     is_mac && abort "Mac OSX doesn't support installation from source"
     install_from_source
@@ -130,7 +132,7 @@ if [ "$non_primary" = "1" ] || ! type -p nvim &> /dev/null; then
   fi
   check_link 1
 else
-  echo "nvim is already found at $(type -p nvim)"
+  echo "nvim is already found at $(check_command nvim)"
   check_link
 fi
 

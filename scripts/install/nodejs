@@ -2,6 +2,13 @@
 
 set -eo pipefail
 
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+EOF
+  exit 1
+}
+
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 . $(dirname "$BASH_SOURCE")/../lib/asdf.sh
 

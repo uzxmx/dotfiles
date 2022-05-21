@@ -40,3 +40,10 @@ install_plugin_package() {
   fi
   asdf install "$plugin" "$package_version"
 }
+
+find_package_path() {
+  local version="$("$DOTFILES_DIR/bin/asdf" - list "$1" | awk '{print $1}' | grep "$2" | tail -1)"
+  if [ -n "$version" ]; then
+    "$DOTFILES_DIR/bin/asdf" - where "$1" "$version"
+  fi
+}

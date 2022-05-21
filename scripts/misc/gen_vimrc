@@ -2,17 +2,27 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+export DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-# Make sure `erb` is in PATH.
-. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+source "$DOTFILES_DIR/scripts/lib/utils.sh"
+source "$DOTFILES_DIR/scripts/lib/template.sh"
+source "$DOTFILES_DIR/scripts/lib/asdf.sh"
 
-if ! type -p erb &>/dev/null; then
-  abort "erb is required"
+PYTHON2_HOME="$(find_package_path python "^2\.")"
+if [ -n "$PYTHON2_HOME" ]; then
+  PYTHON2_PATH="$PYTHON2_HOME/bin/python"
 fi
 
-if [ ! -d ~/.vim ]; then
-  abort 'Please make sure directory ~/.vim exists'
+PYTHON3_HOME="$(find_package_path python "^3\.")"
+if [ -n "$PYTHON3_HOME" ]; then
+  PYTHON3_PATH="$PYTHON3_HOME/bin/python"
 fi
 
-erb -T - $(dirname "$BASH_SOURCE")/../../vim/vimrc.generated.erb >~/.vim/vimrc.generated
+NODE_HOME="$(find_package_path nodejs)"
+if [ -n "$NODE_HOME" ]; then
+  NODE_PATH="$NODE_HOME/bin/node"
+fi
+
+mkdir -p "$DOTFILES_TARGET_DIR/.vim"
+render_shell_template_file "$DOTFILES_DIR/vim/vimrc.tpl.sh" >"$DOTFILES_TARGET_DIR/.vim/vimrc.generated"

@@ -2,17 +2,15 @@
 
 set -eo pipefail
 
-. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+export DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-# Make sure `erb` is in PATH.
-. $(dirname "$BASH_SOURCE")/../lib/asdf.sh
+source "$DOTFILES_DIR/scripts/lib/utils.sh"
+source "$DOTFILES_DIR/scripts/lib/template.sh"
+source "$DOTFILES_DIR/scripts/lib/asdf.sh"
 
-if ! type -p erb &>/dev/null; then
-  abort "erb is required"
-fi
+SOLARGRAPH_PATH="$DOTFILES_TARGET_DIR/.asdf/shims/solargraph"
+LOMBOK_JAR_PATH="$DOTFILES_TARGET_DIR/lombok/lombok.jar"
 
-if [ ! -d ~/.config/nvim ]; then
-  abort 'Please make sure directory ~/.config/nvim exists'
-fi
-
-erb -T - $(dirname "$BASH_SOURCE")/../../config/nvim/coc-settings.json.erb >~/.config/nvim/coc-settings.json
+mkdir -p "$DOTFILES_TARGET_DIR/.config/nvim"
+render_shell_template_file "$DOTFILES_DIR/config/nvim/coc-settings.json.tpl.sh" >"$DOTFILES_TARGET_DIR/.config/nvim/coc-settings.json"

@@ -5,6 +5,10 @@ set -e
 dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
 asdf_dir="$dotfiles_dir/scripts/asdf"
 
+if [ -z "$ASDF_DATA_DIR" ]; then
+  export ASDF_DATA_DIR="${DOTFILES_TARGET_DIR:-$HOME}/.asdf"
+fi
+
 usage() {
   cat <<-EOF
 Wrapper for asdf utility.
