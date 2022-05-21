@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Download plugins and save zsh settings to ~/.zsh_plugins.sh.
+# Download plugins and save zsh settings to $DOTFILES_TARGET_DIR/.zsh_plugins.sh.
 #
 # Notes:
 #
@@ -12,7 +12,5 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-
-"$dotfiles_dir/bin/antibody_purge" -s &>/dev/null
-antibody bundle <"$dotfiles_dir/zsh/plugins.txt" >~/.zsh_plugins.sh
+"$DOTFILES_DIR/bin/antibody_purge" -s &>/dev/null
+antibody bundle <"$DOTFILES_DIR/zsh/plugins.txt" >"$DOTFILES_TARGET_DIR/.zsh_plugins.sh"

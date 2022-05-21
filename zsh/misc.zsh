@@ -16,7 +16,7 @@ command_not_found_handler() {
   case "$name" in
     dig | whois | tcpdump | route)
       ask
-      ~/.dotfiles/scripts/install/network_tools
+      "$DOTFILES_DIR/scripts/install/network_tools"
       ;;
     *)
       echo "Sorry, I couldn't help to install it, please do it by yourself."

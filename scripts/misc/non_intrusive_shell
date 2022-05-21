@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+export DOTFILES_NON_INTRUSIVE_MODE=1
+export DOTFILES_TARGET_DIR="$DOTFILES_DIR/.local"
+
+PATH="$DOTFILES_DIR/bin_nim:$PATH"
+
+if type -p zsh &>/dev/null; then
+  exec zsh
+else
+  exec bash
+fi

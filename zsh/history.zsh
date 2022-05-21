@@ -1,5 +1,5 @@
 # Borrowed from https://github.com/robbyrussell/oh-my-zsh/blob/master/lib/history.zsh
-[[ -z "$HISTFILE" ]] && HISTFILE="$HOME/.zsh_history"
+[ -z "$HISTFILE" ] && HISTFILE="$DOTFILES_TARGET_DIR/.zsh_history"
 HISTSIZE=50000
 SAVEHIST=10000
 

@@ -21,7 +21,7 @@ _fed() {
   fi
 }
 
-alias fevp="_fed ~/.vim/plugged"
+alias fevp="_fed $DOTFILES_TARGET_DIR/.vim/plugged"
 
 # This is a ZLE widget function that allows us to execute the command in the
 # editing buffer by pressing CTRL-S.
@@ -74,10 +74,10 @@ wrap_executable() {
   "
 }
 
-wrap_executable ssh ~/.dotfiles/scripts/bin/ssh
-wrap_executable sshuttle ~/.dotfiles/scripts/bin/sshuttle
-wrap_executable rsync ~/.dotfiles/scripts/bin/rsync
-wrap_executable va ~/.dotfiles/scripts/bin/vagrant
+wrap_executable ssh "$DOTFILES_DIR/scripts/bin/ssh"
+wrap_executable sshuttle "$DOTFILES_DIR/scripts/bin/sshuttle"
+wrap_executable rsync "$DOTFILES_DIR/scripts/bin/rsync"
+wrap_executable va "$DOTFILES_DIR/scripts/bin/vagrant"
 
 # Copy with progress
 cp_p() {
@@ -87,8 +87,8 @@ cp_p() {
 # Extract archive
 x() {
   local dir
-  dir="$(~/.dotfiles/bin/extract "$1")"
-  if [ "$?" -eq "0" -a -n "$dir" ]; then
+  dir="$("$DOTFILES_DIR/bin/extract" "$1")"
+  if [ "$?" -eq "0" -a -d "$dir" ]; then
     cd "$dir"
   fi
 }

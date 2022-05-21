@@ -1,12 +1,8 @@
 #!/bin/sh
 
-if [ -z "$dotfiles_dir" ]; then
-  dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
-fi
-
 if ! type asdf &>/dev/null; then
-  if [ -f ~/.asdf/asdf.sh ]; then
-    source ~/.asdf/asdf.sh
+  if [ -f "$DOTFILES_TARGET_DIR/.asdf/asdf.sh" ]; then
+    source "$DOTFILES_TARGET_DIR/.asdf/asdf.sh"
   fi
 fi
 
@@ -15,7 +11,7 @@ plugin_installed() {
 }
 
 parse_package_version() {
-  grep "$1" "$dotfiles_dir/tool-versions" | cut -d ' ' -f 2 | head -1
+  grep "$1" "$DOTFILES_DIR/tool-versions" | cut -d ' ' -f 2 | head -1
 }
 
 install_plugin_package() {
@@ -28,10 +24,10 @@ install_plugin_package() {
         ;;
       java)
         # asdf plugin-add "$plugin" https://github.com/uzxmx/asdf-java.git
-        "$dotfiles_dir/bin/hub" download -d ~/.asdf/plugins/java halcyon/asdf-java 7a04f7c1a615370cc639d3ee02a91e99ecca27b5
+        "$DOTFILES_DIR/bin/hub" download -d "$DOTFILES_TARGET_DIR/.asdf/plugins/java" halcyon/asdf-java 7a04f7c1a615370cc639d3ee02a91e99ecca27b5
         ;;
       golang)
-        "$dotfiles_dir/bin/hub" download -d ~/.asdf/plugins/golang kennyp/asdf-golang 9297fbefb1f95aaeadfd872b53d28e355a3e67e5
+        "$DOTFILES_DIR/bin/hub" download -d "$DOTFILES_TARGET_DIR/.asdf/plugins/golang" kennyp/asdf-golang 9297fbefb1f95aaeadfd872b53d28e355a3e67e5
         ;;
       *)
         asdf plugin-add "$plugin"

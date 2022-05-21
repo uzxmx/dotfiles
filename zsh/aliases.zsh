@@ -1,21 +1,15 @@
-alias a='capture_source_and_signal ~/.dotfiles/bin/asdf "$@"'
+alias a='capture_source_and_signal "$DOTFILES_DIR"/bin/asdf "$@"'
 alias bi="bundle install"
-alias c='capture_source_and_signal ~/.dotfiles/bin/c "$@"'
+alias c='capture_source_and_signal "$DOTFILES_DIR"/bin/c "$@"'
 alias e='$EDITOR'
 
 alias f="fe"
-alias fbr="~/.dotfiles/scripts/fzf/git-branch"
-alias fe='capture_source_and_signal ~/.dotfiles/bin/fe "$@"'
-alias fed="fe ~/.dotfiles"
-alias fedb="fe ~/.dotfiles/bin"
-alias fedd="fe ~/.dotfiles/doc"
-alias fedz="fe ~/.dotfiles/zsh"
-alias fedv="fe ~/.dotfiles/vim"
-alias fedh="fe ~/.dotfiles/hooks"
-alias feds="fe ~/.dotfiles/scripts"
-alias fev="fe ~/.vim"
-alias fmerge="~/.dotfiles/scripts/fzf/git-merge"
-alias fmergeto="~/.dotfiles/scripts/fzf/git-merge-to"
+alias fbr="\"$DOTFILES_DIR\"/scripts/fzf/git-branch"
+alias fe='capture_source_and_signal "$DOTFILES_DIR"/bin/fe "$@"'
+alias fed="fe \"$DOTFILES_DIR\""
+alias fev="fe \"$DOTFILES_TARGET_DIR\"/.vim"
+alias fmerge="\"$DOTFILES_DIR\"/scripts/fzf/git-merge"
+alias fmergeto="\"$DOTFILES_DIR\"/scripts/fzf/git-merge-to"
 
 alias get='wget --continue --progress=bar'
 
@@ -43,7 +37,7 @@ alias gss="git stash"
 alias gsp="git stash pop"
 alias gt="git tag"
 
-alias h='capture_source_and_signal ~/.dotfiles/bin/h "$@"'
+alias h='capture_source_and_signal "$DOTFILES_DIR"/bin/h "$@"'
 
 alias k='kubectl --namespace="$KUBECTL_NAMESPACE"'
 alias l="ls -1tA"
@@ -66,25 +60,25 @@ alias vass="va status"
 alias p="pwd"
 
 # proxyctl
-alias px='capture_source_and_signal ~/.dotfiles/scripts/misc/proxyctl "$@"'
+alias px='capture_source_and_signal "$DOTFILES_DIR"/scripts/misc/proxyctl "$@"'
 alias pe='px enable'
 alias pd='px disable'
 alias pi='px info'
 
 # `r` is also a zsh built-in command.
-alias r='capture_source_and_signal ~/.dotfiles/bin/r "$@"'
+alias r='capture_source_and_signal "$DOTFILES_DIR"/bin/r "$@"'
 
-alias s='capture_source_and_signal ~/.dotfiles/bin/s "$@"'
+alias s='capture_source_and_signal "$DOTFILES_DIR"/bin/s "$@"'
 
-alias ta="~/.dotfiles/scripts/misc/tmuxctl attach"
-alias td="~/.dotfiles/scripts/misc/tmuxctl detach"
+alias ta="\"$DOTFILES_DIR\"/scripts/misc/tmuxctl attach"
+alias td="\"$DOTFILES_DIR\"/scripts/misc/tmuxctl detach"
 alias tl="ta"
-alias tn="~/.dotfiles/scripts/misc/tmuxctl new"
+alias tn="\"$DOTFILES_DIR\"/scripts/misc/tmuxctl new"
 alias ts="ta"
 
 alias wb="curl www.baidu.com"
 alias wg="curl www.google.com"
-alias zl="vi ~/.zshrc.local"
+alias zl="vi \"$DOTFILES_TARGET_DIR\"/.zshrc.local"
 
 case $OSTYPE in
   darwin*)
@@ -93,4 +87,4 @@ case $OSTYPE in
 esac
 
 # Include custom aliases (keep this line at the very bottom)
-[[ -f ~/.zsh/aliases.local ]] && source ~/.zsh/aliases.local
+[ -f "$DOTFILES_TARGET_DIR/.zsh/aliases.local" ] && source "$DOTFILES_TARGET_DIR/.zsh/aliases.local"
