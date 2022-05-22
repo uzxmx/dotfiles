@@ -11,6 +11,8 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_command fzf &> /dev/null && exit
 
+export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
+
 if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   brew_install fzf
   /usr/local/opt/fzf/install --xdg --all --no-update-rc
@@ -21,5 +23,5 @@ else
     rm -rf "$DOTFILES_TARGET_DIR/.fzf"
     git clone --depth 1 https://github.com/junegunn/fzf.git "$DOTFILES_TARGET_DIR/.fzf"
   fi
-  "$DOTFILES_TARGET_DIR/.fzf" --xdg --all --no-update-rc
+  "$DOTFILES_TARGET_DIR/.fzf/install" --xdg --all --no-update-rc
 fi
