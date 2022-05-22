@@ -5,6 +5,16 @@ set -eo pipefail
 source "$DOTFILES_DIR/scripts/lib/path.sh"
 PATH="$(new_path_exclude "$DOTFILES_DIR/bin_nim")"
 
+if ! check_command nvim &>/dev/null; then
+  echo "Neovim not found. Installing..."
+  log_file="$DOTFILES_TARGET_DIR/.install.log"
+  if ! "$DOTFILES_DIR/scripts/install/nvim" &>"$log_file"; then
+    echo "Failed to install neovim. Please see the log at $log_file"
+    exit 1
+  fi
+  echo 'Neovim installed successfully.'
+fi
+
 export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
 
 exec vi "$@"
