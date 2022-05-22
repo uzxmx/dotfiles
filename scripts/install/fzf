@@ -4,19 +4,22 @@
 
 set -eo pipefail
 
-type -p fzf &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if is_mac; then
+check_command fzf &> /dev/null && exit
+
+if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   brew_install fzf
-  /usr/local/opt/fzf/install --key-bindings --completion --no-update-rc
+  /usr/local/opt/fzf/install --xdg --all --no-update-rc
 else
-  if $(test -d ~/.fzf && cd ~/.fzf && git status &>/dev/null); then
+  if test -d "$DOTFILES_TARGET_DIR/.fzf" && cd "$DOTFILES_TARGET_DIR/.fzf" && git status &>/dev/null; then
     git pull
   else
-    rm -rf ~/.fzf
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    rm -rf "$DOTFILES_TARGET_DIR/.fzf"
+    git clone --depth 1 https://github.com/junegunn/fzf.git "$DOTFILES_TARGET_DIR/.fzf"
   fi
-  ~/.fzf/install --key-bindings --completion --no-update-rc
+  "$DOTFILES_TARGET_DIR/.fzf" --xdg --all --no-update-rc
 fi
