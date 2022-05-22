@@ -4,13 +4,13 @@
 
 set -eo pipefail
 
-bundle() {
-  ~/.dotfiles/bin/antibody_bundle
-}
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-type -p antibody &> /dev/null && bundle && exit
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+PATH="$DOTFILES_TARGET_DIR/bin:$PATH"
+check_command antibody &> /dev/null && exit
 
 version="v6.1.1"
 path_to_save="/tmp/antibody-$version.tgz"
@@ -22,9 +22,11 @@ else
   abort "Unsupported system"
 fi
 
-~/.dotfiles/bin/cget "https://github.com/getantibody/antibody/releases/download/$version/antibody_${platform}_x86_64.tar.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/cget" "https://github.com/getantibody/antibody/releases/download/$version/antibody_${platform}_x86_64.tar.gz" "$path_to_save"
 tar zxf "$path_to_save" -C /tmp antibody
-sudo mv /tmp/antibody /usr/local/bin
+if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  mv /tmp/antibody "$DOTFILES_TARGET_DIR/bin"
+else
+  sudo mv /tmp/antibody /usr/local/bin
+fi
 rm "$path_to_save"
-
-bundle

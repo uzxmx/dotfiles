@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+PATH="$DOTFILES_DIR/scripts/rcm/bin:$PATH"
+rcup -T "${DOTFILES_TARGET_DIR:-$HOME}" "$@"

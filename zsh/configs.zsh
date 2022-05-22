@@ -4,6 +4,9 @@ unalias run-help 2>/dev/null
 autoload run-help
 alias help=run-help
 
+if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  PROMPT='[%F{red}nim]$prompt_newline%F{grey}%* '$PROMPT
+fi
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
 # Keep dirty color same with git:branch.
 zstyle :prompt:pure:git:dirty color 242

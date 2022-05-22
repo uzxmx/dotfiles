@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+antibody_dir="$DOTFILES_DIR/scripts/antibody"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+PATH="$DOTFILES_TARGET_DIR/bin:$PATH"
+if ! check_command antibody &>/dev/null; then
+  if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    "$DOTFILES_DIR/scripts/install/antibody"
+  else
+    abort "Please install 'antibody' first."
+  fi
+fi
+
+usage() {
+  cat <<-EOF
+Wrapper for antibody utility.
+EOF
+  exit 1
+}
+
+case "$1" in
+  bundle | purge)
+    case "$1" in
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$antibody_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    antibody "$@"
+    ;;
+  *)
+    antibody "$@"
+    ;;
+esac

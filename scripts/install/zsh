@@ -4,9 +4,15 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
 check_current_shell() {
+  [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && return
   echo 'Checking if current shell is zsh'
-  local zsh_path=$(which zsh)
+  local zsh_path="$(check_command zsh)"
   if [ ! "$(perl -e '@x=getpwuid($<); print $x[8]')" = "$zsh_path" ]; then
     if ! grep "$zsh_path" /etc/shells &>/dev/null; then
       echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
@@ -22,9 +28,9 @@ check_current_shell() {
   fi
 }
 
-type -p zsh &> /dev/null && check_current_shell && exit
-
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+if check_command zsh &> /dev/null; then
+  check_current_shell; exit
+fi
 
 if has_yum; then
   sudo yum install -y ncurses-devel
@@ -34,19 +40,29 @@ fi
 
 version="5.8"
 path_to_save="/tmp/zsh-$version.tar.xz"
-~/.dotfiles/bin/cget "https://nchc.dl.sourceforge.net/project/zsh/zsh/$version/zsh-$version.tar.xz" "$path_to_save"
+"$DOTFILES_DIR/bin/cget" "https://nchc.dl.sourceforge.net/project/zsh/zsh/$version/zsh-$version.tar.xz" "$path_to_save"
 
 cd /tmp
 tar Jxf "$path_to_save"
 
-cd "zsh-$version"
-./configure --without-tcsetpgrp
-make
-sudo make install
+configure_opts=(--without-tcsetpgrp)
+if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  configure_opts+=(--prefix="$DOTFILES_TARGET_DIR/opt/zsh-$version")
+else
+  sudo_opt="sudo"
+fi
+if is_mac; then
+  # For Mac OSX, we may need to specify below CFLAGS, otherwise, the built zsh may be stuck on startup.
+  # See https://github.com/Homebrew/homebrew-core/pull/64923
+  configure_opts+=(--enable-cflags=-Wno-implicit-function-declaration)
+fi
+(cd "zsh-$version"; ./configure "${configure_opts[@]}"; make; $sudo_opt make install)
 
 rm -rf "$path_to_save" "zsh-$version"
 
 check_current_shell
+
+[ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
 
 if is_mac; then
   platform=osx
@@ -54,12 +70,12 @@ elif is_wsl; then
   platform=wsl
 fi
 
-if [ -n "$platform" -a -f ~/.zshrc.$platform ]; then
-  if [ -f ~/.zshrc.platform ]; then
-    if [ $? != 0 -o "$(readlink ~/.zshrc.platform)" != "$(ls -d ~)/.zshrc.$platform" ]; then
-      warn "Failed to link ~/.zshrc.platform to ~/.zshrc.$platform, please check ~/.zshrc.platform"
+if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+  if [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ]; then
+    if [ $? != 0 -o "$(readlink "$DOTFILES_TARGET_DIR/.zshrc.platform")" != "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+      warn "Failed to link '$DOTFILES_TARGET_DIR/.zshrc.platform' to '$DOTFILES_TARGET_DIR/.zshrc.$platform', please check '$DOTFILES_TARGET_DIR/.zshrc.platform'"
     fi
   else
-    ln -s ~/.zshrc.$platform ~/.zshrc.platform
+    ln -s "$DOTFILES_TARGET_DIR/.zshrc.$platform" "$DOTFILES_TARGET_DIR/.zshrc.platform"
   fi
 fi

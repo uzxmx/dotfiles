@@ -13,3 +13,11 @@ new_path_exclude() {
   done
   echo $result
 }
+
+# Check if a command exists in the PATH.
+#
+# @params:
+#   $1: the command
+check_command() {
+  (PATH="$(new_path_exclude "$DOTFILES_DIR/bin" "$DOTFILES_DIR/bin_nim")" type -p "$1")
+}

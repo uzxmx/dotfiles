@@ -7,13 +7,7 @@
 . $(dirname "$BASH_SOURCE")/utils.sh
 . $(dirname "$BASH_SOURCE")/git.sh
 . $(dirname "$BASH_SOURCE")/dmg.sh
-
 . $(dirname "$BASH_SOURCE")/path.sh
-
-# Check if a command exists in the PATH.
-check_command() {
-  (PATH="$(new_path_exclude "$DOTFILES_DIR/bin" "$DOTFILES_DIR/bin_nim")" type -p "$1")
-}
 
 # Parse arguments.
 remainder=()
