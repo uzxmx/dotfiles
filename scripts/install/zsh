@@ -62,7 +62,7 @@ rm -rf "$path_to_save" "zsh-$version"
 
 check_current_shell
 
-[ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
+[ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && mkdir -p "$DOTFILES_TARGET_DIR/bin" && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
 
 if is_mac; then
   platform=osx
