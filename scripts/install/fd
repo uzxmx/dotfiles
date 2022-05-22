@@ -4,17 +4,27 @@
 
 set -eo pipefail
 
-type -p fd &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if is_mac; then
+check_command fd &> /dev/null && exit
+
+if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   brew_install fd
 else
   version=7.4.0
   basename="fd-v${version}-x86_64-unknown-linux-musl"
-  cd /tmp && wget "https://github.com/sharkdp/fd/releases/download/v${version}/${basename}.tar.gz" -O "${basename}.tar.gz"
+  cd /tmp
+  wget "https://github.com/sharkdp/fd/releases/download/v${version}/${basename}.tar.gz" -O "${basename}.tar.gz"
   tar zxf "$basename.tar.gz"
-  cd "$basename" && sudo cp fd /usr/local/bin/ && sudo cp fd.1 /usr/local/share/man/man1/ && sudo mandb
-  cd /tmp && rm -rf "$basename" "$basename.tar.gz"
+  cd "$basename"
+  if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    cp fd $DOTFILES_TARGET_DIR/bin
+  else
+    sudo cp fd /usr/local/bin/ && sudo cp fd.1 /usr/local/share/man/man1/ && sudo mandb
+  fi
+  cd /tmp
+  rm -rf "$basename" "$basename.tar.gz"
 fi
