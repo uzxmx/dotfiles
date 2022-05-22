@@ -9,6 +9,7 @@ export DOTFILES_TARGET_DIR="$DOTFILES_DIR/.local"
 mkdir -p "$DOTFILES_TARGET_DIR"
 
 source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$DOTFILES_TARGET_DIR/bin:$PATH"
 if ! check_command zsh &>/dev/null; then
   echo "Zsh not found. Installing..."
   log_file="$DOTFILES_TARGET_DIR/.install.log"
