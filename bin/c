@@ -2,10 +2,11 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-source "$dotfiles_dir/scripts/lib/utils/common.sh"
-source "$dotfiles_dir/scripts/lib/fzf.sh"
+source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+source "$DOTFILES_DIR/scripts/lib/fzf.sh"
 
 usage() {
   cat <<-EOF
@@ -27,7 +28,7 @@ change_directory() {
 }
 
 check_directory() {
-  if [[ "$1/" =~ ~/.resources/ ]] && [ ! -e ~/.resources ]; then
+  if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ] && [[ "$1/" =~ ~/.resources/ ]] && [ ! -e ~/.resources ]; then
     git clone git@github.com:uzxmx/resources ~/.resources
   else
     [ ! -e "$1" ] && mkdir -p "$1"
@@ -81,7 +82,7 @@ while [ "$#" -gt 0 ]; do
       use_cwd=1
       ;;
     p | -p)
-      source "$dotfiles_dir/scripts/cd/parent.sh"
+      source "$DOTFILES_DIR/scripts/cd/parent.sh"
       exit
       ;;
     *)
@@ -94,14 +95,17 @@ done
 if [ "$use_cwd" = "1" ]; then
   directories="$(find . -maxdepth 2 -type d ! -path .)"
 else
-  [ -d ~/vagrant_boxes ] || mkdir ~/vagrant_boxes
-  [ -d ~/projects ] || mkdir ~/projects
   directories="\
-$dotfiles_dir
-$HOME/.templates
-$(find ~/.resources -maxdepth 1 -type d | grep -v .git)
-$HOME/.pwn\
+$DOTFILES_DIR
+$DOTFILES_TARGET_DIR/.templates
+$DOTFILES_TARGET_DIR/.pwn\
 "
+
+  if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    directories="$directories
+$(find ~/.resources -maxdepth 1 -type d | grep -v .git)\
+"
+  fi
 
   if [ -d ~/.private ]; then
     directories="$directories
@@ -109,15 +113,24 @@ $(find ~/.private -maxdepth 1 -type d)\
 "
   fi
 
-    directories="$directories
-$(find ~/vagrant_boxes -maxdepth 1 -type d)
+  directories="$directories
 $HOME/tmp
-$(find ~/projects -maxdepth 1 -type d)\
+$DOTFILES_TARGET_DIR/.vim/plugged
+$DOTFILES_TARGET_DIR/.config/coc\
 "
 
-  if [ -f ~/.cd_paths.sh ]; then
+  if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    [ -d ~/vagrant_boxes ] || mkdir ~/vagrant_boxes
+    [ -d ~/projects ] || mkdir ~/projects
     directories="$directories
-$(sh ~/.cd_paths.sh)\
+$(find ~/vagrant_boxes -maxdepth 1 -type d)
+$(find ~/projects -maxdepth 1 -type d)\
+"
+  fi
+
+  if [ -f "$DOTFILES_TARGET_DIR/.cd_paths.sh" ]; then
+    directories="$directories
+$(sh "$DOTFILES_TARGET_DIR/.cd_paths.sh")\
 "
   fi
 fi
