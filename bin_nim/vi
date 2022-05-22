@@ -7,11 +7,23 @@ PATH="$(new_path_exclude "$DOTFILES_DIR/bin_nim")"
 
 if ! check_command nvim &>/dev/null; then
   echo "Neovim not found. Installing..."
-  log_file="$DOTFILES_TARGET_DIR/.install.log"
-  if ! "$DOTFILES_DIR/scripts/install/nvim" &>"$log_file"; then
-    echo "Failed to install neovim. Please see the log at $log_file"
-    exit 1
-  fi
+
+  install_package() {
+    local log_file="$DOTFILES_TARGET_DIR/.install.log"
+    if ! "$DOTFILES_DIR/scripts/install/$1" &>"$log_file"; then
+      echo "Failed to install $2. Please see the log at $log_file"
+      exit 1
+    fi
+  }
+
+  echo "Make sure nodejs is installed..."
+  install_package nodejs nodejs
+
+  echo "Make sure python is installed..."
+  "$DOTFILES_DIR/scripts/install/python"
+  install_package python python
+
+  install_package nvim neovim
   echo 'Neovim installed successfully.'
 fi
 
