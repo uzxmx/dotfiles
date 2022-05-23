@@ -66,7 +66,7 @@ process_dns_list_output() {
 }
 
 select_dns_domain() {
-  run_cli '' alidns DescribeDomains | jq -r '.Domains.Domain[] | .DomainName' | fzf --prompt "Select a domain> "
+  run_cli '' alidns DescribeDomains | jq -r '.Domains.Domain[] | .DomainName' | fzf --prompt "Select a domain> " -1
 }
 
 cmd_dns_list() {
