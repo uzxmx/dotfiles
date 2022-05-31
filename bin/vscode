@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+if is_mac; then
+  vscode="$HOME/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+  if [ ! -e "$vscode" ]; then
+    vscode="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+  fi
+fi
+
+if [ ! -e "$vscode" ]; then
+  abort "Visual Studio Code not found. Please install it first."
+fi
+
+usage() {
+  cat <<-EOF
+Usage: vscode [project-dir]
+
+Wrapper for Visual Studio Code. Open a project specified by a directory, or
+current working directory if no argument is specified.
+EOF
+  exit 1
+}
+
+remainder=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -)
+      "$vscode" "$@"
+      exit
+      ;;
+    -h | --help)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+set - "${remainder[@]}"
+
+opts=(--new-window)
+if [ "$#" -eq 0 ]; then
+  "$vscode" "${opts[@]}" .
+else
+  "$vscode" "${opts[@]}" "$@"
+fi
