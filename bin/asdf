@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
 
-set -e
+set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-asdf_dir="$dotfiles_dir/scripts/asdf"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+asdf_dir="$DOTFILES_DIR/scripts/asdf"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+if ! check_command asdf &>/dev/null; then
+  if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    "$DOTFILES_DIR/scripts/install/asdf"
+  else
+    abort "Please install 'asdf' first."
+  fi
+fi
 
 if [ -z "$ASDF_DATA_DIR" ]; then
   export ASDF_DATA_DIR="${DOTFILES_TARGET_DIR:-$HOME}/.asdf"
@@ -20,9 +31,6 @@ Subcommands:
 EOF
   exit 1
 }
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 alias_cmd() {
   local new_name="$1"
