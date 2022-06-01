@@ -3,10 +3,10 @@
 source "$(dirname "$BASH_SOURCE")/utils.sh"
 
 source "$(dirname "$BASH_SOURCE")/path.sh"
-PATH="$(new_path_exclude "$(realpath "$(dirname "$BASH_SOURCE")/../..")/bin")"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
 
-if [ -n "$PWN_DIR" ]; then
-  PATH="$(new_path_exclude "$(realpath "$PWN_DIR/bin")")"
+if [ -e "$PWN_DIR" ]; then
+  PATH="$(new_path_exclude "$PWN_DIR/bin")"
 fi
 
 alias_cmd() {
