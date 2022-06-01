@@ -1,3 +1,3 @@
 select_plugin() {
-  ls ~/.asdf/plugins | fzf "$@"
+  ls "$ASDF_DATA_DIR/plugins" | fzf "$@"
 }
