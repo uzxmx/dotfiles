@@ -65,7 +65,7 @@ _req() {
   if [ -n "$query" ]; then
     url="$url?$query"
   fi
-  curl -H "Authorization: Qiniu $access_token" -H "Content-Type: $content_type" "$url"
+  curl -s -H "Authorization: Qiniu $access_token" -H "Content-Type: $content_type" "$url"
 }
 
 get_req() {

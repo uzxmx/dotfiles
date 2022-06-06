@@ -17,18 +17,22 @@ QINIU_SECRET_KEY, QINIU_BUCKET), or pass options.
 Subcommands:
   b, bucket - manage buckets
   u, upload - upload files to qiniu
+  l, list   - list files
 EOF
   exit 1
 }
 
 case "$1" in
-  b | bucket | u | upload)
+  b | bucket | u | upload | l | list)
     case "$1" in
       b)
         name="bucket"
         ;;
       u)
         name="upload"
+        ;;
+      l)
+        name="list"
         ;;
       *)
         name="$1"
