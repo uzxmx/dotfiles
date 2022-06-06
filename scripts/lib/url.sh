@@ -38,3 +38,22 @@ url_get_path() {
     echo "$url"
   fi
 }
+
+# This function encodes a string to be url-safe. Note this encodes the whole
+# string, so if you specify a string like `foo=bar`, the `=` character will
+# also be encoded.
+#
+# @params:
+#   $1: the string to be url encoded
+url_encode() {
+  url_encode_by_curl "$@"
+}
+
+url_encode_by_jq() {
+  jq -rn --arg x "$1" '$x|@uri'
+}
+
+url_encode_by_curl() {
+  local result="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "=$1" "")"
+  echo "${result##/?}"
+}
