@@ -20,7 +20,7 @@ case "$name" in
     ask
     "$DOTFILES_DIR/scripts/install/network_tools"
     ;;
-  fzf | fd)
+  fzf | fd | rg)
     "$DOTFILES_DIR/scripts/install/$name"
     ;;
   *)
