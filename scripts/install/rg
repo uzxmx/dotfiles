@@ -4,18 +4,35 @@
 
 set -eo pipefail
 
-type -p rg &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if is_mac; then
-  brew_install ripgrep
-elif has_yum; then
-  sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
-  sudo yum install -y ripgrep
-elif has_dpkg; then
-  version=12.1.1
-  download_and_install_debian_package "https://github.com/BurntSushi/ripgrep/releases/download/$version/ripgrep_${version}_amd64.deb"
+check_command rg &> /dev/null && exit
+
+if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  if is_mac; then
+    brew_install ripgrep
+  elif has_yum; then
+    sudo yum-config-manager --add-repo=https://copr.fedorainfracloud.org/coprs/carlwgeorge/ripgrep/repo/epel-7/carlwgeorge-ripgrep-epel-7.repo
+    sudo yum install -y ripgrep
+  elif has_dpkg; then
+    version=12.1.1
+    download_and_install_debian_package "https://github.com/BurntSushi/ripgrep/releases/download/$version/ripgrep_${version}_amd64.deb"
+  else
+    abort "Unsupported system"
+  fi
 else
-  abort "Unsupported system"
+  version="13.0.0"
+  if is_mac; then
+    platform="x86_64-apple-darwin"
+  else
+    platform="x86_64-unknown-linux-musl"
+  fi
+  install_fn() {
+    local dir="$(find "$1" -type d -maxdepth 1 | grep -v '^\.$' | tail -1)"
+    cd "$dir" && mv rg "$DOTFILES_TARGET_DIR/bin"
+  }
+  download_and_install "https://github.com/BurntSushi/ripgrep/releases/download/$version/ripgrep-$version-$platform.tar.gz" install_fn
 fi

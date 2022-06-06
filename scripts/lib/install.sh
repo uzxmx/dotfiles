@@ -9,6 +9,22 @@
 . $(dirname "$BASH_SOURCE")/dmg.sh
 . $(dirname "$BASH_SOURCE")/path.sh
 
+# Download package and install.
+#
+# @params
+#   $1: download url
+#   $2: install function
+download_and_install() {
+  local tmpdir
+  create_tmpdir tmpdir
+  local path_to_save="$tmpdir/$(basename "$1")"
+  "$DOTFILES_DIR/bin/cget" "$1" "$path_to_save"
+  if [[ "$1" =~ \.tar.gz$ ]]; then
+    tar zxf "$path_to_save" -C "$tmpdir"
+  fi
+  $2 "$tmpdir"
+}
+
 # Parse arguments.
 remainder=()
 while [ $# -gt 0 ]; do
