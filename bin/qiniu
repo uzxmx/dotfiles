@@ -18,12 +18,13 @@ Subcommands:
   b, bucket - manage buckets
   u, upload - upload files to qiniu
   l, list   - list files
+  f, filter - filter listed files
 EOF
   exit 1
 }
 
 case "$1" in
-  b | bucket | u | upload | l | list)
+  b | bucket | u | upload | l | list | f | filter)
     case "$1" in
       b)
         name="bucket"
@@ -33,6 +34,9 @@ case "$1" in
         ;;
       l)
         name="list"
+        ;;
+      f)
+        name="filter"
         ;;
       *)
         name="$1"

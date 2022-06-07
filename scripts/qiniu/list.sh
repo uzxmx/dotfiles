@@ -4,7 +4,8 @@ usage_list() {
   cat <<-EOF
 Usage: qiniu list
 
-List files.
+List files. If you want to filter by some conditions, you can use 'filter'
+subcommand.
 
 Options:
   -k <access_key> access key
