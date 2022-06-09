@@ -34,6 +34,14 @@ func (b *BitBool) Scan(src interface{}) error {
 	return nil
 }
 
+func (b BitBool) String() string {
+	if b {
+		return "true"
+	} else {
+		return "false"
+	}
+}
+
 func usage() {
 	fmt.Fprintf(os.Stderr, `Usage: mysql csv
 
@@ -179,8 +187,10 @@ func main() {
 				if v.Valid {
 					content.WriteString(v.Time.String())
 				}
+			case *BitBool:
+				fmt.Fprintf(&content, "%s", v.String())
 			default:
-				panic(fmt.Errorf("Unknown column: %v", v))
+				panic(fmt.Errorf("Unknown column: %s", v))
 			}
 
 		}
