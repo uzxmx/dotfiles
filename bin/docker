@@ -17,7 +17,7 @@ Subcommands:
   s          - manage services
   list_tags  - list image tags from dockerhub
   pids       - show pids of containers
-  prune      - remove unused and dangling(unamed) images, and unused volumes
+  prune      - remove unused data
   fzf        - search a command by its description and execute
 EOF
   exit 1
@@ -75,11 +75,12 @@ cmd_pids() {
 }
 
 cmd_prune() {
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
-  local reply="$(yesno "Are you sure you want to remove all unused images and volumes? (y/N)" "no")"
-  [ "$reply" = "no" ] && echo Cancelled && exit
-  docker image prune -a -f
-  docker volume prune -f
+  # source "$dotfiles_dir/scripts/lib/prompt.sh"
+  # local reply="$(yesno "Are you sure you want to remove all unused images and volumes? (y/N)" "no")"
+  # [ "$reply" = "no" ] && echo Cancelled && exit
+  # docker image prune -a -f
+  # docker volume prune -f
+  docker system prune -a
 }
 
 run() {
