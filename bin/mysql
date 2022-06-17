@@ -33,7 +33,7 @@ _run_cli() {
   if [ -z "$cli" ]; then
     cli="$(check_cmd_with_docker_fallback mysql mysql mysql:5.7.32)"
   fi
-  $prefix $cli "$@"
+  $prefix $cli --default-character-set=utf8 "$@"
 }
 
 run_cli() {
