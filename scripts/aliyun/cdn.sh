@@ -350,10 +350,13 @@ cmd_cdn_configure() {
   fi
 
   if [ -n "$source_host" -a "$source_host" != "$(_get_cdn_domain_config "$domain" set_req_host_header)" ]; then
-    run_cli '' cdn SetSourceHostConfig --DomainName "$domain" --BackSrcDomain "$source_host"
+    echo "Config CDN: set_req_host_header"
+    # See https://help.aliyun.com/document_detail/388460.html
+    run_cli '' cdn BatchSetCdnDomainConfig --DomainNames "$domain" --Functions "[{ \"functionArgs\": [{ \"argName\": \"domain_name\", \"argValue\": \"$source_host\" }], \"functionName\": \"set_req_host_header\" }]"
   fi
 
   if ! _is_cdn_certificate_enabled "$domain"; then
+    echo "Config CDN: SetDomainServerCertificate"
     run_cli '' cdn SetDomainServerCertificate --DomainName "$domain" --ServerCertificateStatus on --CertType free
   fi
 }
