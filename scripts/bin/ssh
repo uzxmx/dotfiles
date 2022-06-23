@@ -7,6 +7,7 @@ if [ "$#" -gt 0 ]; then
 fi
 
 host_label=$("$DOTFILES_DIR/scripts/bin/select-ssh-host")
+[ -z "$host_label" ] && exit
 
 exec perl <<EOF
   use strict;
