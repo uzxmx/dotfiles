@@ -14,7 +14,9 @@ if ! check_command zsh &>/dev/null; then
   echo "Zsh not found. Installing..."
   log_file="$DOTFILES_TARGET_DIR/.install.log"
   if ! "$DOTFILES_DIR/scripts/install/zsh" &>"$log_file"; then
-    echo "Failed to install zsh. Please see the log at $log_file"
+    echo -e "Failed to install zsh.\n"
+    tail -50 "$log_file"
+    echo -e "\nThe log can be found at $log_file"
     exit 1
   fi
   echo 'Zsh installed successfully.'
