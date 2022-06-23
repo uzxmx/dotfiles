@@ -10,16 +10,21 @@ ssh intactly.
 
 Options:
   -d, --dry-run Only output SSH command
+  -p Enable http proxy
 EOF
   exit 1
 }
 
 cmd_ssh() {
   local host_label dry_run
+  local -a opts
   while [ $# -gt 0 ]; do
     case "$1" in
       -d)
         dry_run=1
+        ;;
+      -p)
+        opts+=(-R 8123:localhost:8123)
         ;;
       -)
         shift
@@ -42,11 +47,13 @@ cmd_ssh() {
   if [ -z "$host_label" ]; then
     host_label=$("$DOTFILES_DIR/scripts/bin/select-ssh-host")
   fi
+  [ -z "$host_label" ] && exit
+
 
   local cmd=$("$DOTFILES_DIR/scripts/bin/build-ssh-cmd" "$host_label")
   if [ -z "$dry_run" ]; then
-    $cmd "$@"
+    $cmd "${opts[@]}" "$@"
   else
-    echo $cmd "$@"
+    echo $cmd "${opts[@]}" "$@"
   fi
 }
