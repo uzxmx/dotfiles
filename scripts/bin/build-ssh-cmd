@@ -1,0 +1,38 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Cwd;
+use String::ShellQuote 'shell_quote';
+
+my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+
+require $dotfiles_dir . '/scripts/perl/ssh.pl';
+
+if (!scalar(@ARGV) || !$ARGV[0]) {
+  print "A host label is required.\n";
+  exit 1;
+}
+my $s = select_host($ARGV[0]);
+
+my @command = ('ssh');
+
+if (my $identity = $s->get_identity()) {
+  push @command, '-i', $identity;
+}
+
+if (my $port = $s->get_port()) {
+  push @command, '-p', $port;
+}
+
+if (my $user_host = $s->get_user_host()) {
+  push @command, $user_host;
+}
+
+if (my $ssh_options = $s->get_ssh_options()) {
+  push @command, '-o', $_ for @$ssh_options;
+}
+
+print shell_quote(@command);

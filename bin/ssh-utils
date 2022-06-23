@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+ssh_utils_dir="$DOTFILES_DIR/scripts/ssh-utils"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+SSH utilities.
+
+Subcommands:
+  ssh - enhanced SSH command
+EOF
+  exit 1
+}
+
+case "$1" in
+  ssh)
+    case "$1" in
+      *)
+        name="$1"
+    esac
+    source "$ssh_utils_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac

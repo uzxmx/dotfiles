@@ -19,10 +19,13 @@ sub remove_path_from_env {
 sub print_and_exit {
   my ($cmdline, $code) = @_;
 
-  open(SIGNAL, ">&=3");
-  print SIGNAL shell_quote(@$cmdline);
-  close(SIGNAL);
-  exit $code;
+  if (open(SIGNAL, ">&=3")) {
+    print SIGNAL shell_quote(@$cmdline);
+    close(SIGNAL);
+    exit $code;
+  } else {
+    exec @$cmdline;
+  }
 }
 
 sub run_original_if_required {

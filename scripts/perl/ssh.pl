@@ -18,6 +18,9 @@ sub check_ssh_hosts_file {
 }
 
 sub select_host {
+  my ($host_label) = @_;
+  my $key;
+
   my $file = glob('~/.ssh_hosts');
   unless (-e $file) {
     print_and_exit([basename($0)], 100);
@@ -34,28 +37,32 @@ sub select_host {
   my $text = '';
   $text .= "$_->{label}\n" for @$json;
 
-  open2 my $out, my $in, 'fzf --expect=ctrl-e' or die $!;
+  if (!$host_label) {
+    open2 my $out, my $in, 'fzf --expect=ctrl-e' or die $!;
 
-  print $in "$_->{label}\n" for @$json;
-  close($in);
-  my $key = <$out>;
-  my $selected = <$out>;
-  close($out);
+    print $in "$_->{label}\n" for @$json;
+    close($in);
+    $key = <$out>;
+    my $selected = <$out>;
+    close($out);
 
-  if ($key) {
-    chomp($key);
-  }
-  if ($selected) {
-    chomp($selected);
-  }
+    if ($key) {
+      chomp($key);
+    }
+    if ($selected) {
+      chomp($selected);
+    }
 
-  if (!$selected) {
-    exit;
+    if (!$selected) {
+      exit;
+    }
+
+    $host_label = $selected;
   }
 
   my $host;
   for my $h (@$json) {
-    if ($h->{label} eq $selected) {
+    if ($h->{label} eq $host_label) {
       $host = $h;
       last;
     }
@@ -75,6 +82,11 @@ sub new {
    bless $self, $class;
    $self->set_interactive(::basename($0) eq 'ssh');
    return $self;
+}
+
+sub get_label {
+  my ($self) = @_;
+  return $self->{_host}->{label};
 }
 
 sub set_interactive {

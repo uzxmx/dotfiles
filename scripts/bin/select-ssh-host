@@ -1,0 +1,14 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Basename;
+use Cwd;
+
+my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+
+require $dotfiles_dir . '/scripts/perl/ssh.pl';
+
+my $s = select_host();
+print $s->get_label(), "\n";
