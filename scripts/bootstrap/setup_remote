@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+usage() {
+  cat <<-EOF
+Usage: $0
+
+Utility to setup dotfiles repository on the remote system through SSH.
+
+Options:
+  -o <ssh-options> SSH options
+EOF
+  exit 1
+}
+
+pods=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -o)
+      shift
+      ssh_opts="$1"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+file="$(dirname "$0")/inc/non_intrusive_mode_setup"
+if [ -z "$ssh_opts" ]; then
+  "$DOTFILES_DIR/bin/ssh-utils" ssh -p - "bash -s" < "$file"
+else
+  ssh $ssh_opts -R 8123:localhost:8123 "bash -s" < "$file"
+fi
+

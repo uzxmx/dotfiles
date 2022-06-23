@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+DOTFILES_PARENT_DIR="$HOME/tmp"
+DOTFILES_DIR="$DOTFILES_PARENT_DIR/dotfiles"
+
+mkdir -p "$DOTFILES_PARENT_DIR"
+
+export http_proxy=http://localhost:8123
+export HTTP_PROXY=$http_proxy
+export https_proxy=$http_proxy
+export HTTPS_PROXY=$http_proxy
+
+if [ ! -d "$DOTFILES_DIR" ]; then
+  git clone --depth 1 https://github.com/uzxmx/dotfiles.git "$DOTFILES_DIR"
+fi
+
+cd "$DOTFILES_DIR"
+
+alias_cmd="alias non_intrusive_shell=\"$DOTFILES_DIR/scripts/misc/non_intrusive_shell\""
+
+if ! grep "$alias_cmd" ~/.bashrc &>/dev/null; then
+  echo "$alias_cmd" >>~/.bashrc
+fi
+
+"$DOTFILES_DIR/scripts/misc/non_intrusive_shell" -s <<'EOF'
+  # The shell may not be interactive and '.zshrc' won't get loaded. So we source
+  # it manually.
+  source $DOTFILES_TARGET_DIR/.zshrc
+
+  $DOTFILES_DIR/scripts/install/fzf
+  $DOTFILES_DIR/scripts/install/fd
+EOF
