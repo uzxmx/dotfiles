@@ -32,4 +32,4 @@ if [ ! -e "$DOTFILES_TARGET_DIR/.zsh_plugins.sh" ]; then
   echo "Finished building zsh plugins."
 fi
 
-exec "$DOTFILES_DIR/bin_nim/zsh"
+exec "$DOTFILES_DIR/bin_nim/zsh" "$@"
