@@ -35,4 +35,4 @@ if (my $ssh_options = $s->get_ssh_options()) {
   push @command, '-o', $_ for @$ssh_options;
 }
 
-print shell_quote(@command);
+print shell_quote($s->build_command(@command));

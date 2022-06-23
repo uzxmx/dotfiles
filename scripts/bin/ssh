@@ -1,36 +1,16 @@
-#!/usr/bin/env perl
+#!/usr/bin/env bash
 
-use strict;
-use warnings;
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-use File::Basename;
-use Cwd;
+if [ "$#" -gt 0 ]; then
+  exec ssh "$@"
+fi
 
-my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+host_label=$("$DOTFILES_DIR/scripts/bin/select-ssh-host")
 
-require $dotfiles_dir . '/scripts/perl/ssh.pl';
-
-check_ssh_hosts_file();
-run_original_if_required();
-
-my $s = select_host();
-
-my @command = ('ssh');
-
-if (my $identity = $s->get_identity()) {
-  push @command, '-i', $identity;
-}
-
-if (my $port = $s->get_port()) {
-  push @command, '-p', $port;
-}
-
-if (my $user_host = $s->get_user_host()) {
-  push @command, $user_host;
-}
-
-if (my $ssh_options = $s->get_ssh_options()) {
-  push @command, '-o', $_ for @$ssh_options;
-}
-
-$s->run(@command);
+exec perl <<EOF
+  use strict;
+  use warnings;
+  require '$DOTFILES_DIR/scripts/perl/wrapper.pl';
+  print_and_exit(['ssh-utils', 'ssh', '$host_label'], 100);
+EOF

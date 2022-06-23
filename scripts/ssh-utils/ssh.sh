@@ -7,14 +7,20 @@ build the ssh command and connect to the remote.
 
 All arguments after '-' should be valid ssh arguments, and will be passed into
 ssh intactly.
+
+Options:
+  -d, --dry-run Only output SSH command
 EOF
   exit 1
 }
 
 cmd_ssh() {
-  local host_label
+  local host_label dry_run
   while [ $# -gt 0 ]; do
     case "$1" in
+      -d)
+        dry_run=1
+        ;;
       -)
         shift
         break
@@ -38,5 +44,9 @@ cmd_ssh() {
   fi
 
   local cmd=$("$DOTFILES_DIR/scripts/bin/build-ssh-cmd" "$host_label")
-  $cmd "$@"
+  if [ -z "$dry_run" ]; then
+    $cmd "$@"
+  else
+    echo $cmd "$@"
+  fi
 }

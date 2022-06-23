@@ -107,7 +107,7 @@ sub set_interactive {
   $self->{_command} = $command;
 }
 
-sub run {
+sub build_command {
   my ($self, @command) = @_;
 
   my @tmp = ::shellwords($self->{_command}->{template});
@@ -122,6 +122,14 @@ sub run {
       push @cmdline, $e;
     }
   }
+
+  return @cmdline;
+}
+
+sub run {
+  my ($self, @command) = @_;
+
+  my @cmdline = $self->build_command(@command);
 
   # Don't remove dotfiles from PATH, because we may rely on other
   # executables in that path, unless we've changed to use absolute paths.
