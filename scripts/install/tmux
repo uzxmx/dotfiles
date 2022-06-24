@@ -7,6 +7,25 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
+usage() {
+  cat <<-EOF
+Install tmux.
+
+Options:
+  --from-git-repo Install from git repo
+EOF
+  exit 1
+}
+
+parse_args="
+  --from-git-repo)
+    from_git_repo=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_command tmux &> /dev/null && exit
@@ -24,16 +43,35 @@ if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   fi
 fi
 
-dir="/tmp/tmux"
-git_clone https://github.com/tmux/tmux.git "$dir" --branch "$version" --depth 1
+if has_yum; then
+  sudo yum install -y libevent-devel
+fi
 
-cd "$dir"
-sh autogen.sh
+do_install() {
+  cd "$1"
 
-dest_path="$DOTFILES_TARGET_DIR/opt/tmux-$version"
-./configure --prefix "$dest_path"
-make
-make install
-link="$DOTFILES_TARGET_DIR/bin/tmux"
-[ -e "$link" ] || create_link "$link" "$dest_path/bin/tmux"
-rm -rf "$dir"
+  if [ ! -e configure ] && [ -e autogen.sh ]; then
+    sh autogen.sh
+  fi
+
+  local dest_path="$DOTFILES_TARGET_DIR/opt/tmux-$version"
+  ./configure --prefix "$dest_path"
+  make
+  make install
+  local link="$DOTFILES_TARGET_DIR/bin/tmux"
+  [ -e "$link" ] || create_link "$link" "$dest_path/bin/tmux"
+}
+
+if [ -n "$from_git_repo" ]; then
+  dir="/tmp/tmux-$version"
+  git_clone https://github.com/tmux/tmux.git "$dir" --branch "$version" --depth 1
+
+  do_install "$dir"
+  rm -rf "$dir"
+else
+  install_fn() {
+    local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+    do_install "$dir"
+  }
+  download_and_install "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" install_fn
+fi
