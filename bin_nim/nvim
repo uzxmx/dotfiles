@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin_nim")"
+
+if [ ! -e "$DOTFILES_TARGET_DIR/bin/nvim" ]; then
+  echo "Neovim not found. Installing..."
+
+  install_package() {
+    local log_file="$DOTFILES_TARGET_DIR/.install.log"
+    if ! "$DOTFILES_DIR/scripts/install/$1" &>"$log_file"; then
+      echo "Failed to install $2. Please see the log at $log_file"
+      exit 1
+    fi
+  }
+
+  echo "Make sure nodejs is installed..."
+  install_package nodejs nodejs
+
+  echo "Make sure python is installed..."
+  "$DOTFILES_DIR/scripts/install/python"
+  install_package python python
+
+  install_package nvim neovim
+  echo 'Neovim installed successfully.'
+fi
+
+export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
+
+exec nvim "$@"
