@@ -25,7 +25,7 @@ EOF
 
 cmd_d() {
   local opts=()
-  local fzf_mode
+  local fzf_mode=1
   local double_dash
   local commits=()
   local paths=()
