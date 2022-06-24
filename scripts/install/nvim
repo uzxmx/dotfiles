@@ -4,11 +4,8 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
-
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
-
-. "$dotfiles_dir/scripts/lib/install.sh"
 
 usage() {
   cat <<-EOF
@@ -34,33 +31,32 @@ EOF
 
 version="v0.7.0"
 from_source="$INSTALL_FROM_SOURCE"
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    -v)
-      shift
-      version="$1"
-      if [[ ! "$version" =~ ^v ]]; then
-        version="v$version"
-      fi
-      ;;
-    -n)
-      version="nightly"
-      ;;
-    --non-primary)
-      non_primary=1
-      ;;
-    --do-all-steps)
-      do_all_steps=1
-      ;;
-    --from-source)
-      from_source=1
-      ;;
-    *)
-      usage
-      ;;
-  esac
-  shift
-done
+parse_args="
+  -v)
+    shift
+    version=\"\$1\"
+    if [[ ! \"\$version\" =~ ^v ]]; then
+      version=\"v\$version\"
+    fi
+    ;;
+  -n)
+    version=nightly
+    ;;
+  --non-primary)
+    non_primary=1
+    ;;
+  --do-all-steps)
+    do_all_steps=1
+    ;;
+  --from-source)
+    from_source=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_link() {
   local always_make="$1"
@@ -72,7 +68,7 @@ check_link() {
   [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/vi" ] && rm "$DOTFILES_TARGET_DIR/bin/vi"
   [ -e "$DOTFILES_TARGET_DIR/bin/vi" ] || create_link "$DOTFILES_TARGET_DIR/bin/vi" "$nvim_path"
   [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/nvim" ] && rm "$DOTFILES_TARGET_DIR/bin/nvim"
-  [ -e "$DOTFILES_TARGET_DIR/bin/vi" ] || create_link "$DOTFILES_TARGET_DIR/bin/nvim" "$nvim_path"
+  [ -e "$DOTFILES_TARGET_DIR/bin/nvim" ] || create_link "$DOTFILES_TARGET_DIR/bin/nvim" "$nvim_path"
 }
 
 if [ "$do_all_steps" = "1" ]; then
@@ -101,7 +97,7 @@ install_from_prebuilt() {
     abort "Unsupported system"
   fi
 
-  "$dotfiles_dir/bin/cget" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
+  "$DOTFILES_DIR/bin/cget" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
 
   mkdir -p "$dest_dir"
   $sudo_opt tar zxf "$path_to_save" -C "$dest_dir" --strip-components=1

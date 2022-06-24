@@ -27,20 +27,28 @@ download_and_install() {
 
 # Parse arguments.
 remainder=()
-while [ $# -gt 0 ]; do
-  case "$1" in
-    -*)
-      if type usage &>/dev/null; then
-        usage
-      else
-        echo "Unsupported option '$1'"
-        exit 1
-      fi
-      ;;
-    *)
-      remainder+=("$1")
-      ;;
-  esac
-  shift
-done
+_parse_arguments() {
+  cat <<EOF
+  while [ \$# -gt 0 ]; do
+    case "\$1" in
+      $1
+      -*)
+        if type usage &>/dev/null; then
+          usage
+        else
+          echo "Unsupported option '\$1'"
+          exit 1
+        fi
+        ;;
+      *)
+        remainder+=("\$1")
+        ;;
+    esac
+    shift
+  done
+EOF
+}
+
+eval "$(_parse_arguments "$parse_args")"
+
 set - "${remainder[@]}"
