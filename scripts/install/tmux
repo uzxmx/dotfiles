@@ -4,31 +4,36 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-type -p tmux &> /dev/null && exit
+check_command tmux &> /dev/null && exit
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+version="3.0a"
+if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  if is_mac; then
+    brew_install tmux
+    exit
+  fi
 
-if is_mac; then
-  brew_install tmux
-  exit
-fi
-
-if has_apt; then
-  # Required for copying to system clipboard.
-  sudo apt-get install -y clip
+  if has_apt; then
+    # Required for copying to system clipboard.
+    sudo apt-get install -y clip
+  fi
 fi
 
 dir="/tmp/tmux"
-git_clone https://github.com/tmux/tmux.git "$dir" --branch 3.0a --depth 1
+git_clone https://github.com/tmux/tmux.git "$dir" --branch "$version" --depth 1
 
 cd "$dir"
 sh autogen.sh
-./configure
+
+dest_path="$DOTFILES_TARGET_DIR/opt/tmux-$version"
+./configure --prefix "$dest_path"
 make
-sudo make install
+make install
+link="$DOTFILES_TARGET_DIR/bin/tmux"
+[ -e "$link" ] || create_link "$link" "$dest_path/bin/tmux"
 rm -rf "$dir"
