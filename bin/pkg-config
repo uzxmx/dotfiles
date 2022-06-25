@@ -51,7 +51,7 @@ cmd_list() {
 alias_cmd l list
 
 case "$1" in
-  list | print_search_path)
+  l | list | p | print_search_path)
     cmd="$1"
     shift
     case "$1" in
