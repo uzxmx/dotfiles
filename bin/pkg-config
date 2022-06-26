@@ -2,64 +2,37 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+pkg_config_dir="$DOTFILES_DIR/scripts/pkg-config"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
-  cat <<-EOF 1>&2
+  cat <<-EOF
 Wrapper for pkg-config utility.
 
 Subcommands:
-  l, list              - list all known packages
+  s, show              - show details of a package
   p, print_search_path - print the search path
 EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-usage_print_search_path() {
-  cat <<-EOF 1>&2
-Usage: pkg-config print_search_path
-
-Print the search path.
-EOF
-  exit 1
-}
-
-cmd_print_search_path() {
-  pkg-config --variable pc_path pkg-config
-}
-alias_cmd p print_search_path
-
-cmd_list() {
-  pkg-config --list-all | fzf
-}
-alias_cmd l list
-
 case "$1" in
-  l | list | p | print_search_path)
-    cmd="$1"
-    shift
+  s | show | p | print_search_path)
     case "$1" in
-      -h)
-        type "usage_$cmd" &>/dev/null && "usage_$cmd"
+      s)
+        name="show"
+        ;;
+      p)
+        name="print_search_path"
+        ;;
+      *)
+        name="$1"
         ;;
     esac
-    "cmd_$cmd" "$@"
+    source "$pkg_config_dir/$name.sh"
+    run "$@"
     ;;
   -h)
     usage
