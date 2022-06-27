@@ -21,6 +21,8 @@ Options:
   [--filename] Also search filename
   [-H | --hidden] Do not skip hidden files/directories
   [-L | --follow] Follow symbolic links
+  [-I | --no-ignore] Show search results from files and directories that would
+                     otherwise be ignored by .gitignore, .ignore or .fdignore files
   [-h] Show help
 
 Examples:
@@ -32,7 +34,7 @@ EOF
 
 rg_options=()
 follow_links=
-
+no_ignore=
 files=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -51,6 +53,9 @@ while [ $# -gt 0 ]; do
       ;;
     -L | --follow)
       follow_links="$1"
+      ;;
+    -I | --no-ignore)
+      no_ignore=1
       ;;
     -*)
       usage
@@ -79,7 +84,6 @@ else
 fi
 
 export BAT_STYLE="numbers,header"
-no_ignore=
 if [ "$(tput cols)" -ge 160 ]; then
   preview_window="right"
 else
