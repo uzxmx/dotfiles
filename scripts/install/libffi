@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Install libffi.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+version="3.4.2"
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+  ./configure --prefix="$DOTFILES_TARGET_DIR/sdk"
+  make
+  make install
+}
+download_and_install "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz" install_fn
