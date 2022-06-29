@@ -84,7 +84,8 @@ do_install() {
   make
   make install
   local link="$DOTFILES_TARGET_DIR/bin/tmux"
-  [ -e "$link" ] || create_link "$link" "$dest_path/bin/tmux"
+  [ -e "$link" ] rm -rf "$link"
+  create_link "$link" "$dest_path/bin/tmux"
 }
 
 if [ -n "$from_git_repo" ]; then
