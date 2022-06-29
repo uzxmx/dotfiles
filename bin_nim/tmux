@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin_nim")"
+
+export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
+
+exec tmux "$@"
