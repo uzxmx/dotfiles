@@ -13,6 +13,7 @@ Install tmux.
 
 Options:
   --from-git-repo Install from git repo
+  --install-plugins Install plugins
 EOF
   exit 1
 }
@@ -21,6 +22,9 @@ parse_args="
   --from-git-repo)
     from_git_repo=1
     ;;
+  --install-plugins)
+    install_plugins=1
+    ;;
   *)
     usage
     ;;
@@ -28,7 +32,19 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-check_command tmux &> /dev/null && exit
+check_plugins() {
+  [ -z "$install_plugins" ] && return
+
+  local plugin
+  while read plugin; do
+    local dir="$DOTFILES_TARGET_DIR/.tmux/plugins/$(basename "$plugin")"
+    if [ -z "$(ls "$dir" 2>/dev/null || true)" ]; then
+      git clone --depth 1 "https://github.com/$plugin" "$dir"
+    fi
+  done < <(cat "$DOTFILES_DIR/tmux.conf" | grep '^set-option -g @plugin' | cut -d ' ' -f 4 | sed "s/'//g")
+}
+
+check_command tmux &> /dev/null && check_plugins &&  exit
 
 version="3.0a"
 if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
@@ -75,3 +91,6 @@ else
   }
   download_and_install "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" install_fn
 fi
+
+install_plugins=1
+check_plugins

@@ -267,9 +267,6 @@ for pod in "${pods[@]}"; do
 
       is_pod_enabled gopls && run ./scripts/install/gopls
       ;;
-    tmux)
-      run ./scripts/misc/setup_tmux
-      ;;
   esac
 done
 
