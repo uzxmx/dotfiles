@@ -7,6 +7,7 @@ Usage: aliyun oss
 Manage OSS.
 
 Subcommands:
+  mb      - Make bucket
   l, list - List buckets or objects
   cp      - upload, download or copy objects
 EOF
@@ -19,7 +20,7 @@ cmd_oss() {
   [ -z "$cmd" ] && usage_oss
 
   case "$cmd" in
-    l | list | cp)
+    mb | l | list | cp)
       case "$cmd" in
         l)
           cmd="list"
@@ -97,4 +98,50 @@ cmd_oss_cp() {
 
   process_profile_opts
   run_cli '' oss cp "$@"
+}
+
+usage_oss_mb() {
+  cat <<-EOF
+Usage: aliyun oss mb <bucket-name>
+
+Create a bucket.
+
+Options:
+  -e <endpoint-region> the endpoint region, default is 'cn-shanghai', you can execute 'aliyun ecs regions' to get one
+  -a <acl> the access mode, values can be 'public-read-write' / 'public-read' / 'private', default is 'private'
+EOF
+  exit 1
+}
+
+cmd_oss_mb() {
+  local bucket
+  local endpoint_region="cn-shanghai"
+  local acl="private"
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -e)
+        shift
+        endpoint_region="$1"
+        ;;
+      -a)
+        shift
+        acl="$1"
+        ;;
+      -*)
+        usage_oss_mb
+        ;;
+      *)
+        if [ -z "$bucket" ]; then
+          bucket="$1"
+        else
+          abort "Only one bucket name should be specified."
+        fi
+    esac
+    shift
+  done
+
+  [ -z "$bucket" ] && abort "A bucket name should be specified."
+
+  process_profile_opts
+  run_cli '' oss mb --endpoint "oss-$endpoint_region.aliyuncs.com" --acl "$acl" "oss://$bucket"
 }
