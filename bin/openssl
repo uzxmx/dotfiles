@@ -2,8 +2,10 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-openssl_dir="$dotfiles_dir/scripts/openssl"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+openssl_dir="$DOTFILES_DIR/scripts/openssl"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -27,39 +29,12 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
 check_host() {
   [ -n "$1" ] || (echo 'Host is required' && exit 1)
 }
 
 show_expiration() {
   echo | openssl s_client -connect "$1:443" -servername "$1" 2>/dev/null | openssl x509 -noout -dates
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
 }
 
 run_fallback() {

@@ -70,10 +70,10 @@ cmd_ocsp_req() {
   done
 
   check_host "$arg"
-  local host="$(echo "$1" | awk -F: '{print $1}')"
-  local port="$(echo "$1" | awk -F: '{print $2}')"
+  local host="$(echo "$arg" | awk -F: '{print $1}')"
+  local port="$(echo "$arg" | awk -F: '{print $2}')"
   if [ "$check_stapling" = "1" ]; then
-    local resp="$(parse_ocsp_response "$(openssl s_client -connect "$host:${port:-443}" -servername "$1" -status < /dev/null 2>/dev/null)")"
+    local resp="$(parse_ocsp_response "$(openssl s_client -connect "$host:${port:-443}" -servername "$arg" -status < /dev/null 2>/dev/null)")"
     if [ -z "$resp" ]; then
       echo 'OCSP stapling is not enabled.'
     else
@@ -85,13 +85,13 @@ cmd_ocsp_req() {
   fi
 
   local cert_file="$(mktemp)"
-  cmd_cert "$host" >"$cert_file"
+  "$DOTFILES_DIR/bin/openssl" cert "$host" >"$cert_file"
   uri="$(openssl x509 -noout -ocsp_uri -in "$cert_file")"
   if [ "$show_uri" = "1" ]; then
     echo "OCSP Responder URI: $uri"
   else
     local chain_file="$(mktemp)"
-    cmd_chain "$host" >"$chain_file"
+    "$DOTFILES_DIR/bin/openssl" chain "$host" >"$chain_file"
     # It may result in "Bad Request" without "Host" header. See http://www.jfcarter.net/~jimc/documents/bugfix/21-openssl-ocsp.html.
     local resp="$(parse_ocsp_response "$(openssl ocsp -issuer "$chain_file" -cert "$cert_file" -text -url "$uri" -header Host "$(echo "$uri" | sed -E 's#(https?://)?([^/:]+).*#\2#')" 2>/dev/null)")"
     [ "$verbose" = "1" ] && echo -e "$resp\n"
