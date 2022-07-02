@@ -2,46 +2,32 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-docker_dir="$dotfiles_dir/scripts/docker"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+docker_dir="$DOTFILES_DIR/scripts/docker"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
 Wrapper for docker utility.
 
-Subcommands:
-  p          - pull image from a mirror
+Show commands:
   l          - show logs of a container selected by fzf
+  ps         - list containers
+  list_tags  - list image tags from dockerhub
+  pids       - show pids of containers
+
+Remove commands:
+  rm         - remove docker containers
+  prune      - remove unused data
+
+Misc commands:
+  p          - pull image from a mirror
   e, exec    - execute a comand in a container selected by fzf
   r, run     - run a docker image
   s          - manage services
-  list_tags  - list image tags from dockerhub
-  pids       - show pids of containers
-  prune      - remove unused data
-  fzf        - search a command by its description and execute
 EOF
   exit 1
-}
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-FZF_COMMANDS="Show exited containers\tdocker ps --filter=\"status=exited\"
-Remove containers exited before\t$docker_dir/rm --exited
-Remove containers with created status\t$docker_dir/rm --created
-"
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
 }
 
 usage_list_tags() {
@@ -75,7 +61,7 @@ cmd_pids() {
 }
 
 cmd_prune() {
-  # source "$dotfiles_dir/scripts/lib/prompt.sh"
+  # source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   # local reply="$(yesno "Are you sure you want to remove all unused images and volumes? (y/N)" "no")"
   # [ "$reply" = "no" ] && echo Cancelled && exit
   # docker image prune -a -f
@@ -83,26 +69,13 @@ cmd_prune() {
   docker system prune -a
 }
 
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
+[ "$#" -eq 0 ] && usage
 
 case "$1" in
-  fzf)
-    source "$dotfiles_dir/scripts/lib/cmd_fzf.sh"
-    run "$@"
-    ;;
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | e | exec | p | r | run | s)
+  l | e | exec | p | r | run | rm | s | ps)
     case "$1" in
       l)
         name="logs"
