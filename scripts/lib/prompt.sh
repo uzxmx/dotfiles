@@ -1,5 +1,16 @@
 #!/bin/sh
 
+_prompt_read_reply() {
+  if type -p rlwrap &>/dev/null; then
+    rlwrap -S "$1" head -1
+  else
+    echo -n "$1" >/dev/stderr
+    local reply
+    read reply
+    echo "$reply"
+  fi
+}
+
 # Prompt for yes/no
 #
 # @params:
@@ -17,9 +28,9 @@
 yesno() {
   local reply
   if [ -t 0 ]; then
-    reply=$(rlwrap -S "$1" head -1)
+    reply=$(_prompt_read_reply "$1")
   else
-    reply=$(rlwrap -S "$1" head -1 </dev/tty)
+    reply=$(_prompt_read_reply "$1" </dev/tty)
   fi
   reply=$(echo "${reply:-$2}" | tr "A-Z" "a-z" )
   if $(echo "$reply" | grep -E "^y|yes$" &>/dev/null); then
