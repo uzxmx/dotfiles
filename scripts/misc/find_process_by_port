@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Find which process is listening at or connected to a specific port.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+if check_command lsof &>/dev/null; then
+  "$DOTFILES_DIR/bin/lsof" port "$@"
+fi
