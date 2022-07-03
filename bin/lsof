@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+lsof_dir="$DOTFILES_DIR/scripts/lsof"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for lsof utility.
+
+Subcommands:
+  p, port - show port
+EOF
+  exit 1
+}
+
+[ "$#" -eq 0 ] && usage
+
+case "$1" in
+  p | port)
+    case "$1" in
+      p)
+        name="port"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$lsof_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    lsof "$@"
+    ;;
+  *)
+    lsof "$@"
+    ;;
+esac
