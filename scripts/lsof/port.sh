@@ -42,6 +42,8 @@ cmd_port() {
     shift
   done
 
+  [ -z "$port" ] && usage_port
+
   if [ -n "$state" ]; then
     [ -z "$protocol" ] && abort "A protocol must be specified by '-p'."
     opts+=(-s "$protocol:$state")
