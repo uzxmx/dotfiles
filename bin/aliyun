@@ -25,6 +25,8 @@ variables.
 
 The third way is to use 'profile use' command to set a defaul profile.
 
+To find a supported region, you can execute 'aliyun ecs regions'.
+
 Common options:
   --region <region>
   --access-key-id <access-key-id>
