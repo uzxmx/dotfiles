@@ -39,11 +39,14 @@ elif has_apt; then
 fi
 
 version="5.8"
-path_to_save="/tmp/zsh-$version.tar.xz"
-"$DOTFILES_DIR/bin/cget" "https://nchc.dl.sourceforge.net/project/zsh/zsh/$version/zsh-$version.tar.xz" "$path_to_save"
+path_to_save="/tmp/zsh-$version.tar.gz"
+"$DOTFILES_DIR/bin/cget" "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" "$path_to_save"
 
 cd /tmp
-tar Jxf "$path_to_save"
+mkdir "zsh-$version"
+cd "zsh-$version"
+tar zxf "$path_to_save"
+cd "$(find . -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
 
 configure_opts=(--without-tcsetpgrp)
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
@@ -56,9 +59,12 @@ if is_mac; then
   # See https://github.com/Homebrew/homebrew-core/pull/64923
   configure_opts+=(--enable-cflags=-Wno-implicit-function-declaration)
 fi
-(cd "zsh-$version"; ./configure "${configure_opts[@]}"; make; $sudo_opt make install)
+[ ! -e ./configure ] && autoreconf
+./configure "${configure_opts[@]}"
+make
+$sudo_opt make install
 
-rm -rf "$path_to_save" "zsh-$version"
+rm -rf "$path_to_save" "/tmp/zsh-$version"
 
 check_current_shell
 
