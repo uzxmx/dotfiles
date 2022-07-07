@@ -101,7 +101,7 @@ $DOTFILES_TARGET_DIR/.templates
 $DOTFILES_TARGET_DIR/.pwn\
 "
 
-  if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" -a -d ~/.resources ]; then
     directories="$directories
 $(find ~/.resources -maxdepth 1 -type d | grep -v .git)\
 "
