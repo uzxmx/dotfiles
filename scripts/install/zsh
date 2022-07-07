@@ -62,7 +62,8 @@ fi
 [ ! -e ./configure ] && autoreconf
 ./configure "${configure_opts[@]}"
 make
-$sudo_opt make install
+# Skip the targets that may fail on some system.
+$sudo_opt make -o install.man -o install.runhelp install
 
 rm -rf "$path_to_save" "/tmp/zsh-$version"
 
