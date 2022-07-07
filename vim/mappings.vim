@@ -1,4 +1,4 @@
-if has('nvim')
+if has('nvim-0.7.0')
   unmap Y
 endif
 
