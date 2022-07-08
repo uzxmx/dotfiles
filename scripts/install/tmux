@@ -63,7 +63,7 @@ version="3.3a"
 
 if has_apt; then
   # Required for copying to system clipboard.
-  sudo apt-get install -y clip
+  sudo apt-get install -y clip || true
 elif has_yum; then
   sudo yum install -y libevent-devel
 fi
@@ -84,7 +84,7 @@ do_install() {
   make
   make install
   local link="$DOTFILES_TARGET_DIR/bin/tmux"
-  [ -e "$link" ] rm -rf "$link"
+  [ -e "$link" ] && rm -rf "$link"
   create_link "$link" "$dest_path/bin/tmux"
 }
 
