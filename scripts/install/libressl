@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# Install LibreSSL (https://www.libressl.org/index.html)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+
+Install libressl.
+
+Options:
+  --local-install Install to user home directory
+  --force-install Force to install even if it already exists
+  --temp-dir <dir> Temp dir to store the src and build files
+EOF
+  exit 1
+}
+
+version="3.5.3"
+
+parse_args="
+  --local-install)
+    local_install=1
+    ;;
+  --force-install)
+    force_install=1
+    ;;
+  --temp-dir)
+    shift
+    temp_dir=\"\$1\"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    version=\"\$1\"
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+[ -z "$force_install" ] && check_command openssl &> /dev/null && exit
+
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+
+  local dest_path="$DOTFILES_TARGET_DIR/opt/libressl-$version"
+  if [ -z "$local_install" ]; then
+    ./config
+  else
+    ./config --prefix="$dest_path"
+  fi
+  make
+  make install
+}
+download_and_install "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-$version.tar.gz" install_fn "$temp_dir"
