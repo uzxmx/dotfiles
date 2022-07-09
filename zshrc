@@ -58,7 +58,7 @@ if [ -z "$PWN_DIR" ]; then
 fi
 export PWN_DIR
 
-PATH="$PWN_DIR/bin:$PATH:$DOTFILES_DIR/scripts/misc"
+PATH="$PWN_DIR/bin:$DOTFILES_TARGET_DIR/bin:$PATH:$DOTFILES_DIR/scripts/misc"
 
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   PATH="$DOTFILES_DIR/bin_nim:$PATH"
