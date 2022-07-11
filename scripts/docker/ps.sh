@@ -5,6 +5,7 @@ Usage: docker ps
 List containers.
 
 Options:
+  -a Show all containers
   -s <status> Filter by container status, can be 'exited'
 EOF
   exit 1
@@ -17,6 +18,9 @@ cmd_ps() {
       -s)
         shift
         opts+=(--filter "status=$1")
+        ;;
+      -a)
+        opts+=("$1")
         ;;
       *)
         usage_ps
