@@ -1,12 +1,11 @@
 usage_cl() {
   cat <<-EOF
-Usage: g cl <url>
+Usage: g cl <url> [directory]
 
 Clone with depth 1.
 
 Options:
   -b the branch or tag to clone
-  -d the directory to clone to
   -r shallow clone submodules
 EOF
   exit 1
@@ -22,10 +21,6 @@ cmd_cl() {
         shift
         opts+=(-b "$1")
         ;;
-      -d)
-        shift
-        dir="$1"
-        ;;
       -r)
         opts+=(--recurse-submodules --shallow-submodules)
         ;;
@@ -33,7 +28,13 @@ cmd_cl() {
         usage_cl
         ;;
       *)
-        url="$1"
+        if [ -z "$url" ]; then
+          url="$1"
+        elif [ -z "$dir" ]; then
+          dir="$1"
+        else
+          usage_cl
+        fi
         ;;
     esac
     shift
@@ -44,6 +45,6 @@ cmd_cl() {
   if [ -z "$dir" ]; then
     git clone "${opts[@]}" "$url"
   else
-    git clone "${opts[@]}" "$url" "$directory"
+    git clone "${opts[@]}" "$url" "$dir"
   fi
 }
