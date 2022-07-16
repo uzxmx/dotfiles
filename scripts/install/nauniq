@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-#
-# Install nauniq (https://metacpan.org/pod/nauniq)
-
-cpanm App::nauniq

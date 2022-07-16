@@ -2,49 +2,59 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
 Wrapper for uniq utility.
 
-Subcommands:
-  na - remove repeated lines even if they are not adjacent
+By default this removes empty lines and all duplicate lines even if they are
+not adjacent.
+
+Options:
+  --keep-empty-lines Do not remove empty lines
 EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-cmd_na() {
-  # Ref: https://metacpan.org/pod/nauniq
-  awk '!mem[$0]++'
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
+if [ -t 0 -a "$#" -eq 0 ]; then
+  usage
+fi
 
 case "$1" in
-  na)
-    run "$@"
-    ;;
   -h)
     usage
     ;;
   -)
     shift
     uniq "$@"
-    ;;
-  *)
-    uniq "$@"
+    exit
     ;;
 esac
+
+remainder=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --keep-empty-lines)
+      keep_empty_lines=1
+      ;;
+    -h)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
+
+if [ -z "$keep_empty_lines" ]; then
+  cat "$@" | awk '!/^\r$/' | awk '!/^$/' | awk '!mem[$0]++'
+else
+  # Ref: https://metacpan.org/pod/nauniq
+  cat "$@" | awk '!mem[$0]++'
+fi
