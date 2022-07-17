@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+redis_cli_dir="$DOTFILES_DIR/scripts/redis-cli"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+REDIS_CLI_CMD="${REDIS_CLI_CMD:-redis-cli}"
+
+usage() {
+  cat <<-EOF
+Wrapper for redis-cli utility.
+
+Subcommands:
+  keys       - dump all keys
+  key_values - dump keys and values
+EOF
+  exit 1
+}
+
+case "$1" in
+  keys | key_values)
+    case "$1" in
+      *)
+        name="$1"
+    esac
+    source "$redis_cli_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    $REDIS_CLI_CMD "$@"
+    ;;
+  *)
+    $REDIS_CLI_CMD "$@"
+    ;;
+esac
