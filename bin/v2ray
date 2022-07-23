@@ -2,52 +2,22 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+v2ray_dir="$DOTFILES_DIR/scripts/v2ray"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
-Wrapper for v2ray utility. Pass in '-' to call the original.
+Wrapper for v2ray utility.
 
-Provided subcommands include:
-
-  * start/stop/restart:
-      Start/stop/restart v2ray.
-
-      $> v2ray start
-      $> v2ray stop
-      $> v2ray restart
-
-  * status:
-      Show the v2ray status.
-
-      $> v2ray status
-
-  * log:
-      Tail the v2ray log.
-
-      $> v2ray log
-
-  * config:
-      Edit the v2ray config.
-
-      $> v2ray config
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  start/stop/restart - start/stop/restart v2ray service
+  s, status          - show status of v2ray service
+  l, log             - show logs of v2ray service
+  c, config          - edit config of v2ray service and restart on change
 EOF
   exit 1
-}
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-is_mac() {
-  if [[ "$OSTYPE" =~ ^darwin.* ]]; then
-    return 0
-  else
-    return 1
-  fi
 }
 
 get_pid() {
@@ -71,7 +41,7 @@ cmd_start() {
   if ! v2ray_is_running; then
     if is_mac; then
       if ! launchctl list | grep com.v2ray.core &>/dev/null; then
-        launchctl load "$dotfiles_dir/v2ray/com.v2ray.core.plist"
+        launchctl load "$DOTFILES_DIR/v2ray/com.v2ray.core.plist"
       fi
       launchctl start com.v2ray.core
     else
@@ -103,6 +73,7 @@ cmd_status() {
     exit 1
   fi
 }
+alias_cmd s status
 
 cmd_log() {
   if ! v2ray_is_running; then
@@ -116,34 +87,16 @@ cmd_log() {
     tail -F /var/log/v2ray.log
   fi
 }
-
-cmd_config() {
-  local configfile="/usr/local/etc/v2ray/config.json"
-  local old_md5
-  if [ ! -e "$configfile" ]; then
-    template="$(find "$dotfiles_dir/v2ray" -name '*.json.sample' | fzf --prompt 'Select a template file to copy from: ')"
-    [ -z "$template" ] && exit
-    sudo mkdir -p "$(dirname "$configfile")"
-    sudo cp "$template" "$configfile"
-    sudo chmod a+w "$configfile"
-  else
-    old_md5="$(md5sum "$configfile" | awk '{print $1}')"
-  fi
-  if [ ! -w "$configfile" ]; then
-    sudo chmod a+w "$configfile"
-  fi
-
-  "${EDITOR:-vi}" "$configfile"
-  if [ ! "$old_md5" = "$(md5sum "$configfile" | awk '{print $1}')" ]; then
-    cmd_restart
-  fi
-}
+alias_cmd l log
 
 case "$1" in
-  start | stop | restart | status | log | config)
-    cmd="$1"
-    shift
-    "cmd_$cmd" "$@"
+  start | stop | restart | s | status | l | log | c | config)
+    case "$1" in
+      c | config)
+        source "$v2ray_dir/config.sh"
+        ;;
+    esac
+    run "$@"
     ;;
   -h)
     usage
