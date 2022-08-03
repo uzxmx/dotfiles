@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-gradle_dir="$dotfiles_dir/scripts/gradle"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+gradle_dir="$DOTFILES_DIR/scripts/gradle"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -15,6 +17,7 @@ command.
 Subcommands:
   help     - show gradle help
   tasks    - show all tasks
+  gen      - generate a gradle based project
   boot_run - run spring-boot based project
   boot_cli - run CLI for a spring-boot based project
   run_java - run a java main class
@@ -33,23 +36,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-source "$dotfiles_dir/scripts/lib/gradle.sh"
+source "$DOTFILES_DIR/scripts/lib/gradle.sh"
 
 remainder=()
 while [ "$#" -gt 0 ]; do
@@ -65,17 +52,6 @@ while [ "$#" -gt 0 ]; do
 done
 set - "${remainder[@]}"
 
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
-
 def_task_cmds() {
   local script="$1"
   local cmd
@@ -89,7 +65,7 @@ def_task_cmds() {
 }
 
 case "$1" in
-  tasks | boot_run | boot_cli | mirror | android | test | run_java)
+  tasks | boot_run | boot_cli | mirror | android | test | run_java | gen)
     source "$gradle_dir/$1.sh"
     run "$@"
     ;;
