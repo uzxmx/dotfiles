@@ -7,6 +7,8 @@ openssl_dir="$DOTFILES_DIR/scripts/openssl"
 
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
+OPENSSL_CMD="${OPENSSL_CMD:-openssl}"
+
 usage() {
   cat <<-EOF
 Wrapper for openssl utility. Use 'openssl help' to get the original help.
@@ -34,14 +36,14 @@ check_host() {
 }
 
 show_expiration() {
-  echo | openssl s_client -connect "$1:443" -servername "$1" 2>/dev/null | openssl x509 -noout -dates
+  echo | "$OPENSSL_CMD" s_client -connect "$1:443" -servername "$1" 2>/dev/null | "$OPENSSL_CMD" x509 -noout -dates
 }
 
 run_fallback() {
   if [ "$1" = "help" ]; then
-    openssl "$@" 2>&1
+    "$OPENSSL_CMD" "$@" 2>&1
   else
-    openssl "$@"
+    "$OPENSSL_CMD" "$@"
   fi
 }
 

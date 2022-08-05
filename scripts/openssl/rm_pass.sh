@@ -9,9 +9,9 @@ EOF
 
 cmd_rm_pass() {
   if [ ! -t 0 ]; then
-    openssl rsa -in -
+    "$OPENSSL_CMD" rsa -in -
   else
     [ ! -f "$1" ] && echo 'A private key file is required.' && exit 1
-    openssl rsa -in "$1"
+    "$OPENSSL_CMD" rsa -in "$1"
   fi
 }

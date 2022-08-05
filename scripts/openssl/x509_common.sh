@@ -47,12 +47,12 @@ common_scripts_for_x509() {
   fi
 
   if [ "$arg_type" = "file" ] || [ -z "$arg_type" -a -e "$arg" ]; then
-    $prefix openssl x509 -noout -in "$arg" "${x509_opts[@]}"
+    $prefix "$OPENSSL_CMD" x509 -noout -in "$arg" "${x509_opts[@]}"
   else
     check_host "$arg"
     local host="$(echo "$arg" | awk -F: '{print $1}')"
     local port="$(echo "$arg" | awk -F: '{print $2}')"
-    local cmd="echo | openssl s_client -connect \"$host:${port:-443}\" -servername \"$host\" 2>/dev/null | openssl x509 -noout "${x509_opts[@]}""
+    local cmd="echo | "$OPENSSL_CMD" s_client -connect \"$host:${port:-443}\" -servername \"$host\" 2>/dev/null | "$OPENSSL_CMD" x509 -noout "${x509_opts[@]}""
     ${prefix:-eval} "$cmd"
   fi
 EOF

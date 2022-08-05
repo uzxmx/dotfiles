@@ -5,7 +5,7 @@ cmd_tlsversions() {
   local port="$(echo "$1" | awk -F: '{print $2}')"
   for version in "${versions[@]}"; do
     expected=$(echo "Protocol *: *TLSv$version" | tr _ .)
-    if openssl s_client -tls$version -connect "$host:${port:-443}" -servername "$host" 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
+    if "$OPENSSL_CMD" s_client -tls$version -connect "$host:${port:-443}" -servername "$host" 2>/dev/null < /dev/null | grep "$expected" >/dev/null; then
       supported=
     else
       supported=not

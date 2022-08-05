@@ -17,7 +17,7 @@ EOF
 
 cmd_cert() {
   if [ -n "$1" -a -f "$1" ]; then
-    cat "$1" | openssl x509 -text -noout
+    cat "$1" | "$OPENSSL_CMD" x509 -text -noout
     exit
   else
     check_host "$@"
@@ -41,5 +41,5 @@ cmd_cert() {
   done
   local host="$(echo "$arg" | awk -F: '{print $1}')"
   local port="$(echo "$arg" | awk -F: '{print $2}')"
-  (openssl s_client -connect "$host:${port:-443}" -servername "$host" 2>/dev/null < /dev/null || true) | openssl x509 "${options[@]}"
+  ("$OPENSSL_CMD" s_client -connect "$host:${port:-443}" -servername "$host" 2>/dev/null < /dev/null || true) | "$OPENSSL_CMD" x509 "${options[@]}"
 }

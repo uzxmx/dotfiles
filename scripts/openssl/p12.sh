@@ -29,5 +29,5 @@ cmd_p12() {
     shift
   done
 
-  openssl pkcs12 -in "$file" -nodes "${opts[@]}"
+  "$OPENSSL_CMD" pkcs12 -in "$file" -nodes "${opts[@]}"
 }

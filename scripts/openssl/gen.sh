@@ -60,8 +60,8 @@ cmd_gen_rsa_private_key() {
   else
     mkdir -p "$outdir"
   fi
-  openssl genrsa -out "$outdir/privkey.pem" "${opts[@]}" "${bits:-2048}"
-  openssl pkcs8 -topk8 -in "$outdir/privkey.pem" -out "$outdir/privkey_pkcs8.pem" -nocrypt
+  "$OPENSSL_CMD" genrsa -out "$outdir/privkey.pem" "${opts[@]}" "${bits:-2048}"
+  "$OPENSSL_CMD" pkcs8 -topk8 -in "$outdir/privkey.pem" -out "$outdir/privkey_pkcs8.pem" -nocrypt
   cmd_gen_rsa_public_key "$outdir/privkey.pem" "$outdir/pubkey.pem" >/dev/null
 }
 
@@ -79,7 +79,7 @@ EOF
 cmd_gen_rsa_public_key() {
   [ -z "$1" ] && usage_gen_rsa_public_key
   local outpath="${2:-pubkey.pem}"
-  openssl rsa -in "$1" -pubout 2>/dev/null >"$outpath"
+  "$OPENSSL_CMD" rsa -in "$1" -pubout 2>/dev/null >"$outpath"
   echo "Generated to $outpath"
 }
 
@@ -130,20 +130,22 @@ openssl_req() {
     shift
   done
 
-  local default_key output_file
+  local default_key default_key_pkcs8 output_file
   if [ "$t" = "ca" ]; then
     opts+=("-x509")
     default_key="ca_key.pem"
+    default_key_pkcs8="ca_key_pkcs8.pem"
     output_file="ca_cert.pem"
   elif [ "$t" = "csr" ]; then
     default_key="key.pem"
+    default_key_pkcs8="key_pkcs8.pem"
     output_file="cert.csr"
   else
     echo Unsupported type: $t
     exit 1
   fi
 
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   if [ -z "$subj" ]; then
     ask_for_input_empty subj "Subject (empty for using the default wizard of openssl): " "$DEFAULT_SUBJECT"
   fi
@@ -153,7 +155,8 @@ openssl_req() {
 
   if [ -z "$key" ]; then
     key="$default_key"
-    openssl genrsa -out "$key" 2048
+    "$OPENSSL_CMD" genrsa -out "$key" 2048
+    "$OPENSSL_CMD" pkcs8 -topk8 -in "$key" -out "$default_key_pkcs8" -nocrypt
   fi
 
   if [ "$t" = "csr" ]; then
@@ -167,17 +170,17 @@ openssl_req() {
       }
       trap handle_exit EXIT
       export ALT_NAMES
-      "$dotfiles_dir/bin/gen" openssl_conf - -f "$tmpconf" --overwrite >/dev/null
+      "$DOTFILES_DIR/bin/gen" openssl_conf - -f "$tmpconf" --overwrite >/dev/null
       opts+=("-config" "$tmpconf")
     fi
 
-    openssl req -new -sha256 \
+    "$OPENSSL_CMD" req -new -utf8 -sha256 \
       -key "$key" \
       -days "${days:-1000}" \
       "${opts[@]}" \
       -out "$output_file"
   else
-    openssl req -new -sha256 \
+    "$OPENSSL_CMD" req -new -utf8 -sha256 \
       -key "$key" \
       -days "${days:-1000}" \
       "${opts[@]}" \
@@ -268,18 +271,18 @@ cmd_gen_cert() {
   }
   trap handle_exit EXIT
 
-  "$dotfiles_dir/bin/openssl" show cert.csr >"$tmpcsr"
+  "$DOTFILES_DIR/bin/openssl" show cert.csr >"$tmpcsr"
 
-  source "$dotfiles_dir/scripts/lib/awk/find_line.sh"
+  source "$DOTFILES_DIR/scripts/lib/awk/find_line.sh"
   local lineno="$(awk_find_line "$tmpcsr" "X509v3 Subject Alternative Name:")"
   local -a opts
   if [ -n "$lineno" ]; then
-    export ALT_NAMES="$(sed -n "$(($lineno + 1))p" "$tmpcsr" | "$dotfiles_dir/bin/trim" | sed "s/DNS://g")"
-    "$dotfiles_dir/bin/gen" openssl_conf - -f "$tmpconf" --overwrite >/dev/null
+    export ALT_NAMES="$(sed -n "$(($lineno + 1))p" "$tmpcsr" | "$DOTFILES_DIR/bin/trim" | sed "s/DNS://g")"
+    "$DOTFILES_DIR/bin/gen" openssl_conf - -f "$tmpconf" --overwrite >/dev/null
     opts+=("-extensions" "req_ext" "-extfile" "$tmpconf")
   fi
 
-  openssl x509 -req -in "$csr" \
+  "$OPENSSL_CMD" x509 -req -in "$csr" \
     -CA "$ca" -CAkey "$cakey" -CAcreateserial \
     -days "${days:-1000}" -sha256 "${opts[@]}" \
     -out "cert.pem"

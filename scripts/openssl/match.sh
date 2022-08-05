@@ -61,5 +61,5 @@ cmd_match() {
 alias_cmd m match
 
 verify() {
-  echo foo | openssl dgst -sha256 -verify "$2" -signature <(echo foo | openssl dgst -sha256 -sign "$1")
+  echo foo | "$OPENSSL_CMD" dgst -sha256 -verify "$2" -signature <(echo foo | "$OPENSSL_CMD" dgst -sha256 -sign "$1")
 }
