@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-hexdump_dir="$dotfiles_dir/scripts/hexdump"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+hexdump_dir="$DOTFILES_DIR/scripts/hexdump"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -74,5 +74,9 @@ case "$1" in
     hexdump "$@"
     ;;
   *)
-    hexdump "$@"
+    if [ "$#" -eq 1 -a -f "$1" ]; then
+      hexdump -C "$1"
+    else
+      hexdump "$@"
+    fi
 esac
