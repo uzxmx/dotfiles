@@ -14,13 +14,23 @@
 # @params
 #   $1: download url
 #   $2: install function
+#   $3: optional temp dir. One will be generated if not specified
 download_and_install() {
-  local tmpdir
-  create_tmpdir tmpdir
-  local path_to_save="$tmpdir/$(basename "$1")"
-  "$DOTFILES_DIR/bin/cget" "$1" "$path_to_save"
-  if [[ "$1" =~ \.tar.gz$ ]]; then
-    tar zxf "$path_to_save" -C "$tmpdir"
+  local tmpdir="$3"
+  if [ -z "$tmpdir" ]; then
+    create_tmpdir tmpdir
+  else
+    mkdir -p "$tmpdir"
+  fi
+  if [ ! -f "$tmpdir/checksum.sha256" ]; then
+    local path_to_save="$tmpdir/$(basename "$1")"
+    "$DOTFILES_DIR/bin/cget" "$1" "$path_to_save"
+    sha256sum "$path_to_save" >"$tmpdir/checksum.sha256"
+    if [[ "$1" =~ \.tar.gz$ ]]; then
+      tar zxf "$path_to_save" -C "$tmpdir"
+    elif [[ "$1" =~ \.tar.xz$ ]]; then
+      tar Jxf "$path_to_save" -C "$tmpdir"
+    fi
   fi
   $2 "$tmpdir"
 }
