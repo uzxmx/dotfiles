@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# Install openssl (https://www.openssl.org/source/)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+
+Install openssl.
+
+Options:
+  --local-install Install to user home directory
+  --force-install Force to install even if it already exists
+  --temp-dir <dir> Temp dir to store the src and build files
+EOF
+  exit 1
+}
+
+version="1.1.1q"
+
+parse_args="
+  --local-install)
+    local_install=1
+    ;;
+  --force-install)
+    force_install=1
+    ;;
+  --temp-dir)
+    shift
+    temp_dir=\"\$1\"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    version=\"\$1\"
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+[ -z "$force_install" ] && check_command openssl &> /dev/null && exit
+
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+
+  export CFLAGS="-Wno-error=implicit-function-declaration"
+
+  local dest_path="$DOTFILES_TARGET_DIR/opt/openssl-$version"
+  if [ -z "$local_install" ]; then
+    ./config
+  else
+    ./config --prefix="$dest_path" --openssldir="$dest_path/ssl"
+  fi
+  make
+  make install
+}
+download_and_install "https://www.openssl.org/source/openssl-$version.tar.gz" install_fn "$temp_dir"

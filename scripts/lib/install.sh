@@ -25,7 +25,7 @@ download_and_install() {
   if [ ! -f "$tmpdir/checksum.sha256" ]; then
     local path_to_save="$tmpdir/$(basename "$1")"
     "$DOTFILES_DIR/bin/cget" "$1" "$path_to_save"
-    sha256sum "$path_to_save" >"$tmpdir/checksum.sha256"
+    sha256sum "$path_to_save" | awk '{print $1}' >"$tmpdir/checksum.sha256"
     if [[ "$1" =~ \.tar.gz$ ]]; then
       tar zxf "$path_to_save" -C "$tmpdir"
     elif [[ "$1" =~ \.tar.xz$ ]]; then
