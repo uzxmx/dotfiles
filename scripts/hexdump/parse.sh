@@ -19,10 +19,11 @@ Options for non-reverse mode:
 Options for reverse mode:
   -f <format> output format, provided formats include squeezed/separated/decimal/oct.
               (squeezed: 616263)
-              (separated: 0x61 0x62 0x63)
-              (decimal: 97 98 99)
-              (oct: 141 142 143)
+              (separated: 0x61, 0x62, 0x63)
+              (decimal: 97, 98, 99)
+              (oct: 141, 142, 143)
               You can also specify a custom format, see hexdump manual.
+  --space combined with '-f' option to make the output to be space-separated.
 
 Examples:
   # Convert hexadecimal string to binary format.
@@ -48,6 +49,7 @@ cmd_parse() {
   local reverse_mode input_str infile
   local reverse_continuous_bytes_order
   local format="squeezed"
+  local separator=", "
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -s)
@@ -63,6 +65,9 @@ cmd_parse() {
       -f)
         shift
         format="$1"
+        ;;
+      --space)
+        separator=" "
         ;;
       -*)
         usage_parse
@@ -80,13 +85,13 @@ cmd_parse() {
         format='16/1 "%02x"'
         ;;
       separated)
-        format='"0x" 1/1 "%02x" " "'
+        format='"0x" 1/1 "%02x" '"\"$separator\""
         ;;
       decimal)
-        format='"" 1/1 "%d" " "'
+        format='"" 1/1 "%d" '"\"$separator\""
         ;;
       oct)
-        format='"" 1/1 "%o" " "'
+        format='"" 1/1 "%o" '"\"$separator\""
         ;;
     esac
 
