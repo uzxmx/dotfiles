@@ -3,6 +3,7 @@
 set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+vscode_dir="$DOTFILES_DIR/scripts/vscode"
 
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
@@ -23,31 +24,38 @@ Usage: vscode [project-dir]
 
 Wrapper for Visual Studio Code. Open a project specified by a directory, or
 current working directory if no argument is specified.
+
+Subcommands:
+  o, open            - open a project, the default subcommand if one is not given
+  sync_settings      - render settings file from a template
+  rcup               - setup rc files for vscode
+  update_color_theme - update color theme for vscode
 EOF
   exit 1
 }
 
-remainder=()
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    -)
-      "$vscode" "$@"
-      exit
-      ;;
-    -h | --help)
-      usage
-      ;;
-    *)
-      remainder+=("$1")
-      ;;
-  esac
-  shift
-done
-set - "${remainder[@]}"
-
-opts=(--new-window)
-if [ "$#" -eq 0 ]; then
-  "$vscode" "${opts[@]}" .
-else
-  "$vscode" "${opts[@]}" "$@"
-fi
+case "$1" in
+  o | open | sync_settings | rcup | update_color_theme)
+    case "$1" in
+      o)
+        name="open"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$vscode_dir/$name.sh"
+    run "$@"
+    ;;
+  -)
+    shift
+    "$vscode" "$@"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    source "$vscode_dir/open.sh"
+    run open "$@"
+    ;;
+esac

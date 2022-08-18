@@ -1,0 +1,6 @@
+# vi: ft=json
+# on-file-change: vscode sync_settings
+{
+  \"java.jdt.ls.vmargs\": \"-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx1G -Xms100m -noverify -javaagent:$HOME/lombok/lombok.jar\",
+  \"workbench.colorTheme\": \"Default Dark+\"
+}
