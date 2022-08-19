@@ -19,20 +19,22 @@ download_and_install() {
   local tmpdir="$3"
   if [ -z "$tmpdir" ]; then
     create_tmpdir tmpdir
-  else
-    mkdir -p "$tmpdir"
   fi
+  local extracted_dir="$tmpdir/extracted"
   if [ ! -f "$tmpdir/checksum.sha256" ]; then
     local path_to_save="$tmpdir/$(basename "$1")"
     "$DOTFILES_DIR/bin/cget" "$1" "$path_to_save"
     sha256sum "$path_to_save" | awk '{print $1}' >"$tmpdir/checksum.sha256"
+    mkdir -p "$extracted_dir"
     if [[ "$1" =~ \.tar.gz$ ]]; then
-      tar zxf "$path_to_save" -C "$tmpdir"
+      tar zxf "$path_to_save" -C "$extracted_dir"
     elif [[ "$1" =~ \.tar.xz$ ]]; then
-      tar Jxf "$path_to_save" -C "$tmpdir"
+      tar Jxf "$path_to_save" -C "$extracted_dir"
+    elif [[ "$1" =~ \.zip$ ]]; then
+      unzip "$path_to_save" -d "$extracted_dir"
     fi
   fi
-  $2 "$tmpdir"
+  $2 "$extracted_dir"
 }
 
 # Parse arguments.

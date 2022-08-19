@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Install busybox for Android phone (https://github.com/meefik/busybox)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+usage() {
+  cat <<-EOF
+Install busybox for Android phone.
+EOF
+  exit 1
+}
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+version="1.34.1"
+dest_path="$DOTFILES_TARGET_DIR/opt/android-busybox-$version"
+if [ ! -d "$dest_path" ]; then
+  install_fn() {
+    cd "$1"
+    cp -R . "$dest_path"
+  }
+  download_and_install "https://github.com/meefik/busybox/releases/download/$version/busybox-v$(echo "$version" | tr . _).zip" install_fn
+fi
+
+source "$DOTFILES_DIR/scripts/adb/common.sh"
+
+device="$(select_device)"
+adb -s "$device" push "$dest_path/arm/bin" /data/local/tmp/busybox/bin
