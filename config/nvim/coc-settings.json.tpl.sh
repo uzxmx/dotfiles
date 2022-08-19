@@ -6,7 +6,7 @@
 
   \"codeLens.enable\": false,
   \"codeLens.position\": \"eol\",
-  \"codeLens.subseparator\": \"\|\",
+  \"codeLens.subseparator\": \"|\",
 
   \"solargraph.commandPath\": \"$SOLARGRAPH_PATH\",
   \"solargraph.checkGemVersion\": false,
