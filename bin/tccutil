@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for tccutil utility. There are two tccutil utility, one is provided by
+Apple, the other is provided by a github project. Apple's utility only supports
+the reset command.
+
+Pass '- -h' arguments to see the options supported by tccutil from the github project.
+
+Subcommands:
+  reset - reset all decisions for the specified service
+
+Examples:
+  # List entries for a service.
+  # You can find all the supported services by running below command:
+  # 'plutil -p /System/Library/PrivateFrameworks/TCC.framework/Resources/en.lproj/Localizable.strings'
+  tccutil -l -s kTCCServiceLocation
+  tccutil -l -s kTCCServiceCamera
+EOF
+  exit 1
+}
+
+run_github_tccutil() {
+  sudo "$DOTFILES_TARGET_DIR/opt/tccutil/tccutil.py" "$@"
+}
+
+case "$1" in
+  reset)
+    tccutil "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    run_github_tccutil "$@"
+    ;;
+  *)
+    run_github_tccutil "$@"
+    ;;
+esac

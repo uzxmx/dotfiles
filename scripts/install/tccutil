@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Install tccutil (https://github.com/jacobsalmela/tccutil)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+usage() {
+  cat <<-EOF
+Install tccutil.
+EOF
+  exit 1
+}
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+dest_path="$DOTFILES_TARGET_DIR/opt/tccutil"
+if [ ! -d "$dest_path" ]; then
+  install_fn() {
+    mkdir -p "$(dirname "$dest_path")"
+    cp -R "$1/tccutil-main" "$dest_path"
+  }
+  download_and_install "https://github.com/jacobsalmela/tccutil/archive/refs/heads/main.zip" install_fn
+fi

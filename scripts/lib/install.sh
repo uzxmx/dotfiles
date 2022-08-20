@@ -19,6 +19,8 @@ download_and_install() {
   local tmpdir="$3"
   if [ -z "$tmpdir" ]; then
     create_tmpdir tmpdir
+  else
+    mkdir -p "$tmpdir"
   fi
   local extracted_dir="$tmpdir/extracted"
   if [ ! -f "$tmpdir/checksum.sha256" ]; then
