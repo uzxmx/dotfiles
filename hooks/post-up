@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-vscode rcup
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+"$DOTFILES_DIR/bin/vscode" rcup || true

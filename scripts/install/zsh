@@ -33,9 +33,9 @@ if check_command zsh &> /dev/null; then
 fi
 
 if has_yum; then
-  sudo yum install -y ncurses-devel
+  sudo yum install -y ncurses-devel autoconf
 elif has_apt; then
-  sudo apt-get install -y libncurses5-dev
+  sudo apt-get install -y libncurses5-dev autoconf
 fi
 
 version="5.8"
