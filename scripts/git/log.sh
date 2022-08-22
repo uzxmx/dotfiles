@@ -38,7 +38,7 @@ select_commit() {
   if [ -n "${remainder[0]}" ] && [[  "${remainder[0]}" =~ .+\.\..+ ]]; then
     default_prompt="$default_prompt CTRL-S:squash-diff"
     local another_commit="$(echo "${remainder[0]}" | awk -F. '{print $1}')"
-    fzf_opts+=(--bind "ctrl-s:execute(tmux split-window \"$dotfiles_dir/bin/g show_commit {1} -d \"$another_commit\"\")")
+    fzf_opts+=(--bind "ctrl-s:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1} -d \"$another_commit\"\")")
   fi
 
   local selection="$(git log --first-parent --pretty="format:%h %<(30,trunc)%s %ai %an %d" "${remainder[@]}" \
@@ -49,7 +49,7 @@ select_commit() {
     --preview-window="right:50%:wrap" \
     --bind=f1:top \
     --bind "ctrl-y:execute-silent(echo -n {1} | trim | cb && tmux display-message yanked)" \
-    --bind "ctrl-v:execute(tmux split-window \"$dotfiles_dir/bin/g show_commit {1}\")" \
+    --bind "ctrl-v:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1}\")" \
     "${fzf_opts[@]}"
   )"
   if [ "$select" = "1" ]; then
@@ -86,7 +86,7 @@ cmd_l() {
   else
     local commit="$(select_commit --select $commit)"
     if [ -n "$commit" ]; then
-      source "$dotfiles_dir/scripts/lib/prompt.sh"
+      source "$DOTFILES_DIR/scripts/lib/prompt.sh"
       [ "$(yesno "Checkout $commit? (Y/n)" "yes")" = "no" ] && echo "Cancelled" && exit
       git checkout "$commit"
     fi

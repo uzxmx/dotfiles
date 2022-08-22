@@ -11,7 +11,7 @@ cmd_cleanb() {
   git fetch -p
 
   local branch
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   for branch in $(LANG=en_US git branch -vv | grep ': gone]' | awk '{print $1}'); do
     if [ "$(yesno "Sure to delete branch $branch? (y/N)" "no")" = "no" ]; then
       echo "Skip branch $branch"

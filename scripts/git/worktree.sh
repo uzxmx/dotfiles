@@ -87,7 +87,7 @@ cmd_worktree_add() {
   [ -z "$worktree_path" ] && echo "A worktree path is required." && exit 1
 
   if [ -z "$commit" ]; then
-    source "$dotfiles_dir/scripts/fzf/git-common"
+    source "$DOTFILES_DIR/scripts/fzf/git-common"
     commit="$(select_branch -a --prompt "Select a branch> ")"
     [ -z "$commit" ] && exit
   fi
@@ -118,7 +118,7 @@ cmd_worktree_remove() {
     exit 1
   fi
 
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   if [ "$(yesno "Are you sure you want to delete the worktree at $worktree_path? (y/N)" "no")" = "yes" ]; then
     git worktree remove "$worktree_path" -f
   else

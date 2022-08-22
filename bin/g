@@ -2,8 +2,8 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-git_dir="$dotfiles_dir/scripts/git"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+git_dir="$DOTFILES_DIR/scripts/git"
 
 usage() {
   cat <<-EOF
@@ -13,7 +13,7 @@ Subcommands:
   a               - archive
   cl              - clone with depth 1
   d               - enhanced diff utility by fzf
-  ignore          - output .gitignore contents for some topic
+  ignore_for      - output .gitignore contents for some topic
   cm              - enhanced commit utility
   pt              - push a local branch to a remote branch
   l               - enhanced log utility by fzf
@@ -25,6 +25,8 @@ Subcommands:
   init_hooks      - initialize git hooks and trigger post-checkout hook
   cleanb          - clean local branches that are gone on the remote
   w, worktree     - worktree utilities
+  root            - show git root directory
+  ignore_status   - check whether a file is ignored by git
 EOF
   exit 1
 }
@@ -58,8 +60,8 @@ case "$1" in
     git status .
     ;;
   a | cl | d | l | show_commit | pt | rm_from_history | \
-  s | search | g | grep | update_commit | ignore | cm | \
-  init_hooks | cleanb | w | worktree)
+  s | search | g | grep | update_commit | ignore_for | cm | \
+  init_hooks | cleanb | w | worktree | root | ignore_status)
     case "$1" in
       a)
         name="archive"
@@ -92,7 +94,7 @@ case "$1" in
     source "$git_dir/$name.sh"
     run "$@"
     ;;
-  -h)
+  -h | --help)
     usage
     ;;
   -)

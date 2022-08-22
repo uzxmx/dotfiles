@@ -77,8 +77,8 @@ cmd_d() {
   local preview_cmd="git diff ${opts[*]} "${commits[@]}" --color=always -- {2} | less -r"
   local edit_cmd="${EDITOR:-vi} +'map q :q<enter>' {2}"
 
-  source "$dotfiles_dir/scripts/lib/utils/common.sh"
-  source "$dotfiles_dir/scripts/lib/fzf.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+  source "$DOTFILES_DIR/scripts/lib/fzf.sh"
   local query
   while true; do
     unset result
