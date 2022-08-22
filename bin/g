@@ -27,6 +27,7 @@ Subcommands:
   w, worktree     - worktree utilities
   root            - show git root directory
   ignore_status   - check whether a file is ignored by git
+  unshallow       - make a full clone for a shallow one
 EOF
   exit 1
 }
@@ -61,7 +62,8 @@ case "$1" in
     ;;
   a | cl | d | l | show_commit | pt | rm_from_history | \
   s | search | g | grep | update_commit | ignore_for | cm | \
-  init_hooks | cleanb | w | worktree | root | ignore_status)
+  init_hooks | cleanb | w | worktree | root | ignore_status | \
+  unshallow)
     case "$1" in
       a)
         name="archive"
