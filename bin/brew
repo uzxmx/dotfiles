@@ -11,23 +11,31 @@ usage() {
   cat <<-EOF
 Wrapper for brew utility.
 
+Homebrew uses git to fetch new updates for taps. So if it's slow to fetch the
+updates, we can enable the git proxy.
+
 Subcommands:
-  m, mirror - manage mirrors
   l, list   - list installed packages
   s, search - search remote packages
   i, info   - show local package info
+
+Advanced subcommands:
+  tap         - manage taps (Third-Party Repositories which provide a list of formulae)
+  update_taps - update taps with progress, can be run before the official update command
+  update      - fetch the newest version of Homebrew and update taps (all formulae) from GitHub
 EOF
   exit 1
 }
 
+if [ "$#" -eq 0 ]; then
+  usage
+fi
+
 case "$1" in
-  i | info | l | list | s | search | m | mirror)
+  tap | i | info | l | list | s | search | tap | update_taps | update)
     case "$1" in
       i)
         name="info"
-        ;;
-      m)
-        name="mirror"
         ;;
       l)
         name="list"
@@ -42,7 +50,7 @@ case "$1" in
     source "$brew_dir/$name.sh"
     run "$@"
     ;;
-  -h)
+  -h | --help)
     usage
     ;;
   -)
