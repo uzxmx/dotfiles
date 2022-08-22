@@ -5,7 +5,12 @@ Usage: gradle gen <project-name>
 Generate a gradle based project.
 
 Options:
-  -t <type> project type, default is java-application
+  -t <type> project type, default is java-application. Supported values include:
+              * basic
+              * java-application
+              * java-gradle-plugin
+              * java-library
+            For more info, please run 'gradle help --task :init'
   -p <package> package, default is com.example
 EOF
   exit 1
