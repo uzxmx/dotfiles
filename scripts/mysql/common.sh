@@ -14,7 +14,7 @@ prepare_sql() {
 select_tables() {
   local db="$1"
   shift
-  local tables="$("$dotfiles_dir/bin/mysql" source "$@" < <(prepare_sql "SELECT table_name FROM information_schema.tables WHERE table_schema = ?;" "$db"))"
+  local tables="$("$DOTFILES_DIR/bin/mysql" source "$@" < <(prepare_sql "SELECT table_name FROM information_schema.tables WHERE table_schema = ?;" "$db"))"
   if [ -n "$tables" ]; then
     echo "$tables" | fzf -m --prompt "Select tables> "
   fi

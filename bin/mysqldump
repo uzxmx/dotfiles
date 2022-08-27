@@ -2,8 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-mysql_dir="$dotfiles_dir/scripts/mysql"
+DOTFILES_DIR="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+mysql_dir="$DOTFILES_DIR/scripts/mysql"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -19,37 +21,14 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-source "$dotfiles_dir/scripts/lib/prompt.sh"
-source "$dotfiles_dir/scripts/lib/docker.sh"
+source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+source "$DOTFILES_DIR/scripts/lib/docker.sh"
 
 mysqldump="$(check_cmd_with_docker_fallback mysqldump mysql mysql:5.7.32)"
 
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
+if [ "$#" -eq 1 -a "$1" = "-h" ]; then
+  usage
+fi
 
 case "$1" in
   nodata | data)
@@ -59,9 +38,6 @@ case "$1" in
     esac
     source "$mysql_dir/$name.sh"
     run "$@"
-    ;;
-  -h)
-    usage
     ;;
   *)
     $mysqldump "$@"

@@ -25,11 +25,9 @@ alias_cmd() {
 run() {
   local cmd="$1"
   shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
+  if [ "$#" -eq 1 -a "$1" = "-h" ]; then
+    type "usage_$cmd" &>/dev/null && "usage_$cmd"
+  fi
   "cmd_$cmd" "$@"
 }
 
