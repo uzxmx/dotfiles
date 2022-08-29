@@ -39,6 +39,25 @@ download_and_install() {
   $2 "$extracted_dir"
 }
 
+# Download and install by git.
+#
+# @params
+#   $1: git url
+#   $2: install function
+#   $3: optional temp dir. One will be generated if not specified
+download_and_install_by_git() {
+  local tmpdir="$3"
+  if [ -z "$tmpdir" ]; then
+    create_tmpdir tmpdir
+  else
+    mkdir -p "$tmpdir"
+  fi
+  git_shallow_clone "$1" "$tmpdir"
+  if [ -n "$2" ]; then
+    $2 "$tmpdir"
+  fi
+}
+
 # Parse arguments.
 remainder=()
 _parse_arguments() {

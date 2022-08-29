@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Check if the directory specified by the 2nd shell argument is already a git
-# repository, if so, do nothin. Otherwise, clone from the remote url.
+# repository, if so, do nothing. Otherwise, clone from the remote url.
 #
 # @params:
 #   $1: repository url
@@ -15,6 +15,19 @@ git_clone() {
   if [ ! -d "$dir" ] || ! (cd "$dir" && git status &> /dev/null); then
     git clone "$@" "$url" "$dir"
   fi
+}
+
+# Git shallow clone.
+#
+# @params:
+#   $1: repository url
+#   $2: directory to clone to
+#   VARARGS: arguments which are passed to the clone command
+git_shallow_clone() {
+  local url="$1"
+  local dir="$2"
+  shift 2
+  git_clone "$url" "$dir" --depth 1 "$@"
 }
 
 # This function tries to find a proper remote name that doesn't exist in the
