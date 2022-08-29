@@ -12,7 +12,9 @@ check_command objection &> /dev/null && exit
 
 install_fn() {
   cd "$1"
-  python setup.py install
+  (cd agent && npm install && npm run build)
+  make sdist
+  pip install dist/objection-*.tar.gz
   check_command asdf &> /dev/null && asdf reshim
 }
 download_and_install_by_git "https://github.com/uzxmx/objection.git" install_fn /tmp/objection
