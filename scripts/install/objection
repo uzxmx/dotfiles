@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Install objection (https://github.com/sensepost/objection)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command objection &> /dev/null && exit
+
+install_fn() {
+  cd "$1"
+  python setup.py install
+  check_command asdf &> /dev/null && asdf reshim
+}
+download_and_install_by_git "https://github.com/uzxmx/objection.git" install_fn /tmp/objection
