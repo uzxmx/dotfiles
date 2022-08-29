@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Install frida-compile (https://github.com/frida/frida-compile)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+usage() {
+  cat <<-EOF
+Install frida-compile.
+
+Options:
+  -f Force to install even if it already exists
+EOF
+  exit 1
+}
+
+parse_args="
+  -f)
+    force_install=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if ! check_command frida-compile &> /dev/null || [ "$force_install" = "1" ]; then
+  echo "Install frida-compile..."
+  npm install -g frida-compile
+  check_command asdf &>/dev/null && asdf reshim
+fi
