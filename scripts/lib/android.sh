@@ -19,3 +19,15 @@ android_ensure_build_tools_available() {
   [ -z "$choice" ] && exit
   PATH="$build_tools_dir/$choice:$PATH"
 }
+
+# On success, ANDROID_SDK_LLDB_DIR will be set.
+android_ensure_lldb_available() {
+  local dir="$_android_sdk_root/lldb"
+  local choices choice
+  choices=$(ls "$dir")
+  if [ -n "$choices" ]; then
+    choice="$(echo "$choices" | fzf --prompt "Select a version for lldb: " -1)"
+  fi
+  [ -z "$choice" ] && exit
+  ANDROID_SDK_LLDB_DIR="$dir/$choice"
+}
