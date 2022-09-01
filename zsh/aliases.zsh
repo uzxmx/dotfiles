@@ -4,6 +4,7 @@ alias c='capture_source_and_signal "$DOTFILES_DIR"/bin/c "$@"'
 alias e='$EDITOR'
 
 alias f="fe"
+alias ff="fe -I"
 alias fbr="\"$DOTFILES_DIR\"/scripts/fzf/git-branch"
 alias fe='capture_source_and_signal "$DOTFILES_DIR"/bin/fe "$@"'
 alias fed="fe \"$DOTFILES_DIR\""
