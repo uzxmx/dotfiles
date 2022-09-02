@@ -4,14 +4,12 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-type -p aliyun &> /dev/null && exit
-
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+check_command aliyun &> /dev/null && exit
 
 version="3.0.77"
 path_to_save="/tmp/aliyun-cli-$version.tgz"
@@ -23,6 +21,6 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/cget" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" "$path_to_save"
-tar zxf "$path_to_save" -C ~/bin
+"$DOTFILES_DIR/bin/cget" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" "$path_to_save"
+tar zxf "$path_to_save" -C "$DOTFILES_TARGET_DIR/bin"
 rm -rf "$path_to_save"
