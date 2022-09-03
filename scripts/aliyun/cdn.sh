@@ -277,7 +277,7 @@ cmd_cdn_delete() {
     domain="$(select_cdn_domain)"
   fi
 
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   [ "$(yesno "Confirm to delete CDN $domain? (y/N)" "no")" = "no" ] && echo Cancelled && exit 1
 
   run_cli '' cdn DeleteCdnDomain --DomainName "$domain"

@@ -135,15 +135,15 @@ cmd_profile_delete() {
     shift
   done
 
-  source "$dotfiles_dir/scripts/lib/utils/common.sh"
-  source "$dotfiles_dir/scripts/lib/utils/lines_to_array.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
   if [ "$delete_all" = "1" ]; then
     lines_to_array profiles < <(get_all_profiles_name)
   elif [ "${#profiles[@]}" -eq 0 ]; then
     lines_to_array profiles < <(select_profile -m)
   fi
   if [ "${#profiles[@]}" -gt 0 ]; then
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     if [ "$(yesno "Are you sure you want to delete?(y/N)" no)" = "no" ]; then
       echo Cancelled
       exit 1

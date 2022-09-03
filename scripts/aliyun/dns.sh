@@ -203,7 +203,7 @@ cmd_dns_add() {
   local result="$(cmd_dns_get "$domain" -t "$record_type")"
   if [ -n "$result" ]; then
     echo -e "Current record details are:\n$result"
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     [ "$(yesno "Still want to update?(y/N)" "no")" = "no" ] && echo Cancelled && exit 1
   fi
 
@@ -295,7 +295,7 @@ esac
     echo "DNS record was not found."
     exit 1
   elif [ -z "$no_confirm" ]; then
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     if [ "$(yesno "Are you sure you want to delete?(y/N)" no)" = "no" ]; then
       echo Cancelled
       exit 1

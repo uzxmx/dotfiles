@@ -206,7 +206,7 @@ EOF
 
 _common_scripts_for_checking_source_ip_and_port() {
   cat <<EOF
-  source "\$dotfiles_dir/scripts/lib/utils/check_variables.sh"
+  source "\$DOTFILES_DIR/scripts/lib/utils/check_variables.sh"
   check_variables source_ip port || exit
 
   $(_common_scripts_for_checking_source_ip)
@@ -238,9 +238,9 @@ case "\$1" in
     ;;
   -t)
     shift
-    source "\$dotfiles_dir/scripts/lib/utils/common.sh"
-    source "\$dotfiles_dir/scripts/lib/utils/lines_to_array.sh"
-    source "\$dotfiles_dir/scripts/lib/utils/split.sh"
+    source "\$DOTFILES_DIR/scripts/lib/utils/common.sh"
+    source "\$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
+    source "\$DOTFILES_DIR/scripts/lib/utils/split.sh"
     split_str_into_array "\$1" , service_types
     ;;
   -*)
@@ -364,7 +364,7 @@ cmd_security_group_update_by_desp() {
     shift
   done
 
-  source "$dotfiles_dir/scripts/lib/utils/check_variables.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/check_variables.sh"
   check_variables description source_ip || exit
 
   eval "$(_common_scripts_for_checking_source_ip)"
