@@ -8,8 +8,14 @@ select_device() {
   fi
 }
 
+# Select android process.
+#
+# @params
+#   $1: device serial
+#   $2: string to be grepped, if given, fzf won't be used
 select_process() {
   local device="$1"
+  local str="$2"
   local output use_ps_vendor_format
   if ! output="$(adb -s "$device" shell ps -A -o PID,PPID,ARGS -w)" || [ "$(echo "$output" | wc -l)" -ge "1" ]; then
     # Old devices may not support `-A` option.
@@ -29,11 +35,16 @@ select_process() {
     fzf_opts=(--with-nth=3)
     pid_index=1
   fi
-  local selected="$(echo "$output" | sed 1d | fzf "${fzf_opts[@]}" \
-    --preview "adb -s '$device' shell ps --pid {1}")"
-  if [ -n "$selected" ]; then
-    echo "$selected" | awk "{print \$$pid_index}"
+
+  if [ -n "$str" ]; then
+    echo "$output" | grep "$str" | awk "{print \$$pid_index}"
   else
-    exit 1
+    local selected="$(echo "$output" | sed 1d | fzf "${fzf_opts[@]}" \
+      --preview "adb -s '$device' shell ps --pid {1}")"
+    if [ -n "$selected" ]; then
+      echo "$selected" | awk "{print \$$pid_index}"
+    else
+      exit 1
+    fi
   fi
 }
