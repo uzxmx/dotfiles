@@ -9,7 +9,11 @@ When ANDROID_STUDIO_JAVA_HOME or ANDROID_STUDIO_HOME is set, it uses the Java
 which is bundled with android studio.
 
 Options:
-  -f select one or more flavors to build by fzf
+  -f Select one or more flavors to build by fzf
+  - Indicate the remaining arguments should be passed to gradle intactly
+
+Examples:
+  android build - -Pabi=armeabi-v7a,x86_64
 EOF
   exit 1
 }
@@ -26,6 +30,10 @@ cmd_build() {
     case "$1" in
       -f)
         select_flavor=1
+        ;;
+      -)
+        shift
+        break
         ;;
       -*)
         usage_build
@@ -52,6 +60,8 @@ cmd_build() {
       args+=("assemble${flavor^}")
     done < <(echo -e "$flavors")
   fi
+
+  args+=("$@")
 
   # Update JAVA_HOME to the one bundled with android studio.
   if [ -n "$ANDROID_STUDIO_JAVA_HOME" ]; then
