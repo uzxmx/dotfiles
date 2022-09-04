@@ -37,7 +37,7 @@ select_process() {
   fi
 
   if [ -n "$str" ]; then
-    echo "$output" | grep "$str" | awk "{print \$$pid_index}"
+    echo "$output" | grep "$str" | fzf --prompt "Select a process: " -1 | awk "{print \$$pid_index}"
   else
     local selected="$(echo "$output" | sed 1d | fzf "${fzf_opts[@]}" \
       --preview "adb -s '$device' shell ps --pid {1}")"
