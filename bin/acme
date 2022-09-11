@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+acme_dir="$DOTFILES_DIR/scripts/acme"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+ACME_CMD="${ACME_CMD:-$DOTFILES_TARGET_DIR/opt/acme.sh/acme.sh}"
+ACME_HOME="$DOTFILES_TARGET_DIR/opt/acme.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for acme.sh utility.
+
+Subcommands:
+  i, issue - issue a certificate for domains
+  l, list  - list all issued certificates
+EOF
+  exit 1
+}
+
+run_acme() {
+  "$ACME_CMD" --home "$ACME_HOME" --config-home "$ACME_HOME" --log "$ACME_HOME/acme.sh.log" "$@"
+}
+
+[ "$#" -eq 0 ] && usage
+
+case "$1" in
+  i | issue | l | list)
+    case "$1" in
+      i)
+        name="issue"
+        ;;
+      l)
+        name="list"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$acme_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    run_acme "$@"
+    ;;
+  *)
+    run_acme "$@"
+    ;;
+esac
