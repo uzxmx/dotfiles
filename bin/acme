@@ -16,8 +16,10 @@ usage() {
 Wrapper for acme.sh utility.
 
 Subcommands:
-  i, issue - issue a certificate for domains
   l, list  - list all issued certificates
+  info     - show info for an issued certificate
+  i, issue - issue a certificate for domains
+  install  - install issued certificate for a domain
 EOF
   exit 1
 }
@@ -29,7 +31,7 @@ run_acme() {
 [ "$#" -eq 0 ] && usage
 
 case "$1" in
-  i | issue | l | list)
+  l | list | info | i | issue | install)
     case "$1" in
       i)
         name="issue"
