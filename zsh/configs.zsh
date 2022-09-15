@@ -97,6 +97,11 @@ fi
 # Bash like completion
 setopt noautomenu
 
+# By using below option, we don't need to quote the url containing params like
+# `curl localhost/foo?bar=baz`. Otherwise, zsh fails with `no matches found` error.
+# This can also make `rax2 =16 0xe+0xf` (showing the hex result of 0xe plus 0xf) work.
+setopt no_nomatch
+
 unsetopt BEEP
 
 if [ -t 0 ]; then
