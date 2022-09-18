@@ -39,50 +39,49 @@ elif has_apt; then
 fi
 
 version="5.8"
-path_to_save="/tmp/zsh-$version.tar.gz"
-"$DOTFILES_DIR/bin/cget" "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" "$path_to_save"
 
-cd /tmp
-mkdir "zsh-$version"
-cd "zsh-$version"
-tar zxf "$path_to_save"
-cd "$(find . -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
 
-configure_opts=(--without-tcsetpgrp)
-if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
-  configure_opts+=(--prefix="$DOTFILES_TARGET_DIR/opt/zsh-$version")
-else
-  sudo_opt="sudo"
-fi
-if is_mac; then
-  # For Mac OSX, we may need to specify below CFLAGS, otherwise, the built zsh may be stuck on startup.
-  # See https://github.com/Homebrew/homebrew-core/pull/64923
-  configure_opts+=(--enable-cflags=-Wno-implicit-function-declaration)
-fi
-[ ! -e ./configure ] && autoreconf
-./configure "${configure_opts[@]}"
-make
-# Skip the targets that may fail on some system.
-$sudo_opt make -o install.man -o install.runhelp install
-
-rm -rf "$path_to_save" "/tmp/zsh-$version"
-
-check_current_shell
-
-[ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && mkdir -p "$DOTFILES_TARGET_DIR/bin" && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
-
-if is_mac; then
-  platform=osx
-elif is_wsl; then
-  platform=wsl
-fi
-
-if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
-  if [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ]; then
-    if [ $? != 0 -o "$(readlink "$DOTFILES_TARGET_DIR/.zshrc.platform")" != "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
-      warn "Failed to link '$DOTFILES_TARGET_DIR/.zshrc.platform' to '$DOTFILES_TARGET_DIR/.zshrc.$platform', please check '$DOTFILES_TARGET_DIR/.zshrc.platform'"
-    fi
+  local configure_opts=(--without-tcsetpgrp)
+  local sudo_opt
+  if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+    configure_opts+=(--prefix="$DOTFILES_TARGET_DIR/opt/zsh-$version")
   else
-    ln -s "$DOTFILES_TARGET_DIR/.zshrc.$platform" "$DOTFILES_TARGET_DIR/.zshrc.platform"
+    sudo_opt="sudo"
   fi
-fi
+  if is_mac; then
+    # For Mac OSX, we may need to specify below CFLAGS, otherwise, the built zsh may be stuck on startup.
+    # See https://github.com/Homebrew/homebrew-core/pull/64923
+    configure_opts+=(--enable-cflags=-Wno-implicit-function-declaration)
+  fi
+  [ ! -e ./configure ] && autoreconf
+  ./configure "${configure_opts[@]}"
+  make
+  # Skip the targets that may fail on some system.
+  $sudo_opt make -o install.man -o install.runhelp install
+
+  check_current_shell
+
+  [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && mkdir -p "$DOTFILES_TARGET_DIR/bin" && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
+
+  local platform
+  if is_mac; then
+    platform=osx
+  elif is_wsl; then
+    platform=wsl
+  fi
+
+  if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+    if [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ]; then
+      if [ $? != 0 -o "$(readlink "$DOTFILES_TARGET_DIR/.zshrc.platform")" != "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+        warn "Failed to link '$DOTFILES_TARGET_DIR/.zshrc.platform' to '$DOTFILES_TARGET_DIR/.zshrc.$platform', please check '$DOTFILES_TARGET_DIR/.zshrc.platform'"
+      fi
+    else
+      ln -s "$DOTFILES_TARGET_DIR/.zshrc.$platform" "$DOTFILES_TARGET_DIR/.zshrc.platform"
+    fi
+  fi
+}
+
+download_and_install "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" install_fn
