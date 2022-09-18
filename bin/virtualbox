@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+vb_dir="$DOTFILES_DIR/scripts/vb"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for VirtualBox utility.
+
+Alias: vb.
+
+Subcommands:
+  s, status      - show status of a vm
+  start          - start a vm
+  show           - show a vm
+  ssh            - ssh into a vm
+  add_pubkey     - add public key to a vm for passwordless ssh login
+  stop           - power off one or more vms
+  set_cpus       - set the number of cpu
+  set_mem        - change memory of a vm (unit is gigabyte)
+  enable_bridge  - enable bridged network for a vm, which operates on the 2nd nic
+  disable_bridge - disable bridged network for a vm, which operates on the 2nd nic
+  list           - list vms, usbhost, etc.
+EOF
+  exit 1
+}
+
+check_vboxmanage() {
+  if type -p VBoxManage &>/dev/null; then
+    VBOXMANAGE=VBoxManage
+  elif type -p VBoxManage.exe &>/dev/null; then
+    VBOXMANAGE=VBoxManage.exe
+  else
+    echo 'Cannot find `VBoxManage` in PATH.'
+    exit 1
+  fi
+}
+
+[ "$#" -eq 0 ] && usage
+
+case "$1" in
+  s | status | start | show | ssh | add_pubkey | stop | set_cpus | set_mem | enable_bridge | disable_bridge)
+    case "$1" in
+      s)
+        name="status"
+        ;;
+      add_pubkey)
+        name="ssh"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$vb_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    check_vboxmanage
+    "$VBOXMANAGE" "$@"
+    ;;
+  *)
+    check_vboxmanage
+    "$VBOXMANAGE" "$@"
+    ;;
+esac
