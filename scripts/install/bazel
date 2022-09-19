@@ -2,6 +2,8 @@
 #
 # Install bazel (https://docs.bazel.build/versions/3.5.0/install.html).
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p bazel &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
@@ -16,7 +18,7 @@ else
   abort "Unsupported system"
 fi
 
-~/.dotfiles/bin/cget "https://github.com/bazelbuild/bazel/releases/download/$version/bazel-$version-installer-$platform-x86_64.sh" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/bazelbuild/bazel/releases/download/$version/bazel-$version-installer-$platform-x86_64.sh" "$path_to_save"
 chmod +x "$path_to_save"
 "$path_to_save" --user
 

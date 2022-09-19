@@ -2,6 +2,8 @@
 #
 # Install helm (https://helm.sh/docs/intro/install/)
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p helm &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
@@ -16,5 +18,5 @@ else
   abort "Unsupported system"
 fi
 
-~/.dotfiles/bin/cget "https://get.helm.sh/helm-v$version-$platform-amd64.tar.gz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://get.helm.sh/helm-v$version-$platform-amd64.tar.gz" $path_to_save
 tar zxf $path_to_save -C ~/bin $platform-amd64/helm --strip-components 1

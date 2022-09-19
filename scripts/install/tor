@@ -4,10 +4,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
 
 appdir="$HOME/Applications/Tor Browser.app"
 
@@ -24,7 +24,7 @@ else
 fi
 path_to_save="/tmp/$name"
 
-"$dotfiles_dir/bin/cget" "https://www.torproject.org/dist/torbrowser/$version/$name" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://www.torproject.org/dist/torbrowser/$version/$name" "$path_to_save"
 
 install_tor() {
   local rootdir="$1"

@@ -2,10 +2,12 @@
 #
 # Install eksctl (https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p eksctl &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 path_to_save="/tmp/eksctl.tar.gz"
-~/.dotfiles/bin/cget "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" $path_to_save
 tar zxf $path_to_save -C ~/bin

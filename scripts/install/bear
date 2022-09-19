@@ -2,13 +2,15 @@
 #
 # Install bear (https://github.com/rizsotto/Bear).
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p bear &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 version="2.4.3"
 path_to_save="/tmp/Bear-$version.tgz"
-~/.dotfiles/bin/cget "https://github.com/rizsotto/Bear/archive/v$version.tar.gz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://github.com/rizsotto/Bear/archive/v$version.tar.gz" $path_to_save
 tar zxf $path_to_save -C /tmp
 cd /tmp/Bear-$version
 cmake .

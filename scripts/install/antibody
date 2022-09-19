@@ -22,7 +22,7 @@ else
   abort "Unsupported system"
 fi
 
-"$DOTFILES_DIR/bin/cget" "https://github.com/getantibody/antibody/releases/download/$version/antibody_${platform}_x86_64.tar.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/getantibody/antibody/releases/download/$version/antibody_${platform}_x86_64.tar.gz" "$path_to_save"
 tar zxf "$path_to_save" -C /tmp antibody
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   mv /tmp/antibody "$DOTFILES_TARGET_DIR/bin"

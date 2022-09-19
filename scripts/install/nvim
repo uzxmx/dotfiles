@@ -97,7 +97,7 @@ install_from_prebuilt() {
     abort "Unsupported system"
   fi
 
-  "$DOTFILES_DIR/bin/cget" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
+  "$DOTFILES_DIR/bin/get" "https://github.com/neovim/neovim/releases/download/$version/nvim-${platform}.tar.gz" "$path_to_save"
 
   mkdir -p "$dest_dir"
   $sudo_opt tar zxf "$path_to_save" -C "$dest_dir" --strip-components=1

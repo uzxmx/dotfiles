@@ -4,6 +4,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 test -x /usr/local/bin/v2ray && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
@@ -18,7 +20,7 @@ else
   abort "Unsupported system"
 fi
 
-~/.dotfiles/bin/cget "https://github.com/v2fly/v2ray-core/releases/download/$version/v2ray-$platform-64.zip" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/v2fly/v2ray-core/releases/download/$version/v2ray-$platform-64.zip" "$path_to_save"
 
 dir="/tmp/v2ray-$version"
 mkdir -p "$dir"

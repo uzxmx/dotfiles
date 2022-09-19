@@ -4,6 +4,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p ant &> /dev/null && exit
 
 target_dir="$HOME/ant"
@@ -20,7 +22,7 @@ fi
 version="${1:-1.10.9}"
 path_to_save="/tmp/ant-$version.tar.gz"
 
-~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/apache/ant/binaries/apache-ant-$version-bin.tar.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://mirrors.tuna.tsinghua.edu.cn/apache/ant/binaries/apache-ant-$version-bin.tar.gz" "$path_to_save"
 
 cd /tmp && tar zxf "$path_to_save" && mv apache-ant-$version "$target_dir"
 rm -rf "$path_to_save"

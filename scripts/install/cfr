@@ -4,9 +4,11 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 [ -f /usr/local/cfr/cfr.jar ] && exit
 
 version="0.150"
-~/.dotfiles/bin/cget "https://github.com/leibnitz27/cfr/releases/download/$version/cfr-$version.jar" /tmp/cfr.jar
+"$DOTFILES_DIR/bin/get" "https://github.com/leibnitz27/cfr/releases/download/$version/cfr-$version.jar" /tmp/cfr.jar
 sudo mkdir -p /usr/local/cfr
 sudo mv /tmp/cfr.jar /usr/local/cfr

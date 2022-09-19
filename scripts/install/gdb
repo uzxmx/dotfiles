@@ -4,6 +4,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 check_makeinfo() {
@@ -20,7 +22,7 @@ check_makeinfo() {
 install() {
   local version="$1"
   local path_to_save="/tmp/gdb-$version.tar.xz"
-  ~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" $path_to_save
+  "$DOTFILES_DIR/bin/get" "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" $path_to_save
   tar Jxf "$path_to_save" -C /tmp
 
   cd /tmp/gdb-$version && mkdir build && cd build \

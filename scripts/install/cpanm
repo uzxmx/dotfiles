@@ -4,11 +4,13 @@
 
 set -eo pipefail
 
-[ -n "$(which -a cpanm | grep -v ~/.dotfiles)" ] && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+[ -n "$(which -a cpanm | grep -v "$DOTFILES_DIR")" ] && exit
 
 version="1.7044"
 path_to_save="/tmp/cpanm-$version.tar.gz"
-~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/CPAN/modules/by-module/App/App-cpanminus-$version.tar.gz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://mirrors.tuna.tsinghua.edu.cn/CPAN/modules/by-module/App/App-cpanminus-$version.tar.gz" $path_to_save
 tar zxf $path_to_save -C ~/bin --strip-components=2 App-cpanminus-1.7044/bin/cpanm
 chmod a+x ~/bin/cpanm
 

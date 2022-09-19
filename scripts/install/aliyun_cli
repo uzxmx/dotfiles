@@ -21,6 +21,6 @@ else
   abort "Unsupported system"
 fi
 
-"$DOTFILES_DIR/bin/cget" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://aliyuncli.alicdn.com/aliyun-cli-$platform-$version-amd64.tgz" "$path_to_save"
 tar zxf "$path_to_save" -C "$DOTFILES_TARGET_DIR/bin"
 rm -rf "$path_to_save"

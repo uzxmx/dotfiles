@@ -4,6 +4,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if ! is_linux; then
@@ -12,7 +14,7 @@ fi
 
 version="2.36-rc2"
 path_to_save="/tmp/util-linux-$version.tar.xz"
-~/.dotfiles/bin/cget "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-$version.tar.xz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.36/util-linux-$version.tar.xz" "$path_to_save"
 tar Jxf "$path_to_save" -C /tmp
 cd "/tmp/util-linux-$version"
 ./configure

@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Usage: get <url> [output-file]
+
+HTTP Get utility.
+
+Options:
+  -C Use curl
+  -W Use wget
+EOF
+  exit 1
+}
+
+[ "$#" -eq 0 ] && usage
+
+run_curl() {
+  curl -L -o "$2" "$1"
+}
+
+run_wget() {
+  wget --continue --progress=bar "$1" -O "$2"
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -C)
+      backend="curl"
+      ;;
+    -W)
+      backend="wget"
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      if [ -z "$url" ]; then
+        url="$1"
+      elif [ -z "$outfile" ]; then
+        outfile="$1"
+      else
+        usage
+      fi
+  esac
+  shift
+done
+
+[ -z "$url" ] && abort "HTTP url is required."
+
+if [ -z "$outfile" ]; then
+  outfile="$(basename "$url" | sed "s/\?.*$//")"
+fi
+
+if [ -z "$outfile" ]; then
+  abort "Failed to generate the name for the output file."
+fi
+
+case "$backend" in
+  curl)
+    run_curl "$url" "$outfile"
+    ;;
+  wget)
+    run_wget "$url" "$outfile"
+    ;;
+  *)
+    if type -p curl &>/dev/null; then
+      run_curl "$url" "$outfile"
+    elif type -p wget &>/dev/null; then
+      run_wget "$url" "$outfile"
+    else
+      abort "Neither curl nor wget is found."
+    fi
+    ;;
+esac
+
+echo "Saved as $outfile"

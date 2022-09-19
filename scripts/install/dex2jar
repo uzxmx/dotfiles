@@ -4,9 +4,11 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 [ -f /usr/local/dex2jar/d2j-dex2jar.sh ] && exit
 
-~/.dotfiles/bin/cget "https://github.com/pxb1988/dex2jar/files/1867564/dex-tools-2.1-SNAPSHOT.zip" /tmp/dex2jar.zip
+"$DOTFILES_DIR/bin/get" "https://github.com/pxb1988/dex2jar/files/1867564/dex-tools-2.1-SNAPSHOT.zip" /tmp/dex2jar.zip
 
 cd /usr/local && sudo unzip /tmp/dex2jar && sudo mv dex-tools-2.1-SNAPSHOT dex2jar
 rm /tmp/dex2jar.zip

@@ -12,8 +12,6 @@ alias fev="fe \"$DOTFILES_TARGET_DIR\"/.vim"
 alias fmerge="\"$DOTFILES_DIR\"/scripts/fzf/git-merge"
 alias fmergeto="\"$DOTFILES_DIR\"/scripts/fzf/git-merge-to"
 
-alias get='wget --continue --progress=bar'
-
 # Git
 alias ga="git add"
 alias gaa="git add -A"

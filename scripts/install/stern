@@ -4,9 +4,9 @@
 
 set -eo pipefail
 
-type -p stern &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+type -p stern &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
@@ -19,5 +19,5 @@ else
 fi
 
 version="1.11.0"
-"$dotfiles_dir/bin/cget" "https://github.com/wercker/stern/releases/download/$version/stern_${platform}_amd64" ~/bin/stern
+"$DOTFILES_DIR/bin/get" "https://github.com/wercker/stern/releases/download/$version/stern_${platform}_amd64" ~/bin/stern
 chmod a+x ~/bin/stern

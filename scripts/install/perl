@@ -4,16 +4,18 @@
 
 set -eo pipefail
 
-. ~/.dotfiles/scripts/lib/utils/common.sh
-. ~/.dotfiles/scripts/lib/utils/lines_to_array.sh
-. ~/.dotfiles/scripts/lib/utils/split.sh
-. ~/.dotfiles/scripts/lib/utils/version.sh
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+. "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/split.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/version.sh"
 
 version="5.32.0"
 type -p perl &>/dev/null && ! version_lt "$(perl -e 'print $^V;')" "v$version" && exit
 
 path_to_save="/tmp/perl-$version.tar.gz"
-~/.dotfiles/bin/cget "https://mirrors.tuna.tsinghua.edu.cn/CPAN/src/5.0/perl-$version.tar.gz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://mirrors.tuna.tsinghua.edu.cn/CPAN/src/5.0/perl-$version.tar.gz" $path_to_save
 tar zxf $path_to_save -C /tmp
 
 cd /tmp/perl-$version

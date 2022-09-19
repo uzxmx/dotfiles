@@ -2,13 +2,15 @@
 #
 # Install aws-cli (https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p aws &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 path_to_save="/tmp/awscli.zip"
 if is_linux; then
-  ~/.dotfiles/bin/cget "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" $path_to_save
+  "$DOTFILES_DIR/bin/get" "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" $path_to_save
   cd /tmp && unzip $path_to_save
   sudo /tmp/aws/install
   rm -rf /tmp/aws

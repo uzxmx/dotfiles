@@ -2,6 +2,8 @@
 #
 # Install ninja (https://ninja-build.org/)
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 type -p ninja &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
@@ -16,6 +18,6 @@ else
   abort "Unsupported system"
 fi
 
-~/.dotfiles/bin/cget "https://github.com/ninja-build/ninja/releases/download/v$version/ninja-$platform.zip" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://github.com/ninja-build/ninja/releases/download/v$version/ninja-$platform.zip" $path_to_save
 cd /tmp && unzip $path_to_save
 mv /tmp/ninja ~/bin

@@ -4,10 +4,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
@@ -20,7 +20,7 @@ install_gadget() {
   if [ ! -e "$file_path" ]; then
     echo "Install gadget for $platform@$version"
     local path_to_save="/tmp/$file_name.xz"
-    "$dotfiles_dir/bin/cget" "https://github.com/frida/frida/releases/download/$version/$file_name.xz" "$path_to_save"
+    "$DOTFILES_DIR/bin/get" "https://github.com/frida/frida/releases/download/$version/$file_name.xz" "$path_to_save"
 
     mkdir -p "$(dirname "$file_path")"
     xz -dc "$path_to_save" >"$file_path"

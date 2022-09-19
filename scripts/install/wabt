@@ -4,14 +4,11 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-type -p wat2wasm &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+check_command wat2wasm &> /dev/null && exit
 
 version="1.0.24"
 path_to_save="/tmp/wabt-$version.tgz"
@@ -23,6 +20,6 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/cget" "https://github.com/WebAssembly/wabt/releases/download/$version/wabt-$version-$platform.tar.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/WebAssembly/wabt/releases/download/$version/wabt-$version-$platform.tar.gz" "$path_to_save"
 tar zxf "$path_to_save" -C ~/bin --strip-components=2 --wildcards "wabt-$version/bin/*"
 rm -rf "$path_to_save"

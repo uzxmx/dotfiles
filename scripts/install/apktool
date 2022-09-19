@@ -22,8 +22,8 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/cget" "$wrapper_url" /tmp/apktool
-"$dotfiles_dir/bin/cget" "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_$version.jar" /tmp/apktool.jar
+"$dotfiles_dir/bin/get" "$wrapper_url" /tmp/apktool
+"$dotfiles_dir/bin/get" "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_$version.jar" /tmp/apktool.jar
 
 chmod a+x /tmp/apktool /tmp/apktool.jar
 sudo mv /tmp/apktool /tmp/apktool.jar /usr/local/bin

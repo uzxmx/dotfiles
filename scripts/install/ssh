@@ -4,6 +4,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 . $(dirname "$BASH_SOURCE")/../lib/utils/version.sh
 
 minimum_required_version="7.9p1"
@@ -14,7 +16,7 @@ type -p ssh &> /dev/null && ! version_lt_not_constrained "$(ssh -V 2>&1 | awk '{
 
 version="$minimum_required_version"
 path_to_save="/tmp/openssh-$version.tar.gz"
-~/.dotfiles/bin/cget "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$version.tar.gz" "$path_to_save"
+$DOTFILES_DIR/bin/get "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$version.tar.gz" "$path_to_save"
 
 cd /tmp && tar zxf "$path_to_save"
 

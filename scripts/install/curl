@@ -7,16 +7,18 @@
 
 set -eo pipefail
 
-. ~/.dotfiles/scripts/lib/utils/common.sh
-. ~/.dotfiles/scripts/lib/utils/lines_to_array.sh
-. ~/.dotfiles/scripts/lib/utils/split.sh
-. ~/.dotfiles/scripts/lib/utils/version.sh
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+. "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/split.sh"
+. "$DOTFILES_DIR/scripts/lib/utils/version.sh"
 
 version="7.71.1"
 type -p curl &>/dev/null && ! version_lt "$(curl -V | head -1 | cut -d' ' -f 2)" "$version" && exit
 
 path_to_save="/tmp/curl-$version.tar.xz"
-~/.dotfiles/bin/cget "https://curl.haxx.se/download/curl-$version.tar.xz" $path_to_save
+"$DOTFILES_DIR/bin/get" "https://curl.haxx.se/download/curl-$version.tar.xz" $path_to_save
 tar Jxf $path_to_save -C /tmp
 
 cd /tmp/curl-$version
