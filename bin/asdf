@@ -32,45 +32,26 @@ EOF
   exit 1
 }
 
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
-}
-
-if [ -z "$1" ]; then
-  set - shell
-fi
+[ "$#" -eq 0 ] && usage
+[ "$#" -eq 1 -a -z "$1" ] && usage
 
 case "$1" in
-  s | shell)
-    source "$asdf_dir/shell.sh"
-    run "$@"
-    ;;
-  c | current)
-    source "$asdf_dir/current.sh"
-    run "$@"
-    ;;
-  l | list)
-    source "$asdf_dir/list.sh"
+  s | shell | c | current | l | list)
+    case "$1" in
+      s)
+        name="shell"
+        ;;
+      c)
+        name="current"
+        ;;
+      l)
+        name="list"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$asdf_dir/$name.sh"
     run "$@"
     ;;
   -h)
