@@ -6,7 +6,7 @@
 #   https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
 _bash_quote() {
   local value=$1
-  if [ "$(echo "${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]} >= 4.4" | bc)" = "1" ]; then
+  if type -p bc &>/dev/null && [ "$(echo "${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]} >= 4.4" | bc)" = "1" ]; then
     echo "${value@Q}"
   else
     printf "%q" "$value"
