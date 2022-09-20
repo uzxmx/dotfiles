@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
@@ -68,8 +68,8 @@ else
   done
 fi
 
-source "$dotfiles_dir/scripts/lib/utils/common.sh"
-source "$dotfiles_dir/scripts/lib/fzf.sh"
+source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+source "$DOTFILES_DIR/scripts/lib/fzf.sh"
 
 while true; do
   unset result
@@ -140,8 +140,8 @@ while true; do
 done
 
 if [ "${#result[@]}" -ne 0 ]; then
-  if [[ "${#result[@]}" -eq 1 && "${result[0]}" =~ \.(png|jpg|jpeg)$ ]]; then
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+  if [[ "${#result[@]}" -eq 1 && "${result[0]}" =~ \.(png|jpg|jpeg|pdf)$ ]]; then
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     if [ "$(yesno "Using open utility to handle this file? (Y/n)" "yes")" = "yes" ]; then
       open "${result[0]}"
       exit
