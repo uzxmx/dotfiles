@@ -83,12 +83,3 @@ wrap_executable va "$DOTFILES_DIR/scripts/bin/vagrant"
 cp_p() {
   rsync -WavP --human-readable --progress $1 $2
 }
-
-# Extract archive
-x() {
-  local dir
-  dir="$("$DOTFILES_DIR/bin/extract" "$1")"
-  if [ "$?" -eq "0" -a -d "$dir" ]; then
-    cd "$dir"
-  fi
-}

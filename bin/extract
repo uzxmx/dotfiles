@@ -1,15 +1,34 @@
 #!/usr/bin/env bash
-#
-# Extract archive.
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
-source "$dotfiles_dir/scripts/lib/utils.sh"
-source "$dotfiles_dir/scripts/lib/utils/random.sh"
+source "$DOTFILES_DIR/scripts/lib/utils.sh"
+source "$DOTFILES_DIR/scripts/lib/utils/random.sh"
 
-file="$1"
+usage() {
+  cat <<-EOF
+Usage: extract <archive-file>
+
+Extract archive.
+EOF
+  exit 1
+}
+
+[ "$#" -eq 0 ] && usage
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      file="$1"
+  esac
+  shift
+done
+
 if [ ! -f "$file" ]; then
   abort 'Invalid input file'
 fi
@@ -23,10 +42,19 @@ elif [[ "$file" =~ (.+)(\.tar\.bz2|\.tbz|\.tb2)$ ]]; then
   cmd=(tar jxvf "$fullpath")
 elif [[ "$file" =~ (.+)\.tar$ ]]; then
   cmd=(tar xvf "$fullpath")
-elif [[ "$file" =~ (.+)\.(zip|jar|ipa)$ ]]; then
+elif [[ "$file" =~ (.+)\.(zip|jar|ipa|apk)$ ]]; then
   cmd=(unzip "$fullpath")
 elif [[ "$file" =~ (.+)\.rar$ ]]; then
   cmd=(unrar x "$fullpath")
+elif [[ "$file" =~ (.+)\.gz$ ]]; then
+  dest_file="$(basename -s .gz "$file")"
+  if [ -e "$dest_file" ]; then
+    echo "File $dest_file already exists, please remove it first." 1>&2
+    exit 1
+  fi
+  gunzip -c "$fullpath" >"$dest_file"
+  echo "$dest_file generated." 1>&2
+  exit
 else
   abort "Cannot extract $file"
 fi
@@ -52,4 +80,4 @@ if [ "$(echo "$files" | wc -l)" -eq "1" -a -d "${files[0]}" ]; then
   finalpath="$finalpath/${files[0]}"
 fi
 
-echo "$finalpath"
+echo "Successfully extracted to $finalpath"
