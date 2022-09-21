@@ -49,7 +49,7 @@ while [ "$#" -gt 0 ]; do
       ;;
     --root)
       shift
-      export DOTFILES_ROOT="$1"
+      export DOTFILES_DIR="$1"
       ;;
     --git-ssh)
       export GIT_CLONE_WITH_SSH=1
@@ -130,19 +130,19 @@ if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(d
 
   source "$tmpfile"
 else
-  DOTFILES_ROOT="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
-  source "$DOTFILES_ROOT/scripts/bootstrap/inc/stage0"
+  DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+  source "$DOTFILES_DIR/scripts/bootstrap/inc/stage0"
 fi
 
 # Do real setup.
-cd "$DOTFILES_ROOT"
+cd "$DOTFILES_DIR"
 
 build_pods_for_type() {
   local file
   if [ "$1" = "full" ]; then
-    file="$DOTFILES_ROOT/scripts/bootstrap/pods"
+    file="$DOTFILES_DIR/scripts/bootstrap/pods"
   else
-    file="$DOTFILES_ROOT/scripts/bootstrap/$1_pods"
+    file="$DOTFILES_DIR/scripts/bootstrap/$1_pods"
   fi
   while read pod; do
     pods+=("$pod")
@@ -150,7 +150,7 @@ build_pods_for_type() {
 }
 
 check_pod() {
-  if ! grep -Fx "$1" "$DOTFILES_ROOT/scripts/bootstrap/pods" &>/dev/null; then
+  if ! grep -Fx "$1" "$DOTFILES_DIR/scripts/bootstrap/pods" &>/dev/null; then
     echo "Pod $1 doesn't exist"
     exit 1
   fi
@@ -192,7 +192,7 @@ is_pod_enabled sudo_nopasswd && run ./scripts/misc/set_sudo_nopasswd
 if [ -n "$user_http_proxy" ]; then
   # Create a symlink for gitconfig, so git http proxy can be shown correctly.
   if [ ! -e ~/.gitconfig ]; then
-    run ln -s "$DOTFILES_ROOT/gitconfig" ~/.gitconfig
+    run ln -s "$DOTFILES_DIR/gitconfig" ~/.gitconfig
   fi
 
   source ./scripts/misc/bash_proxyctl

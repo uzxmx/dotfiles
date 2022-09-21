@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOTFILES_ROOT=${DOTFILES_ROOT:-~/.dotfiles}
+DOTFILES_DIR=${DOTFILES_DIR:-~/.dotfiles}
 GIT_CLONE_ARGS=($GIT_CLONE_ARGS)
 
 is_available() {
@@ -22,13 +22,13 @@ if ! is_available git; then
   fi
 fi
 
-if [ ! -d "$DOTFILES_ROOT" ] || ! (cd "$DOTFILES_ROOT" && git status &> /dev/null); then
+if [ ! -d "$DOTFILES_DIR" ] || ! (cd "$DOTFILES_DIR" && git status &> /dev/null); then
   if [ "$GIT_CLONE_WITH_SSH" = "1" ]; then
     url="git@github.com:uzxmx/dotfiles.git"
   else
     url="https://github.com/uzxmx/dotfiles.git"
   fi
-  run_with_proxy git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_ROOT"
+  run_with_proxy git clone "${GIT_CLONE_ARGS[@]}" "$url" "$DOTFILES_DIR"
 elif [ "$update_repo" = "1" ]; then
-  (cd "$DOTFILES_ROOT" && run_with_proxy git pull)
+  (cd "$DOTFILES_DIR" && run_with_proxy git pull)
 fi

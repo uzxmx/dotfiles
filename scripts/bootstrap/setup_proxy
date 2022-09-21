@@ -36,6 +36,6 @@ fi
 source <($download_cmd)
 
 # Do real setup.
-cd "$DOTFILES_ROOT"
+cd "$DOTFILES_DIR"
 
 ./scripts/install/polipo
