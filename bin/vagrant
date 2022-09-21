@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+vagrant_dir="$DOTFILES_DIR/scripts/vagrant"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for vagrant utility.
+
+Subcommands:
+  s, ssh - SSH into a virtual machine
+EOF
+  exit 1
+}
+
+case "$1" in
+  s | ssh)
+    case "$1" in
+      s)
+        name="ssh"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$vagrant_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    vagrant "$@"
+    ;;
+  *)
+    vagrant "$@"
+    ;;
+esac

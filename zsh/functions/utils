@@ -77,7 +77,6 @@ wrap_executable() {
 wrap_executable ssh "$DOTFILES_DIR/scripts/bin/ssh"
 wrap_executable sshuttle "$DOTFILES_DIR/scripts/bin/sshuttle"
 wrap_executable rsync "$DOTFILES_DIR/scripts/bin/rsync"
-wrap_executable va "$DOTFILES_DIR/scripts/bin/vagrant"
 
 # Copy with progress
 cp_p() {
