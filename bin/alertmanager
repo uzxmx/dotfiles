@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+#
+# See https://github.com/prometheus/alertmanager/blob/main/api/v2/openapi.yaml for a list of supported APIs.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+alertmanager_dir="$DOTFILES_DIR/scripts/alertmanager"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Alertmanager utility.
+
+The default server url is 'http://localhost:9093', you can change it by
+exporting the environment variable 'URL'.
+
+Subcommands:
+  s, status - show status
+  alert     - send an alert for test
+EOF
+  exit 1
+}
+
+req() {
+  local method="$1"
+  local path="$2"
+  shift 2
+  curl -Ss -X "$method" "${URL:-http://localhost:9093}$path" "$@"
+}
+
+get_req() {
+  req GET "$@"
+}
+
+post_req() {
+  req POST "$@"
+}
+
+case "$1" in
+  s | status | alert)
+    case "$1" in
+      s)
+        name="status"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$alertmanager_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
