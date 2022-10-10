@@ -8,8 +8,12 @@ acme_dir="$DOTFILES_DIR/scripts/acme"
 
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
-ACME_CMD="${ACME_CMD:-$DOTFILES_TARGET_DIR/opt/acme.sh/acme.sh}"
-ACME_HOME="$DOTFILES_TARGET_DIR/opt/acme.sh"
+if [ -e "$HOME/.acme.sh/acme.sh" ]; then
+  ACME_HOME="$HOME/.acme.sh"
+else
+  ACME_HOME="$DOTFILES_TARGET_DIR/opt/acme.sh"
+fi
+ACME_CMD="${ACME_CMD:-$ACME_HOME/acme.sh}"
 
 usage() {
   cat <<-EOF
