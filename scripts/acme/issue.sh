@@ -10,6 +10,8 @@ names in that certificate using 'challenges' as defined by the ACME standard.
 There are challenge types such as 'HTTP-01 challenge', 'DNS-01 challenge'.
 For more info, please visit 'https://letsencrypt.org/docs/challenge-types/'.
 
+When using 'dns_ali', you may also need to export 'Ali_Key' and 'Ali_Secret' environment variables.
+
 Options:
   -d <dns_provider> The DNS provider to use for DNS-01 challenge. Supported values include 'dns_ali'.
                     See 'https://github.com/acmesh-official/acme.sh/wiki/dnsapi' for a list of providers

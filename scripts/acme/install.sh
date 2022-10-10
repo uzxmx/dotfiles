@@ -31,6 +31,7 @@ cmd_install() {
     case "$1" in
       -t)
         shift
+        [ -e "$1" ] || mkdir "$1"
         opts+=(--key-file "$1/key.pem" --fullchain-file "$1/cert.pem")
         ;;
       --cert-file | --key-file | --ca-file | --fullchain-file)
