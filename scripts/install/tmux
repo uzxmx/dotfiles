@@ -40,6 +40,8 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
+[ -z "$force_install" ] && check_command tmux &> /dev/null && exit
+
 check_plugins() {
   [ -z "$install_plugins" ] && return
 
@@ -85,6 +87,7 @@ do_install() {
   make install
   local link="$DOTFILES_TARGET_DIR/bin/tmux"
   [ -e "$link" ] && rm -rf "$link"
+  mkdir -p "$dest_path/bin"
   create_link "$link" "$dest_path/bin/tmux"
 }
 

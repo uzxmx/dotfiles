@@ -30,6 +30,8 @@ EOF
   exit 1
 }
 
+export DOTFILES_DIR=${DOTFILES_DIR:-~/.dotfiles}
+
 pods=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -73,7 +75,7 @@ run() {
     echo "Run: $@" >&2
   fi
   export DOTFILES_DIR
-  eval "$@"
+  eval "$@" >"$DOTFILES_DIR/setup.log"
 }
 export -f run
 

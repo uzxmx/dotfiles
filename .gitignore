@@ -6,7 +6,7 @@
 .byebug_history
 .env
 db/*.sqlite3
-log/*.log
+*.log
 rerun.txt
 tags
 .tags
