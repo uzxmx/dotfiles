@@ -40,8 +40,6 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-[ -z "$force_install" ] && check_command tmux &> /dev/null && exit
-
 check_plugins() {
   [ -z "$install_plugins" ] && return
 
