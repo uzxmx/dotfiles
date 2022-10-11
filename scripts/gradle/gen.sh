@@ -26,6 +26,10 @@ cmd_gen() {
         shift
         project_type="$1"
         ;;
+      -p)
+        shift
+        package="$1"
+        ;;
       -*)
         usage_gen
         ;;
