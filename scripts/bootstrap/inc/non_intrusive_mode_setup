@@ -10,11 +10,18 @@ export HTTP_PROXY=$http_proxy
 export https_proxy=$http_proxy
 export HTTPS_PROXY=$http_proxy
 
-if [ ! -d "$DOTFILES_DIR" ]; then
-  git clone --depth 1 https://github.com/uzxmx/dotfiles.git "$DOTFILES_DIR"
+if ! type -p git &>/dev/null; then
+  echo "You must have git installed."
+  exit 1
 fi
 
-cd "$DOTFILES_DIR"
+if [ -d "$DOTFILES_DIR" ]; then
+  cd "$DOTFILES_DIR"
+  git pull
+else
+  git clone --depth 1 https://github.com/uzxmx/dotfiles.git "$DOTFILES_DIR"
+  cd "$DOTFILES_DIR"
+fi
 
 alias_cmd="alias non_intrusive_shell=\"$DOTFILES_DIR/scripts/misc/non_intrusive_shell\""
 
@@ -29,4 +36,7 @@ fi
 
   $DOTFILES_DIR/scripts/install/fzf
   $DOTFILES_DIR/scripts/install/fd
+  $DOTFILES_DIR/scripts/install/rg
+  $DOTFILES_DIR/scripts/install/nvim --do-all-steps
+  $DOTFILES_DIR/scripts/install/tmux --install-plugins
 EOF
