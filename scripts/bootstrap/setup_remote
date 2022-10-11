@@ -45,7 +45,7 @@ done
 
 if [ "$intrusive_setup" = 1 ]; then
   file="$(dirname "$0")/setup"
-  opts=(-p localhost:8123 -t minimal -v)
+  opts=(-p localhost:8123 -t minimal --update-repo -v)
 else
   file="$(dirname "$0")/inc/non_intrusive_mode_setup"
 fi
