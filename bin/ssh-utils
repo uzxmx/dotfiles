@@ -12,13 +12,14 @@ usage() {
 SSH utilities.
 
 Subcommands:
-  ssh - enhanced SSH command
+  ssh            - enhanced SSH command
+  setup_dotfiles - setup dotfiles repo on the remote system
 EOF
   exit 1
 }
 
 case "$1" in
-  ssh)
+  ssh | setup_dotfiles)
     case "$1" in
       *)
         name="$1"

@@ -72,6 +72,7 @@ run() {
   if [ "$verbose" = "1" ]; then
     echo "Run: $@" >&2
   fi
+  export DOTFILES_DIR
   eval "$@"
 }
 export -f run
@@ -130,7 +131,7 @@ if ! [ "$(basename $(dirname "$BASH_SOURCE"))" = "bootstrap" -a "$(basename "$(d
 
   source "$tmpfile"
 else
-  DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+  export DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
   source "$DOTFILES_DIR/scripts/bootstrap/inc/stage0"
 fi
 
@@ -204,7 +205,6 @@ is_pod_enabled system_repo_mirror && run ./scripts/misc/setup_system_repo_mirror
 
 pods=(
   prerequisites
-  rcm
   zsh
   antibody
   hstr
@@ -218,11 +218,14 @@ for pod in "${pods[@]}"; do
   run "./scripts/install/$pod"
 
   case "$pod" in
-    rcm)
-      run rcup
+    zsh)
+      run "$DOTFILES_DIR/bin/rcup"
 
       # Fix bad permissions.
       [ -f ~/.ssh/config ] && chmod 600 ~/.ssh/config
+      ;;
+    antibody)
+      run "$DOTFILES_DIR/bin/antibody" bundle
       ;;
   esac
 done
@@ -234,14 +237,14 @@ export GO111MODULE=on
 export GOPROXY="https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct"
 
 pods=(
-  nodejs
-  nvim
-  tmux
   bc
   socat
   fzf
   fd
   rg
+  tmux
+  nodejs
+  nvim
 )
 
 for pod in "${pods[@]}"; do

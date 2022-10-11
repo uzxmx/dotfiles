@@ -2,4 +2,4 @@
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
-"$DOTFILES_DIR/bin/vscode" rcup || true
+"$DOTFILES_DIR/bin/vscode" rcup &> /dev/null || true

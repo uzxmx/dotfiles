@@ -6,22 +6,33 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null
 
 usage() {
   cat <<-EOF
-Usage: $0
+Usage: $0 <-f | --vagrant>
 
 Utility to setup dotfiles repository on the remote system through SSH.
 
 Options:
+  -f Select a remote host from '~/.ssh_hosts' by fzf
+  --vagrant SSH via vagrant
   -o <ssh-options> SSH options
+  --intrusive Intrusive setup
 EOF
   exit 1
 }
 
-pods=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    -f)
+      use_fzf=1
+      ;;
     -o)
       shift
       ssh_opts="$1"
+      ;;
+    --vagrant)
+      use_vagrant=1
+      ;;
+    --intrusive)
+      intrusive_setup=1
       ;;
     *)
       usage
@@ -30,10 +41,21 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-file="$(dirname "$0")/inc/non_intrusive_mode_setup"
-if [ -z "$ssh_opts" ]; then
-  "$DOTFILES_DIR/bin/ssh-utils" ssh -p - "bash -s" < "$file"
+[ -z "$use_fzf" -a -z "$use_vagrant" ] && usage
+
+if [ "$intrusive_setup" = 1 ]; then
+  file="$(dirname "$0")/setup"
+  opts=(-p localhost:8123 -t minimal)
 else
-  ssh $ssh_opts -R 8123:localhost:8123 "bash -s" < "$file"
+  file="$(dirname "$0")/inc/non_intrusive_mode_setup"
 fi
 
+if [ "$use_vagrant" = "1" ]; then
+    vagrant ssh -- $ssh_opts -R 8123:localhost:8123 "bash -s -- ${opts[@]}" < "$file"
+else
+  if [ -z "$ssh_opts" ]; then
+    "$DOTFILES_DIR/bin/ssh-utils" ssh - "bash -s -- ${opts[@]}" < "$file"
+  else
+    ssh $ssh_opts -R 8123:localhost:8123 "bash -s -- ${opts[@]}" < "$file"
+  fi
+fi

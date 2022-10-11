@@ -1,4 +1,3 @@
-sudo_nopasswd
 system_repo_mirror
 prerequisites
 zsh
@@ -14,12 +13,3 @@ socat
 fzf
 fd
 rg
-coc_python
-java
-coc_java
-maven
-go
-gopls
-perl
-cpanm
-perl_modules

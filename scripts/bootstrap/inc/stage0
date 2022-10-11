@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOTFILES_DIR=${DOTFILES_DIR:-~/.dotfiles}
+export DOTFILES_DIR=${DOTFILES_DIR:-~/.dotfiles}
 GIT_CLONE_ARGS=($GIT_CLONE_ARGS)
 
 is_available() {
