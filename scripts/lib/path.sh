@@ -19,5 +19,5 @@ new_path_exclude() {
 # @params:
 #   $1: the command
 check_command() {
-  (PATH="$(new_path_exclude "$DOTFILES_DIR/bin" "$DOTFILES_DIR/bin_nim")" type -p "$1")
+  (PATH="$(new_path_exclude "$DOTFILES_DIR/bin" "$DOTFILES_DIR/bin_nim" "$PWN_DIR/bin")" type -p "$1")
 }
