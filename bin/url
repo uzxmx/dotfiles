@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+url_dir="$DOTFILES_DIR/scripts/url"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+URL utility.
+
+Subcommands:
+  d, decode - URL decode
+EOF
+  exit 1
+}
+
+case "$1" in
+  d | decode)
+    case "$1" in
+      d)
+        name="decode"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$url_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
