@@ -7,7 +7,7 @@ set -eo pipefail
 target_file="$HOME/lombok/lombok.jar"
 [ -e "$target_file" ] && exit
 
-version="1.18.18"
+version="1.18.24"
 mkdir -p ~/lombok
 curl -o ~/lombok/lombok-$version.jar https://projectlombok.org/downloads/lombok-$version.jar
 ln -s ~/lombok/lombok-$version.jar "$target_file"
