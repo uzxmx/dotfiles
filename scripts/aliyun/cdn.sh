@@ -1,5 +1,8 @@
 source "$aliyun_dir/common.sh"
 
+# TODO Refresh or prefetch for CDN resources. See:
+# * https://help.aliyun.com/document_detail/27140.htm#section-81a-rm1-sis
+# * https://help.aliyun.com/document_detail/151829.htm?spm=a2c4g.11186623.0.0.4bd52288nsx2FZ#topic-2404622
 usage_cdn() {
   cat <<-EOF
 Usage: aliyun cdn
