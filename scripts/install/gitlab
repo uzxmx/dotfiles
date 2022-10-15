@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# Install gitlab (https://gitlab.cn/en/install/).
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+usage() {
+  cat <<-EOF
+Usage: $0 <external-url>
+
+Install gitlab and configure gitlab behind a reverse proxy (nginx), so we can
+deploy other vhosts in parallel with gitlab.
+
+Examples:
+  $0 http://gitlab.example.com
+EOF
+  exit 1
+}
+
+parse_args="
+  -*)
+    usage
+    ;;
+  *)
+    if [ -z \"$external_url\" ]; then
+      external_url=\"\$1\"
+    else
+      abort Only one external url should be specified.
+    fi
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if has_yum; then
+  curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+  sudo yum install -y gitlab-ee
+else
+  abort "Unsupported system"
+fi
+
+if [ -n "$external_url" ]; then
+  cat <<EOF | sudo tee /etc/gitlab/gitlab.rb >/dev/null
+external_url '$external_url'
+nginx['listen_port'] = 8081
+EOF
+
+  sudo gitlab-ctl reconfigure
+fi
