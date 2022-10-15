@@ -22,6 +22,10 @@ EOF
 [ "$#" -eq 0 ] && usage
 
 run_curl() {
+  # TODO Check whether the HTTP server supports byte ranges.
+  # See https://stackoverflow.com/questions/18084677/determine-if-server-supports-resume-get-request
+  # curl -C- -L -o "$2" "$1"
+
   curl -L -o "$2" "$1"
 }
 
