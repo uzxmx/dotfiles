@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 iptables_dir="$dotfiles_dir/scripts/iptables"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -20,7 +20,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/user.sh"
+source "$DOTFILES_DIR/scripts/lib/user.sh"
 
 iptables() {
   if is_root; then
