@@ -13,7 +13,7 @@ select_image() {
 }
 
 select_service() {
-  local result="$(docker service ls --format "{{.Name}}\t{{.Image}}" | column -t -s $'\t' | fzf --nth=1)"
+  local result="$(docker service ls --format "{{.Name}}\t{{.Image}}" | column -t -s $'\t' | fzf --nth=1 -0)"
   if [ -n "$result" ]; then
     echo "$result" | awk '{print $1}'
   fi
