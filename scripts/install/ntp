@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Install ntp
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_enabled() {
+  if [ "$(sudo systemctl is-enabled ntpd)" = "disabled" ]; then
+    sudo systemctl enable ntpd
+  fi
+}
+
+check_command ntpdate &> /dev/null && check_enabled && exit
+
+if has_yum; then
+  sudo yum install -y ntp
+else
+  abort "Unsupported system"
+fi
+
+check_enabled
+sudo systemctl start ntpd
