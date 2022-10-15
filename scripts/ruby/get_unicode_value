@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-if ARGV.count.zero?
-  puts 'Usage: get_unicode_value <character or string>'
-  exit 1
-end
-
-puts ARGV.first.chars.map { |c| format('0x%4.4x', c.ord) }.join(' ')
