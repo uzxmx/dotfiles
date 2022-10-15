@@ -3,7 +3,7 @@
 _origin_name="$(basename "$0")"
 
 update_origin_path() {
-  _origin_path="$(source "$dotfiles_dir/scripts/lib/path.sh"; PATH="$(new_path_exclude "$dotfiles_dir/bin")"; which $_origin_name || true)"
+  _origin_path="$(source "$DOTFILES_DIR/scripts/lib/path.sh"; PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"; which $_origin_name || true)"
 }
 
 update_origin_path
@@ -28,7 +28,7 @@ ensure_origin_exists() {
 
     local install_script="${2:-$_origin_name}"
     if [[ ! "$install_script" =~ ^/ ]]; then
-      install_script="$dotfiles_dir/scripts/install/$install_script"
+      install_script="$DOTFILES_DIR/scripts/install/$install_script"
     fi
 
     "$install_script"

@@ -36,6 +36,6 @@ cmd_add_pubkey() {
   local vm
   if vm="$(select_vm_and_check_running "$1")"; then
     [ -z "$vm" ] && exit
-    "$dotfiles_dir/scripts/misc/add_pubkey_to_remote" "$(get_ssh_target "$vm")"
+    "$DOTFILES_DIR/scripts/misc/add_pubkey_to_remote" "$(get_ssh_target "$vm")"
   fi
 }
