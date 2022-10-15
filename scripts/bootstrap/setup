@@ -203,6 +203,15 @@ if [ -n "$user_http_proxy" ]; then
   trap pd EXIT
 fi
 
+# Check timezone for vagrant box.
+if [ "$USER" = "vagrant" ]; then
+  run "./scripts/install/ntp"
+
+  if ! timedatectl status | grep 'Time zone: .*\+0800' &>/dev/null; then
+    sudo timedatectl set-timezone Asia/Shanghai
+  fi
+fi
+
 is_pod_enabled system_repo_mirror && run ./scripts/misc/setup_system_repo_mirror
 
 pods=(
