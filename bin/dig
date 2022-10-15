@@ -2,11 +2,27 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
 Wrapper for dig utility.
+
+DNS Servers in China:
+  * Aliyun: 223.5.5.5
+  * 114 DNS: 114.114.114.114
+  * China Unicom: 123.125.81.6
+  * Baidu: 180.76.76.76
+  * Tencent: 119.29.29.29
+
+DNS Servers abroad:
+  * Google: 8.8.8.8
+  * OpenDNS: 208.67.222.220
+  * Cloudflare: 1.1.1.1
+  * Quad9: 9.9.9.9
+  * Comodo Secure DNS: 8.26.56.26
+
+DNS progation checker: https://dnschecker.org/
 
 Examples:
 
@@ -16,7 +32,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/bin_wrapper.sh"
+source "$DOTFILES_DIR/scripts/lib/bin_wrapper.sh"
 
 if [ "$#" -eq 1 -a "$1" = "-h" ]; then
   usage
