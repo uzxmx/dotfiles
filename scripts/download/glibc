@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
 version="${1:-2.18}"
 path_to_save="${2:-/tmp/glibc-$version.tar.gz}"
-~/.dotfiles/bin/cget "http://mirrors.ustc.edu.cn/gnu/libc/glibc-$version.tar.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "http://mirrors.ustc.edu.cn/gnu/libc/glibc-$version.tar.gz" "$path_to_save"
