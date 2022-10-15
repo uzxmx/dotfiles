@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+android_studio_dir="$DOTFILES_DIR/scripts/android-studio"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Usage: android-studio [project-dir]
+
+Android Studio utility. Open a project specified by a directory, or
+current working directory if no argument is specified.
+
+Subcommands:
+  o, open            - open a project, the default subcommand if one is not given
+EOF
+  exit 1
+}
+
+case "$1" in
+  o | open)
+    case "$1" in
+      o)
+        name="open"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$android_studio_dir/$name.sh"
+    run "$@"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    source "$android_studio_dir/open.sh"
+    run open "$@"
+    ;;
+esac
