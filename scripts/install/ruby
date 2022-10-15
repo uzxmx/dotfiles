@@ -2,41 +2,109 @@
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
 usage() {
   cat <<-EOF
 Usage: $0 [version]
+
+Install ruby. By default it installs ruby by asdf (ruby-build). You can specify
+'--local-install' to install it manually.
+
+Options:
+  --local-install Install to user home directory
+  --force-install Force to install even if it already exists
+  --temp-dir <dir> Temp dir to store the src and build files
+
+  --openssl-dir <dir> Optional openssl dir to find include and library files, also support LibreSSL
 EOF
   exit 1
 }
 
-. "$(dirname "$BASH_SOURCE")/../lib/install.sh"
-. "$(dirname "$BASH_SOURCE")/../lib/asdf.sh"
+parse_args="
+  --local-install)
+    local_install=1
+    ;;
+  --force-install)
+    force_install=1
+    ;;
+  --temp-dir)
+    shift
+    temp_dir=\"\$1\"
+    ;;
+  --openssl-dir)
+    shift
+    openssl_dir=\"\$1\"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    version=\"\$1\"
+    ;;
+"
 
-echo 'Check and install ruby dependencies...'
-if has_yum; then
-  sudo yum install -y openssl-devel readline-devel
-elif has_apt; then
-  . "$(dirname "$BASH_SOURCE")/../lib/utils/common.sh"
-  . "$(dirname "$BASH_SOURCE")/../lib/utils/lines_to_array.sh"
-  . "$(dirname "$BASH_SOURCE")/../lib/utils/split.sh"
-  . "$(dirname "$BASH_SOURCE")/../lib/utils/version.sh"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-  if is_ubuntu && ! version_lt_not_constrained "$(lsb_release_number)" 20; then
-    sudo apt-get install -y libssl-dev libreadline-dev
-  else
-    sudo apt-get install -y libssl1.0-dev libreadline-dev
+[ -z "$force_install" ] && check_command ruby &> /dev/null && exit
+
+if [ -z "$local_install" ]; then
+  source "$DOTFILES_DIR/scripts/lib/asdf.sh"
+
+  echo 'Check and install ruby dependencies...'
+  if has_yum; then
+    sudo yum install -y openssl-devel readline-devel
+  elif has_apt; then
+    source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+    source "$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
+    source "$DOTFILES_DIR/scripts/lib/utils/split.sh"
+    source "$DOTFILES_DIR/scripts/lib/utils/version.sh"
+
+    if is_ubuntu && ! version_lt_not_constrained "$(lsb_release_number)" 20; then
+      sudo apt-get install -y libssl-dev libreadline-dev
+    else
+      sudo apt-get install -y libssl1.0-dev libreadline-dev
+    fi
   fi
-fi
 
-. "$(dirname "$BASH_SOURCE")/../lib/tmpfile.sh"
+  source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
 
-create_tmpfile mirror_cmd_file
-cat <<'EOF' >"$mirror_cmd_file"
+  create_tmpfile mirror_cmd_file
+  cat <<'EOF' >"$mirror_cmd_file"
 #!/usr/bin/env bash
 echo "${package_url/cache.ruby-lang.org/cache.ruby-china.com}"
 EOF
-chmod +x "$mirror_cmd_file"
+  chmod +x "$mirror_cmd_file"
 
-export RUBY_BUILD_MIRROR_CMD="$mirror_cmd_file"
+  export RUBY_BUILD_MIRROR_CMD="$mirror_cmd_file"
 
-install_plugin_package ruby "$1"
+  install_plugin_package ruby "$1"
+  exit
+fi
+
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+
+  local dest_path="$DOTFILES_TARGET_DIR/opt/ruby-$version"
+  local -a opts
+  if [ -n "$openssl_dir" -a -d "$openssl_dir" ]; then
+    opts+=(--with-openssl-dir="$openssl_dir")
+  fi
+  # if is_mac; then
+  #   openssl_dir="$(brew --prefix openssl@1.1 2>/dev/null || true)"
+  #   if [ -d "$openssl_dir" ]; then
+  #     opts+=(--with-openssl-dir="$openssl_dir")
+  #   fi
+  # fi
+  ./configure --prefix "$dest_path" "${opts[@]}"
+  make
+  make install
+  local link="$DOTFILES_TARGET_DIR/bin/ruby"
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  [ -e "$link" ] && rm -rf "$link"
+  create_link "$link" "$dest_path/bin/ruby"
+}
+main_minor_version="$(echo "$version" | sed -E 's/([0-9]*\.[0-9]*).*/\1/')"
+download_and_install "https://cache.ruby-china.com/pub/ruby/$main_minor_version/ruby-$version.tar.gz" install_fn "$temp_dir"
