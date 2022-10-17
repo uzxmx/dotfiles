@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Install gomobile (https://github.com/golang/go/wiki/Mobile)
+
+set -eo pipefail
+
+go install golang.org/x/mobile/cmd/gomobile@latest
+gomobile init
