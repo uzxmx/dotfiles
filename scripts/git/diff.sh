@@ -7,7 +7,7 @@ and the working tree (what changes have been done from the HEAD).
 
 When only commit1 is given, it compares commit1 with the working tree (what
 changes have been done from commit1 to the working tree). If you want to
-reverse the comparasion, use -R.
+reverse the comparison, use -R.
 
 When both commit1 and commit2 are given, it compares the commit1 with the
 commit2 (what changes have been done from commit1 to commit2).
@@ -18,7 +18,7 @@ Options:
   -c, --cached show staged changes
   -f, --fzf use fzf mode
   -n | --no-fzf don't use fzf mode
-  -R reverse the comparasion (show differences from index or on-disk file to tree contents)
+  -R reverse the comparison (show differences from index or on-disk file to tree contents)
 EOF
   exit 1
 }
