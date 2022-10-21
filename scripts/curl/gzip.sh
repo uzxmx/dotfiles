@@ -27,8 +27,8 @@ cmd_gzip() {
     usage_gzip
   fi
 
-  source "$dotfiles_dir/scripts/lib/utils/common.sh"
-  source "$dotfiles_dir/scripts/lib/io.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+  source "$DOTFILES_DIR/scripts/lib/io.sh"
 
   local output
   io_run_capture_and_display output curl -H "Accept-Encoding: gzip" "$url" -D - -o /dev/null -sS "${opts[@]}"

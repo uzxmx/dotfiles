@@ -67,16 +67,16 @@ cmd_cors() {
     exit 1
   fi
 
-  source "$dotfiles_dir/scripts/lib/utils/common.sh"
-  source "$dotfiles_dir/scripts/lib/io.sh"
-  source "$dotfiles_dir/scripts/lib/utils/trim.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+  source "$DOTFILES_DIR/scripts/lib/io.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils/trim.sh"
 
   local output
   io_run_capture_and_display output curl -XOPTIONS -H "Origin: $origin" "$url" -D - -o /dev/null -sS "${opts[@]}"
 
   echo -e "----\n"
 
-  source "$dotfiles_dir/scripts/lib/gsed.sh"
+  source "$DOTFILES_DIR/scripts/lib/gsed.sh"
   local allowed_origin="$(str_trim "$(echo "$output" | grep -i Access-Control-Allow-Origin | "$SED" 's/^access-control-allow-origin:[[:space:]]*//i')")"
   if [ "$allowed_origin" = "$origin" -o "$allowed_origin" = "*" ]; then
     echo CORS is allowed.

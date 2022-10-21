@@ -2,8 +2,10 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-curl_dir="$dotfiles_dir/scripts/curl"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+curl_dir="$DOTFILES_DIR/scripts/curl"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -18,20 +20,6 @@ Subcommands:
   gzip     - check if a remote resource is gzipped
 EOF
   exit 1
-}
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
 }
 
 case "$1" in

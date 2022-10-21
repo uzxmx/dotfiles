@@ -52,7 +52,7 @@ cmd_https_ip() {
   [ -n "$domain" ] || (echo 'Domain name is required.' && exit 1)
 
   local regexp="^(https:\\/\\/)?([0-9.]+)(:([0-9]+))?(.*)$"
-  source "$dotfiles_dir/scripts/lib/gsed.sh"
+  source "$DOTFILES_DIR/scripts/lib/gsed.sh"
   if ! echo "$url" | $SED -E "/$regexp/!{q1}" &>/dev/null; then
     echo "Invalid URL: $url"
     echo "URL should match the regular expression: $regexp"
