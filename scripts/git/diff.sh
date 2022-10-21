@@ -93,12 +93,18 @@ cmd_d() {
       # we change to the git root first.
       local old_dir="$(pwd)"
       cd "$(git rev-parse --show-toplevel)"
+      local preview_window
+      if [ "$(tput cols)" -ge 160 ]; then
+        preview_window="right"
+      else
+        preview_window="bottom"
+      fi
       call_fzf result --no-mouse --cycle \
         --query="$query" --print-query \
         --layout=reverse \
         --prompt="C-V:diff-file C-O:open-file C-S:stage-file Enter:edit> " \
         --preview="$preview_cmd" \
-        --preview-window="right:50%:wrap" \
+        --preview-window="$preview_window:50%:wrap" \
         --bind "ctrl-v:execute(tmux new-window \"$preview_cmd\")" \
         --bind "ctrl-o:execute(tmux new-window \"$edit_cmd\")" \
         --expect "ctrl-s" \

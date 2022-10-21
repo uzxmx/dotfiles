@@ -40,10 +40,16 @@ while true; do
   output="$(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")"
   [ -z "$output" ] && echo 'No stash available, exit' && exit
   bind_cmd="execute(tmux split-window \"$dotfiles_dir/bin/g show_commit {2} -d {2}~1\")"
+  if [ "$(tput cols)" -ge 160 ]; then
+    preview_window="right"
+  else
+    preview_window="bottom"
+  fi
   call_fzf result --ansi --no-sort --query="$query" --print-query \
     --layout=reverse \
     --prompt '(CTRL-B:checkout CTRL-V|Enter:view CTRL-O:pop CTRL-D:drop)> ' \
     --preview "git stash show --name-status {2}" \
+    --preview-window="$preview_window:50%:wrap" \
     --bind "ctrl-v:$bind_cmd" \
     --bind "enter:$bind_cmd" \
     --expect="ctrl-b,ctrl-o,ctrl-d" \

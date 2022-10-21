@@ -41,12 +41,19 @@ select_commit() {
     fzf_opts+=(--bind "ctrl-s:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1} -d \"$another_commit\"\")")
   fi
 
+  local preview_window
+  if [ "$(tput cols)" -ge 160 ]; then
+    preview_window="right"
+  else
+    preview_window="bottom"
+  fi
+
   local selection="$(git log --first-parent --pretty="format:%h %<(30,trunc)%s %ai %an %d" "${remainder[@]}" \
     | fzf --no-mouse --cycle \
     --layout=reverse \
     --prompt="${prompt:-"$default_prompt> "}" \
     --preview="git show {1} --first-parent --pretty='commit %H%d%nParent: %p%nAuthor: %an%nDate:   %ai%n%n%w(0,4,4)%B%-' --name-status" \
-    --preview-window="right:50%:wrap" \
+    --preview-window="$preview_window:50%:wrap" \
     --bind=f1:top \
     --bind "ctrl-y:execute-silent(echo -n {1} | trim | cb && tmux display-message yanked)" \
     --bind "ctrl-v:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1}\")" \
