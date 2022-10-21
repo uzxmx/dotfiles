@@ -94,12 +94,21 @@ run_ruby_http_server() {
   ruby -r webrick -e "WEBrick::HTTPServer.new(BindAddress: '$host', Port: $port, DocumentRoot: Dir.pwd).start"
 }
 
+run_netcat() {
+  echo "HTTP server will be listening at $port"
+  while true; do
+    echo -e "HTTP/1.1 200 OK\n\n $(date)" | nc -l "$port"
+  done
+}
+
 if type -p go &>/dev/null; then
   run_go_http_server
 elif type -p ruby &>/dev/null; then
   run_ruby_http_server
 elif type -p python3 &>/dev/null; then
-  python3 -m http.server --bind "$host" $port
+  python3 -m http.server --bind "$host" "$port"
+elif type -p nc &>/dev/null; then
+  run_netcat
 else
   echo "Cannot find a proper way to start an HTTP server"
 fi
