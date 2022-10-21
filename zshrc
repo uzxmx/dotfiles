@@ -5,6 +5,9 @@ export DOTFILES_DIR
 
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
 autoload -Uz compinit
 if [ -f "$DOTFILES_TARGET_DIR/.zcompdump" ]; then
   if [[ "$OSTYPE" =~ ^darwin.* ]]; then

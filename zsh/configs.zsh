@@ -6,6 +6,8 @@ alias help=run-help
 
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   PROMPT='[%F{red}nim]$prompt_newline%F{grey}%* '$PROMPT
+else
+  PROMPT='%F{grey}%* '$PROMPT
 fi
 PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
 # Keep dirty color same with git:branch.
@@ -130,7 +132,7 @@ export THEOS="$DOTFILES_TARGET_DIR/theos"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Duser.language=en"
 
 # Use a clean PATH variable
-PATH="$DOTFILES_TARGET_DIR/bin:$THEOS/bin:$DOTFILES_TARGET_DIR/.cargo/bin:$GOPATH/bin:$DOTFILES_TARGET_DIR/.dotnet/tools:/usr/local/share/dotnet:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+PATH="$THEOS/bin:$DOTFILES_TARGET_DIR/.cargo/bin:$GOPATH/bin:$DOTFILES_TARGET_DIR/.dotnet/tools:$DOTFILES_TARGET_DIR/sdk/bin:/usr/local/share/dotnet:/usr/local/games:/usr/games:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 if [[ "$(uname -r)" =~ Microsoft$ ]]; then
   _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"
