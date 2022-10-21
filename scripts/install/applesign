@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install applesign (https://github.com/nowsecure/node-applesign)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command applesign &> /dev/null && exit
+
+if type -p npm &>/dev/null; then
+  npm install -g applesign
+else
+  abort "npm is required"
+fi
