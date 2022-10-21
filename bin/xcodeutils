@@ -20,7 +20,7 @@ Subcommands:
   u, upload         - upload an ipa file to AppStore and TestFlight
   pgyer             - upload an ipa file to pgyer (https://www.pgyer.com)
   onestop           - archive, export and upload in one command
-  show_entitlements - show entitlements of an IPA file
+  show_entitlements - show entitlements of an IPA file (via codesign)
   verify_site       - verify apple-app-site-association file
   list_profiles     - list profiles on current system
 EOF
