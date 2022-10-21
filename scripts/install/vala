@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# Install vala (https://wiki.gnome.org/Projects/Vala/ValaPlatforms).
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+usage() {
+  cat <<-EOF
+Install vala.
+
+Options:
+  --from-source Install from source
+EOF
+  exit 1
+}
+
+parse_args="
+  --from-source)
+    from_source=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command valac &> /dev/null && exit
+
+if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  if is_mac; then
+    brew_install vala
+    exit
+  fi
+fi
+
+major_version="0"
+minor_version="56"
+patch_version="1"
+version="$major_version.$minor_version.$patch_version"
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+  ./configure --prefix="$DOTFILES_TARGET_DIR/sdk"
+  make
+  make install
+}
+download_and_install "http://download.gnome.org/sources/vala/${major_version}.${minor_version}/vala-$version.tar.xz" install_fn
