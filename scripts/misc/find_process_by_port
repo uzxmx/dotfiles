@@ -8,6 +8,14 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null
 
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
-if check_command lsof &>/dev/null; then
+if ! check_command lsof &>/dev/null; then
   "$DOTFILES_DIR/bin/lsof" port "$@"
+elif check_command netstat &>/dev/null; then
+  cat <<'EOF'
+You can use below command to find:
+
+sudo netstat -anop | grep $PORT
+EOF
+else
+  abort "Unsupported system"
 fi
