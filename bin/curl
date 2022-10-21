@@ -18,12 +18,13 @@ Subcommands:
   cors     - check if CORS is allowed
   https_ip - request an HTTPS server by IP address
   gzip     - check if a remote resource is gzipped
+  mail     - send a mail by smtp
 EOF
   exit 1
 }
 
 case "$1" in
-  time | cors | https_ip | gzip)
+  time | cors | https_ip | gzip | mail)
     case "$1" in
       *)
         name="$1"
