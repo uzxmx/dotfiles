@@ -28,14 +28,12 @@ bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
 bindkey "^P" up-line-or-search
 bindkey "^N" down-line-or-search
-bindkey '^R' history-incremental-search-backward
-bindkey '^W' vi-backward-kill-word
+bindkey "^R" history-incremental-search-backward
+bindkey "^W" vi-backward-kill-word
 bindkey "^V" edit-command-line
 
-# TODO bindkey
-# ^Y
-# ^F
-# ^Z
+# Press `CTRL-X /` to complete the filename.
+bindkey "^X/" _bash_complete-word
 
 _versatile_open() {
   local program result filetype cmd
