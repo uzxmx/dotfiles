@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+#
+# Install flutter (https://flutter.dev/)
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+type -p flutter &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="1.20.2"
+if is_wsl; then
+  platform="windows"
+  dest="/mnt/d"
+  ext="zip"
+elif is_mac; then
+  platform="macos"
+  dest="$HOME"
+  ext="zip"
+elif is_linux; then
+  platform="linux"
+  ext="tar.xz"
+else
+  abort "Unsupported system"
+fi
+path_to_save="/tmp/flutter-$platform-$version.$ext"
+
+"$DOTFILES_DIR/bin/get" "https://storage.flutter-io.cn/flutter_infra/releases/stable/$platform/flutter_${platform}_$version-stable.$ext" "$path_to_save"
+
+make_bin_wrapper() {
+  name=$(basename "$1")
+  path=~/bin/${name:0:-4}
+
+  cat <<EOF >$path
+#!/usr/bin/env bash
+
+if [ -n "\$PUB_HOSTED_URL" ]; then
+  env="set PUB_HOSTED_URL=\$PUB_HOSTED_URL&"
+fi
+
+if [ -n "\$FLUTTER_STORAGE_BASE_URL" ]; then
+  env="\$env set FLUTTER_STORAGE_BASE_URL=\$FLUTTER_STORAGE_BASE_URL&"
+fi
+
+cmd.exe /c "\$env \$(wslpath -w "$1")" "\$@"
+EOF
+
+  chmod a+x "$path"
+}
+
+case "$ext" in
+  zip)
+    cd "$dest" && unzip "$path_to_save"
+    ;;
+  tar.xz)
+    tar Jxf "$path_to_save" -C ~
+    ;;
+esac
+
+if is_wsl; then
+  for bin in "$dest"/flutter/bin/*.bat; do
+    make_bin_wrapper "$bin"
+  done
+fi
