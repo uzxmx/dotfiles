@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# Install insert_dylib (https://github.com/Tyilo/insert_dylib)
+
+set -eo pipefail
+
+type -p insert_dylib &> /dev/null && exit
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+dir="/tmp/insert_dylib"
+git_clone https://github.com/Tyilo/insert_dylib "$dir" --depth 1
+
+cd "$dir"
+xcodebuild
+mv build/Release/insert_dylib ~/bin
+rm -rf "$dir"
