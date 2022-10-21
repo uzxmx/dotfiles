@@ -3,5 +3,5 @@ list_avds() {
 }
 
 select_avd() {
-  list_avds | fzf
+  list_avds | fzf --prompt "Select a device: " -1
 }
