@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Install fontforge (https://github.com/fontforge/fontforge).
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if is_mac; then
+  brew_install fontforge
+else
+  abort "Unsupported system"
+fi
