@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+#
+# Install ghidra (https://github.com/NationalSecurityAgency/ghidra)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+check_command ghidra &> /dev/null && exit
+
+version="10.1.1"
+release_date="20211221"
+path_to_save="/tmp/ghidra-$version.zip"
+
+"$DOTFILES_DIR/bin/get" "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_${version}_build/ghidra_${version}_PUBLIC_${release_date}.zip" "$path_to_save"
+
+unzip -q "$path_to_save" -d /tmp
+rm -rf "$path_to_save"
+mv "/tmp/ghidra_${version}_PUBLIC" ~/ghidra
