@@ -94,3 +94,18 @@ function! s:bufonly(buffer, tab_mode, bang)
     echomsg delete_count "buffers deleted"
   endif
 endfunction
+
+" Run current buf.
+function! s:run()
+  let ext = expand('%:e')
+  if ext ==? 'java'
+    CocCommand java.debug.runJavaFile
+  else
+    " Assume current buf is an executable, and run it in a shell.
+    execute '!%:p'
+  endif
+endfunction
+
+command! Run call s:run()
+
+nnoremap <Leader>r :Run<CR>
