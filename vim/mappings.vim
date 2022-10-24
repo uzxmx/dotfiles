@@ -2,8 +2,6 @@ if has('nvim-0.7.0')
   unmap Y
 endif
 
-nnoremap <Leader>r :!%:p<CR>
-
 noremap <C-h> <C-w>h
 noremap <C-j> <C-w>j
 noremap <C-k> <C-w>k
@@ -67,3 +65,16 @@ xmap <silent> P <Plug>(visual-put-without-messing-register)
 " to the first tag for a source file like C, we do below mapping (because in
 " most cases, we donot want a list). Use `:tjump` to select from a list.
 nnoremap g<c-]> <c-]>
+
+" Exit from terminal mode by `ESC` key.
+" Ref: https://vi.stackexchange.com/questions/4919/exit-from-terminal-mode-in-neovim-vim-8
+tnoremap <Esc> <C-\><C-n>
+
+" Navigate between vim terminal windows and tmux panels.
+" Copied from https://github.com/christoomey/vim-tmux-navigator/pull/129/files
+if exists(':tnoremap')  " Neovim
+  tnoremap <silent> <c-h> <c-\><c-n>:TmuxNavigateLeft<cr>
+  tnoremap <silent> <c-j> <c-\><c-n>:TmuxNavigateDown<cr>
+  tnoremap <silent> <c-k> <c-\><c-n>:TmuxNavigateUp<cr>
+  tnoremap <silent> <c-l> <c-\><c-n>:TmuxNavigateRight<cr>
+endif
