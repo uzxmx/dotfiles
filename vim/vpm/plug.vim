@@ -91,6 +91,14 @@ Plug 'puremourning/vimspector'
 " language plugins. So as a reference, we keep this plugin as a comment.
 " Plug 'sheerun/vim-polyglot'
 
+
+Plug 'sudormrfbin/cheatsheet.nvim'
+Plug 'nvim-lua/popup.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'LukasPietzschmann/telescope-tabs'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
+
 call plug#end()
 
 augroup nerd_loader
