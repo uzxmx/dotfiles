@@ -52,7 +52,7 @@ cnoremap <silent> <expr> <CR> <SID>on_command()
 " Search visual selected text
 vnoremap / yb/<c-r>"
 
-nnoremap <silent> <Leader><Space> :nohlsearch<cr>:call <SID>clear_current_search()<cr>
+nnoremap <silent> <Leader>, :nohlsearch<cr>:call <SID>clear_current_search()<cr>
 
 " Disable this because we usually want to use `<c-w>` to delete a word.
 "
