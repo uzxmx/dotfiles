@@ -2,40 +2,23 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
-Wrapper for polipo utility. Pass in '-' to call the original.
+Wrapper for polipo utility.
 
-Provided subcommands include:
-
-  * start/stop/restart:
-      Start/stop/restart polipo.
-
-      $> polipo start
-      $> polipo stop
-      $> polipo restart
-
-  * status:
-      Show the polipo status.
-
-      $> polipo status
-
-  * log:
-      Tail the polipo log.
-
-      $> polipo log
-
-Global options:
-
-  [-h] Show help
+Subcommands:
+  status  - show the status of polipo
+  log     - tail the polipo log
+  start   - start polipo
+  stop    - stop polipo
+  restart - restart polipo
 EOF
   exit 1
 }
-
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
 
 pid_file=$(polipo -v | grep 'pidFile ' | cut -d ' ' -f 3)
 pid_file=${pid_file:-/tmp/polipo.pid}
@@ -53,9 +36,49 @@ polipo_is_running() {
   fi
 }
 
+usage_start() {
+  cat <<-EOF
+Usage: polipo start [package-name]
+
+Start polipo.
+
+Options:
+  -b <address> the proxy address to bind to, default is '0.0.0.0'
+  -p <port> the proxy port to listen at, default is 8123
+  --socks <proxy> the parent socks proxy to forward the traffic, default is '127.0.0.1:1080'
+  -D do not daemonise
+EOF
+  exit 1
+}
+
 cmd_start() {
+  local -a configs
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -b)
+        shift
+        configs+=("proxyAddress=$1")
+        ;;
+      -p)
+        shift
+        configs+=("proxyPort=$1")
+        ;;
+      --socks)
+        shift
+        configs+=("socksParentProxy=$1")
+        ;;
+      -D)
+        configs+=("daemonise=false")
+        ;;
+      *)
+        usage_start
+        ;;
+    esac
+    shift
+  done
+
   if ! polipo_is_running; then
-    polipo
+    polipo -- "${configs[@]}"
   fi
 }
 
@@ -95,9 +118,7 @@ cmd_log() {
 
 case "$1" in
   start | stop | restart | status | log)
-    cmd="$1"
-    shift
-    "cmd_$cmd" "$@"
+    run "$@"
     ;;
   -h)
     usage
