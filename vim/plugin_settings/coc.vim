@@ -27,6 +27,7 @@ nmap <Leader>cfm <Plug>(coc-format)
 nmap <leader>crf <Plug>(coc-refactor)
 
 nmap <leader>ca  <Plug>(coc-codeaction)
+nmap <leader>cla  <Plug>(coc-codelens-action)
 
 nnoremap <silent> <Leader>clo :<C-u>CocFzfList outline<CR>
 nnoremap <silent> <Leader>cc :<C-u>CocFzfList commands<CR>
@@ -69,7 +70,7 @@ endfunction
 
 augroup coc_group
     au!
-    au FileType java,go,typescript,kotlin,swift nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    au FileType java,go,javascript,typescript,kotlin,swift,cs nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
     " au User CocStatusChange call s:onCocStatusChange()
 
     au BufWritePre *.go :call CocAction('format')
