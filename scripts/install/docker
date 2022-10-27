@@ -28,6 +28,9 @@ type -p docker &> /dev/null && check_group && check_enabled && exit
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if has_yum; then
+  # See https://github.com/containerd/containerd/issues/6209
+  sudo yum install -y libseccomp-devel
+
   # Mirrors:
   # * https://developer.aliyun.com/mirror/docker-ce
   # * https://mirrors.tuna.tsinghua.edu.cn/help/docker-ce/
@@ -48,3 +51,6 @@ fi
 check_group
 check_enabled
 sudo systemctl start docker
+
+# Check if docker is installed successfully.
+docker run hello-world
