@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+shadowsocks_dir="$DOTFILES_DIR/scripts/shadowsocks"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for shadowsocks utility.
+
+Subcommands:
+  c, client  - run as a local server
+  s, server  - run as a remote server
+EOF
+  exit 1
+}
+
+case "$1" in
+  c | client | s | server)
+    case "$1" in
+      c)
+        name="client"
+        ;;
+      s)
+        name="server"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$shadowsocks_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Install shadowsocks (https://github.com/shadowsocks/go-shadowsocks2)
+
+set -eo pipefail
+
+go install github.com/shadowsocks/go-shadowsocks2@latest
