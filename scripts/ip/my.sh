@@ -65,6 +65,11 @@ cmd_my() {
     cmd_geo
   fi
 
+  # We can also get our IP address using the following way.
+  # See https://ifconfig.me
+  #
+  # curl https://ifconfig.me
+
   ip="$(curl -s httpbin.org/get | jq -r '.origin')"
   echo "$ip" | tee >("$DOTFILES_DIR/bin/cb" >/dev/null) >/dev/null
 }
