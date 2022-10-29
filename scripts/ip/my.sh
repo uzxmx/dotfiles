@@ -10,9 +10,9 @@ to find our public IP.
 Get the external IP of the current machine. We use below APIs to query:
 
   * https://www.ip138.com
-  * https://major.io/icanhazip-com-faq/
+  * https://major.io/icanhazip-com-faq/ (e.g. 'curl icanhazip.com')
 
-We may also use 'https://ipinfo.io/ip' to query.
+We may also use 'https://ipinfo.io/ip' to query, e.g. 'curl ipinfo.io', 'curl ipinfo.io/8.8.8.8'.
 
 Note: when visiting different sites, the external IP address may change. To
 get all possible results, we first visit a site hosted in China, then a site
