@@ -28,7 +28,7 @@ EOF
 }
 
 cmd_my() {
-  local concise
+  local concise ip
   case "$1" in
     --concise)
       concise=1
@@ -53,7 +53,6 @@ cmd_my() {
   #   exit
   # fi
   #
-  # local ip
   # if [ -n "$ip1" ]; then
   #   ip="$ip1"
   # fi
@@ -61,10 +60,11 @@ cmd_my() {
   #   ip="$ip2"
   # fi
 
-  ip="$(curl -s httpbin.org/get | jq -r '.origin')"
-
-  echo "$ip" | tee >("$dotfiles_dir/bin/cb" >/dev/null)
   if [ ! "$concise" = "1" ]; then
-    cmd_geo "$ip"
+    source "$ip_dir/geo.sh"
+    cmd_geo
   fi
+
+  ip="$(curl -s httpbin.org/get | jq -r '.origin')"
+  echo "$ip" | tee >("$DOTFILES_DIR/bin/cb" >/dev/null) >/dev/null
 }

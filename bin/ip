@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-ip_dir="$dotfiles_dir/scripts/ip"
+DOTFILES_DIR="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+ip_dir="$DOTFILES_DIR/scripts/ip"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF

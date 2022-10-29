@@ -90,7 +90,7 @@ cmd_link_list() {
       shift
     done
 
-    source "$dotfiles_dir/scripts/lib/go.sh"
+    source "$DOTFILES_DIR/scripts/lib/go.sh"
     local names
     names="$(go_run_compiled "$ip_dir/netlink.go" list "${opts[@]}")"
 
@@ -127,7 +127,7 @@ cmd_link_show() {
 
   sudo ip link show dev "$name"
 
-  source "$dotfiles_dir/scripts/lib/go.sh"
+  source "$DOTFILES_DIR/scripts/lib/go.sh"
   local info
   info="$(go_run_compiled "$ip_dir/netlink.go" show "$name")"
 
@@ -216,7 +216,7 @@ cmd_link_delete() {
     name="$(select_link)"
   fi
 
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   [ "$(yesno "Confirm to delete the network device $name? (y/N)" "no")" = "no" ] && echo Cancelled && exit 1
 
   sudo ip link del dev "$name"
