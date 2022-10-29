@@ -56,8 +56,8 @@ install_fn() {
     make install
 
     local link="$DOTFILES_TARGET_DIR/bin/git"
+    mkdir -p "$DOTFILES_TARGET_DIR/bin"
     [ -e "$link" ] && rm -rf "$link"
-    mkdir -p "$dest_path/bin"
     create_link "$link" "$dest_path/bin/git"
   fi
 }
