@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Install ProxyChains-NG (https://github.com/rofl0r/proxychains-ng)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command proxychains4 &> /dev/null && exit
+
+install_fn() {
+  cd "$1"
+
+  local dest_path="$DOTFILES_TARGET_DIR/opt/proxychains-ng"
+  ./configure --prefix="$dest_path" --sysconfdir="$dest_path/etc"
+  make
+  make install
+  make install-config
+  local link="$DOTFILES_TARGET_DIR/bin/proxychains4"
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  [ -e "$link" ] && rm -rf "$link"
+  create_link "$link" "$dest_path/bin/proxychains4"
+}
+download_and_install_by_git "https://github.com/rofl0r/proxychains-ng.git" install_fn
