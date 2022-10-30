@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Install statik (https://github.com/rakyll/statik).
+# Statik allows you to embed a directory of static files into your Go binary.
+
+set -eo pipefail
+
+go install github.com/rakyll/statik
