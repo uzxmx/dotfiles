@@ -1,3 +1,8 @@
+alias ~="cd ~"
+alias -- -="cd -"
+alias ..="cd .."
+alias ...="cd ../.."
+
 alias a='capture_source_and_signal "$DOTFILES_DIR"/bin/asdf "$@"'
 alias bi="bundle install"
 alias c='capture_source_and_signal "$DOTFILES_DIR"/bin/c "$@"'
@@ -46,6 +51,7 @@ alias lg="lazygit"
 
 alias m="mkdir -p"
 alias migrate="bundle exec rake db:migrate"
+alias mg="echo mg is aliased as no-op, if you want to use it, please remove the alias"
 alias ncz="nc -z -v"
 alias vi_tiny="vi -u NONE"
 alias vad="va destroy"
