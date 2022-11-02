@@ -12,14 +12,18 @@ usage() {
 URL utility.
 
 Subcommands:
+  e, encode - URL encode
   d, decode - URL decode
 EOF
   exit 1
 }
 
 case "$1" in
-  d | decode)
+  e | encode | d | decode)
     case "$1" in
+      e)
+        name="encode"
+        ;;
       d)
         name="decode"
         ;;

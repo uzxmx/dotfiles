@@ -57,3 +57,7 @@ url_encode_by_curl() {
   local result="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "=$1" "")"
   echo "${result##/?}"
 }
+
+url_encode_by_ruby() {
+  ruby -e "require 'uri'; puts URI.encode_www_form_component('$1')"
+}
