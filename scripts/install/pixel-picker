@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# Install pixel-picker (https://github.com/acheronfail/pixel-picker).
+# A tiny menu bar application that helps you pick colours from your screen.
+
+set -eo pipefail
+
+[ -d "/Applications/Pixel Picker.app" ] && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install --cask pixel-picker
+else
+  abort "Unsupported system"
+fi
