@@ -38,7 +38,7 @@ select_commit() {
   if [ -n "${remainder[0]}" ] && [[  "${remainder[0]}" =~ .+\.\..+ ]]; then
     default_prompt="$default_prompt CTRL-S:squash-diff"
     local another_commit="$(echo "${remainder[0]}" | awk -F. '{print $1}')"
-    fzf_opts+=(--bind "ctrl-s:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1} -d \"$another_commit\"\")")
+    fzf_opts+=(--bind "ctrl-s:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" Squashed diff($another_commit..\$(echo {1})) \" -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {1} -d \"$another_commit\"\")")
   fi
 
   local preview_window
@@ -56,7 +56,7 @@ select_commit() {
     --preview-window="$preview_window:50%:wrap" \
     --bind=f1:top \
     --bind "ctrl-y:execute-silent(echo -n {1} | trim | cb && tmux display-message yanked)" \
-    --bind "ctrl-v:execute(tmux split-window \"$DOTFILES_DIR/bin/g show_commit {1}\")" \
+    --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" \$(git log {1} -1 --oneline) \" -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {1}\")" \
     "${fzf_opts[@]}"
   )"
   if [ "$select" = "1" ]; then

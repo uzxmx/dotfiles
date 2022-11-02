@@ -3,7 +3,7 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
@@ -30,16 +30,16 @@ done
 
 set - "${remainder[@]}"
 
-source "$dotfiles_dir/scripts/lib/utils/common.sh"
-source "$dotfiles_dir/scripts/lib/fzf.sh"
-source "$dotfiles_dir/scripts/lib/prompt.sh"
+source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+source "$DOTFILES_DIR/scripts/lib/fzf.sh"
+source "$DOTFILES_DIR/scripts/lib/prompt.sh"
 
 query=
 while true; do
   unset result
   output="$(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")"
   [ -z "$output" ] && echo 'No stash available, exit' && exit
-  bind_cmd="execute(tmux split-window \"$dotfiles_dir/bin/g show_commit {2} -d {2}~1\")"
+  bind_cmd="execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' {1} ' -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {2} -d {2}~1\")"
   if [ "$(tput cols)" -ge 160 ]; then
     preview_window="right"
   else

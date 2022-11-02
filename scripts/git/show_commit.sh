@@ -39,10 +39,15 @@ cmd_show_commit() {
     preview_cmd="git diff --color=always $another_commit $commit -- {2} | less -r"
   fi
 
+  local preview_window
+  if [ "$(tput cols)" -ge 160 ]; then
+    preview_window="right"
+  else
+    preview_window="bottom"
+  fi
+
   "${cmd[@]}" | fzf --no-mouse --cycle \
     --layout=reverse \
-    --prompt="CTRL-V:diff-file> " \
     --preview="$preview_cmd" \
-    --preview-window="right:50%:wrap" \
-    --bind "ctrl-v:execute(tmux new-window \"$preview_cmd\")"
+    --preview-window="$preview_window:50%:wrap"
 }
