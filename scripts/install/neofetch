@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Install neofetch (https://github.com/dylanaraps/neofetch).
+# Neofetch displays information about your operating system, software and
+# hardware in an aesthetic and visually pleasing way.
+
+set -eo pipefail
+
+type -p neofetch &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install neofetch
+else
+  abort "Unsupported system"
+fi
