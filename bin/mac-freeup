@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to free disk space for Mac OSX.
+EOF
+  exit 1
+}
+
+get_free_space() {
+  diskutil info / | grep "Free Space" | awk '{print $4"GB",$11}'
+}
+
+free_space="$(get_free_space)"
+echo "Current free space: $free_space"
+
+clean() {
+  echo "$1"
+  shift
+  "$@"
+  echo -n "$free_space => "
+  free_space="$(get_free_space)"
+  echo "$free_space"
+}
+
+clean "> Homebrew cache" brew cleanup --prune=all
+
+clean "> Ruby cache" gem cleanup
+
+clean "> CocoaPods" rm -rf "$HOME/Library/Caches/CocoaPods"
+
+clean_xcode() {
+  rm -rf ~/Library/Developer/Xcode/Archives
+  rm -rf ~/Library/Developer/Xcode/DerivedData
+  rm -rf "$HOME/Library/Developer/Xcode/iOS Device Logs/"
+}
+
+clean "> XCode logs" clean_xcode
+
+clean "> Docker" docker volume prune -f
