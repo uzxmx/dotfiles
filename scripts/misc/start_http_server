@@ -20,6 +20,9 @@ Options:
 Examples:
   # Start https server
   start_http_server --tls --cert cert.pem --priv-key privkey.pem
+
+  # Install CA on Android by visiting http://<IP>:8010/mitmproxy-ca-cert.cer
+  cd ~/.mitmproxy && start_http_server
 EOF
   exit 1
 }
