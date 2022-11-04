@@ -6,12 +6,42 @@ set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+
+Install frida.
+
+Options:
+  -f Force to install, this will uninstall first
+EOF
+  exit 1
+}
+
+version="12.0.1"
+
+parse_args="
+  -f)
+    force_install=1
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    version=\"\$1\"
+    ;;
+"
+
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if ! check_command frida &>/dev/null; then
-  echo "Install frida-tools..."
-  pip install frida-tools
-  check_command asdf &>/dev/null && asdf reshim
+[ -z "$force_install" ] && check_command frida &> /dev/null && exit
+
+if check_command frida &>/dev/null; then
+  pip uninstall -y frida-tools
 fi
+
+echo "Install frida-tools..."
+pip install "frida-tools==$version"
+check_command asdf &>/dev/null && asdf reshim
 
 "$DOTFILES_DIR/scripts/install/frida-compile"
