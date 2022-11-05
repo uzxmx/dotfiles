@@ -6,10 +6,34 @@ set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-source "$DOTFILES_DIR/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+copy_to_objection_dir() {
+  local -a dirs
+  case "$1" in
+    android-arm)
+      dirs=(armeabi armeabi-v7a)
+      ;;
+    android-arm64)
+      dirs=(arm64 arm64-v8a)
+      ;;
+    android-x86)
+      dirs=(x86)
+      ;;
+    android-x86_64)
+      dirs=(x86_64)
+      ;;
+  esac
+
+  for name in "${dirs[@]}"; do
+    dest="$HOME/.objection/android/$name/libfrida-gadget.so"
+    if [ ! -e "$dest" ]; then
+      mkdir -p "$(dirname "$dest")"
+      cp "$2" "$dest"
+      echo "Gadget copied to $dest"
+    fi
+  done
+}
 
 install_gadget() {
   local platform="$1"
@@ -25,17 +49,21 @@ install_gadget() {
     mkdir -p "$(dirname "$file_path")"
     xz -dc "$path_to_save" >"$file_path"
     rm -rf "$path_to_save"
-    echo "Installed."
+    echo "Installed to $file_path."
   else
     echo "Gadget already installed."
   fi
+
+  copy_to_objection_dir "$platform" "$file_path"
 }
 
 platforms="ios-universal
 android-arm
-android-arm64"
+android-arm64
+android-x86
+android-x86_64"
 
-platform="$(echo "$platforms" | fzf)"
+platform="$(echo "$platforms" | fzf --prompt "Select a platform to install: ")"
 
 version=15.1.14
 case "$platform" in
