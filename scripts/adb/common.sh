@@ -17,7 +17,7 @@ select_process() {
   local device="$1"
   local str="$2"
   local output use_ps_vendor_format
-  if ! output="$(adb -s "$device" shell ps -A -o PID,PPID,ARGS -w)" || [ "$(echo "$output" | wc -l)" -ge "1" ]; then
+  if ! output="$(adb -s "$device" shell ps -A -o PID,PPID,ARGS -w)" || [ "$(echo "$output" | wc -l)" -lt "1" ]; then
     # Old devices may not support `-A` option.
     if ! output="$(adb -s "$device" shell ps)"; then
       echo "$output" >&2
@@ -39,8 +39,15 @@ select_process() {
   if [ -n "$str" ]; then
     echo "$output" | grep "$str" | fzf --prompt "Select a process: " -0 -1 | awk "{print \$$pid_index}"
   else
+    local preview_window
+    if [ "$(tput cols)" -ge 160 ]; then
+      preview_window="right"
+    else
+      preview_window="bottom"
+    fi
     local selected="$(echo "$output" | sed 1d | fzf "${fzf_opts[@]}" \
-      --preview "adb -s '$device' shell ps --pid {1}")"
+      --preview "adb -s '$device' shell ps --pid {$pid_index}" \
+      --preview-window="$preview_window:50%:wrap")"
     if [ -n "$selected" ]; then
       echo "$selected" | awk "{print \$$pid_index}"
     else
