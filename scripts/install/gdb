@@ -15,11 +15,20 @@ usage() {
   cat <<-EOF
 Usage: $0 [version]
 
-Install gdb.
+Install gdb. There are three system definitions: host, build, target.
+For example, If you build gdb on Mac OSX, and you want to debug Linux app with
+x86_64 arch remotely, you must specify '--target x86_64-unknown-linux-gnu'. If you
+don't, the built gdb can only debug apps with the same arch and the same
+system as the build machine.
 
 Options:
   -c <compnent> Component to make, supported values are 'gdb', 'gdbserver', default is 'gdb'
+  --target <target> The system against which the software being built will run on, e.g. x86_64-unknown-linux-gnu
   --temp-dir <dir> Temp dir to store the src and build files, default is '/tmp/gdb'
+
+Examples:
+  # Build gdb which runs on current system, but can debug linux app with x86_64 arch.
+  $> $0 --target x86_64-unknown-linux-gnu
 EOF
   exit 1
 }
@@ -28,6 +37,10 @@ parse_args="
   -c)
     shift
     component=\"\$1\"
+    ;;
+  --target)
+    shift
+    target=\"\$1\"
     ;;
   --temp-dir)
     shift
@@ -60,18 +73,29 @@ install_fn() {
   local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
   cd "$dir"
 
-  mkdir -p build
-  cd build
-  # See https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver
-  ../configure --prefix="$dest_path"
-  if [ "$component" = "gdb" ]; then
-    make all-gdb
-    make install-gdb
-  elif [ "$component" = "gdbserver" ]
-    make all-gdbserver
-    make install-gdbserver
+  mkdir -p "build-$component"
+  cd "build-$component"
+
+  # For cross compilation, see https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver
+  if [ ! -e Makefile ]; then
+    local -a opts
+    if [ -n "$target" ]; then
+      opts+=("--target=$target")
+    fi
+    ../configure --prefix="$dest_path" "${opts[@]}"
   fi
+
+  make "all-$component"
+  make "install-$component"
+  local prefix
+  if [ -n "$target" ]; then
+    prefix="$target-"
+  fi
+  local link="$DOTFILES_TARGET_DIR/bin/$prefix$component"
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  [ -e "$link" ] && rm -rf "$link"
+  create_link "$link" "$dest_path/bin/$prefix$component"
 }
 
 check_makeinfo
-download_and_install "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" "$temp_dir"
+download_and_install "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" install_fn "$temp_dir"
