@@ -21,14 +21,30 @@ x86_64 arch remotely, you must specify '--target x86_64-unknown-linux-gnu'. If y
 don't, the built gdb can only debug apps with the same arch and the same
 system as the build machine.
 
+You can set cflags like 'export CFLAGS="-Wno-error=constant-logical-operand"'
+(or 'export CFLAGS="-Wno-error"' to skip all warnings), but it will only be effective
+when 'configure' is invoked.
+
 Options:
   -c <compnent> Component to make, supported values are 'gdb', 'gdbserver', default is 'gdb'
-  --target <target> The system against which the software being built will run on, e.g. x86_64-unknown-linux-gnu
+
+  --host <host>  The system that is going to run the software once it is built, e.g. arm-linux-gnueabi
+                 Note: toolchains have a loose name convention like arch[-vendor][-os]-abi.
+                 Visit https://stackoverflow.com/a/13798214 for more info.
+
+  --target <target> The system against which the software being built will run on
+                    E.g. x86_64-unknown-linux-gnu, arm-linux-gnueabi
+                    Note: toolchains have a loose name convention like arch[-vendor][-os]-abi.
+                    Visit https://stackoverflow.com/a/13798214 for more info.
+
   --temp-dir <dir> Temp dir to store the src and build files, default is '/tmp/gdb'
 
 Examples:
   # Build gdb which runs on current system, but can debug linux app with x86_64 arch.
   $> $0 --target x86_64-unknown-linux-gnu
+
+  # Build gdbserver which runs on arm linux system.
+  $> $0 -c gdbserver --host arm-linux-gnueabi
 EOF
   exit 1
 }
@@ -37,6 +53,10 @@ parse_args="
   -c)
     shift
     component=\"\$1\"
+    ;;
+  --host)
+    shift
+    host=\"\$1\"
     ;;
   --target)
     shift
@@ -73,12 +93,26 @@ install_fn() {
   local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
   cd "$dir"
 
-  mkdir -p "build-$component"
-  cd "build-$component"
+  local prefix
+  if [ -n "$target" ]; then
+    prefix="$target-"
+  fi
+
+  local build_dir
+  if [ -n "$host" ]; then
+    build_dir="build-$host-$prefix$component"
+  else
+    build_dir="build-$prefix$component"
+  fi
+  mkdir -p "$build_dir"
+  cd "$build_dir"
 
   # For cross compilation, see https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver
   if [ ! -e Makefile ]; then
     local -a opts
+    if [ -n "$host" ]; then
+      opts+=("--host=$host")
+    fi
     if [ -n "$target" ]; then
       opts+=("--target=$target")
     fi
@@ -87,14 +121,13 @@ install_fn() {
 
   make "all-$component"
   make "install-$component"
-  local prefix
-  if [ -n "$target" ]; then
-    prefix="$target-"
+
+  if [ -z "$host" ]; then
+    local link="$DOTFILES_TARGET_DIR/bin/$prefix$component"
+    mkdir -p "$DOTFILES_TARGET_DIR/bin"
+    [ -e "$link" ] && rm -rf "$link"
+    create_link "$link" "$dest_path/bin/$prefix$component"
   fi
-  local link="$DOTFILES_TARGET_DIR/bin/$prefix$component"
-  mkdir -p "$DOTFILES_TARGET_DIR/bin"
-  [ -e "$link" ] && rm -rf "$link"
-  create_link "$link" "$dest_path/bin/$prefix$component"
 }
 
 check_makeinfo

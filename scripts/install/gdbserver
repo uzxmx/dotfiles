@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Install gdb (https://www.gnu.org/software/gdb/).
+# Install gdbserver (https://www.gnu.org/software/gdb/).
 
 set -eo pipefail
 
-"$(dirname "$0")/gdb" -c gdbserver
+"$(dirname "$0")/gdb" -c gdbserver "$@"
