@@ -5,30 +5,73 @@
 set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+version="12.1"
+component=gdb
+temp_dir=/tmp/gdb
+
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+
+Install gdb.
+
+Options:
+  -c <compnent> Component to make, supported values are 'gdb', 'gdbserver', default is 'gdb'
+  --temp-dir <dir> Temp dir to store the src and build files, default is '/tmp/gdb'
+EOF
+  exit 1
+}
+
+parse_args="
+  -c)
+    shift
+    component=\"\$1\"
+    ;;
+  --temp-dir)
+    shift
+    temp_dir=\"\$1\"
+    ;;
+  -*)
+    usage
+    ;;
+  *)
+    version=\"\$1\"
+    ;;
+"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+dest_path="$DOTFILES_TARGET_DIR/opt/gdb-$version"
+[ -e "$dest_path/bin/gdb" ] && exit
 
 check_makeinfo() {
-  which makeinfo &> /dev/null && return
+  check_command makeinfo &> /dev/null && return
 
-  if ! has_yum; then
+  if has_yum; then
     sudo yum install -y texinfo
   else
     abort 'Please install `makeinfo` command beforehand.'
   fi
 }
 
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
 
-install() {
-  local version="$1"
-  local path_to_save="/tmp/gdb-$version.tar.xz"
-  "$DOTFILES_DIR/bin/get" "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" $path_to_save
-  tar Jxf "$path_to_save" -C /tmp
-
-  cd /tmp/gdb-$version && mkdir build && cd build \
-    && ../configure \
-    && make && sudo make install
+  mkdir -p build
+  cd build
+  # See https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver
+  ../configure --prefix="$dest_path"
+  if [ "$component" = "gdb" ]; then
+    make all-gdb
+    make install-gdb
+  elif [ "$component" = "gdbserver" ]
+    make all-gdbserver
+    make install-gdbserver
+  fi
 }
 
 check_makeinfo
-install 9.2
+download_and_install "https://mirrors.tuna.tsinghua.edu.cn/gnu/gdb/gdb-$version.tar.xz" "$temp_dir"
