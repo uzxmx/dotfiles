@@ -24,6 +24,7 @@ Options:
 
 Example:
   $> curl cors http://example.com http://foo.example.com
+  $> curl cors http://xxx.oss-cn-shanghai.aliyuncs.com/foo http://localhost -m PUT
 EOF
   exit 1
 }
