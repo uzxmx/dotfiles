@@ -25,13 +25,20 @@ copy_to_objection_dir() {
       ;;
   esac
 
+  local confirmed
   for name in "${dirs[@]}"; do
     dest="$HOME/.objection/android/$name/libfrida-gadget.so"
-    if [ ! -e "$dest" ]; then
-      mkdir -p "$(dirname "$dest")"
-      cp "$2" "$dest"
-      echo "Gadget copied to $dest"
+    if [ -e "$dest" -a -z "$confirmed" ]; then
+      source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+      echo "A gadget already exists in the objection directory. Do you want to overwrite it?"
+      if [ "$(yesno "(Y/n): " "yes")" = "no" ]; then
+        exit
+      fi
+      confirmed=1
     fi
+    mkdir -p "$(dirname "$dest")"
+    cp "$2" "$dest"
+    echo "Gadget copied to $dest"
   done
 }
 
@@ -65,7 +72,7 @@ android-x86_64"
 
 platform="$(echo "$platforms" | fzf --prompt "Select a platform to install: ")"
 
-version=15.1.14
+version=16.0.2
 case "$platform" in
   ios-universal)
     extension="dylib"
