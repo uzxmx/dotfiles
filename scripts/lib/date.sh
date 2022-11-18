@@ -8,7 +8,7 @@ convert_en_US_to_unix_time() {
 # %A: day of week
 convert_unix_timestamp_to_human_readable() {
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    date --date "@$1" +"+%Y-%m-%d %H:%M:%S"
+    date --date "@$1" "+%Y-%m-%d %H:%M:%S"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
     date -r "$1" "+%Y-%m-%d %H:%M:%S"
   fi
