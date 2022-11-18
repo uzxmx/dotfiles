@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Because we have `iptables` wrapper utility in `$DOTFILES_DIR/bin`, it may
+# mislead `sshuttle` if the system doesn't support iptables. So we use this
+# wrapper utility to exclude the `$DOTFILES_DIR/bin` from `$PATH`.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+sshuttle "$@"
