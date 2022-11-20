@@ -28,7 +28,8 @@ emit_code() {
 
   code="\033]${code}\a"
 
-  if [[ -n "$TMUX" ]]; then
+  # TODO this seems not working any more.
+  if [ -n "$TMUX" ]; then
     code="\033Ptmux;\033${code}\033\\"
   fi
 

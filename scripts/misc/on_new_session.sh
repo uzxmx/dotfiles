@@ -11,3 +11,11 @@ clear_screen() {
 }
 
 clear_screen
+
+if [ "$1" = "iTerm2" ]; then
+  if [ -n "$ITERM2_COLOR_PRESET" ]; then
+    source "$DOTFILES_DIR/scripts/lib/iterm2.sh"
+    emit_code SetColors preset "$ITERM2_COLOR_PRESET"
+  fi
+  echo "Initialized for iTerm2."
+fi

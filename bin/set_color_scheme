@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Change color scheme for iTerm2 and vim permanently.
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+select_color_scheme() {
+  local schemes=(
+    "Solarized Dark"
+    "Solarized Light"
+    Snazzy
+  )
+
+  (IFS=$'\n'; echo "${schemes[*]}" | fzf)
+}
+
+set_iterm2_color() {
+  source "$DOTFILES_DIR/scripts/lib/iterm2.sh"
+
+  local preset="$1"
+  emit_code SetColors preset "$preset"
+
+  if grep -E '^export ITERM2_COLOR_PRESET=.*$' ~/.zshrc.local &>/dev/null; then
+    source "$DOTFILES_DIR/scripts/lib/gsed.sh"
+    $SED -i -E "s/^export ITERM2_COLOR_PRESET=.*$/export ITERM2_COLOR_PRESET=\"$preset\"/" ~/.zshrc.local
+  else
+    echo "export ITERM2_COLOR_PRESET=\"$preset\"" >>~/.zshrc.local
+  fi
+}
+
+set_vim_color() {
+ local scheme="$(echo "$1" | tr 'A-Z' 'a-z')"
+  local vimfile="$HOME/.vim/vimrc.before.local"
+  if [ -f "$vimfile" ]; then
+    local regexp="^(let g:current_colorscheme = ').*(')$"
+    if grep -E "$regexp" "$vimfile" &>/dev/null; then
+      sed -Ee "s/${regexp}/\1${scheme}\2/" -i "" "$vimfile"
+      exit
+    fi
+  fi
+
+  local code="let g:current_colorscheme = '$scheme'"
+  if [ -f "$vimfile" ]; then
+    echo "$code" >>"$vimfile"
+  else
+    echo "$code" >"$vimfile"
+  fi
+}
+
+scheme="$(select_color_scheme)"
+set_iterm2_color "$scheme"
+set_vim_color "$scheme"
