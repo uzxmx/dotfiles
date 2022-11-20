@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Select a Makefile target by fzf.
+
+Options:
+  -f <file> The path to Makefile, default to 'Makefile'
+EOF
+  exit 1
+}
+
+file="Makefile"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -f)
+      shift
+      file="$1"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+# Ref: https://github.com/OakNinja/MakeMeFish/blob/master/functions/mm.fish
+get_targets() {
+  make -f "$file" -pRrq : 2>/dev/null |
+    awk '{if (sub(/\\\$/,"")) printf "%s", $0; else print $0}' |
+    awk -F: '/^# Files/,/^# Finished Make data base/ {
+      if ($1 == "# Not a target") skip = 1;
+        if ($1 !~ "^[#.\t]") {
+          if (!skip) print $1; skip=0
+        }
+      }' 2>/dev/null
+}
+
+target="$(get_targets | sed "/^$/d" | fzf \
+  --height 30% \
+  --layout=reverse \
+  --border \
+  --prompt "Select a target: " \
+  --preview-window="right:70%" \
+  --preview="grep --color=always -A 10 -B 1 '^{}:' $file")"
+
+if [ -n "$target" ]; then
+  make -f "$file" $target
+fi
