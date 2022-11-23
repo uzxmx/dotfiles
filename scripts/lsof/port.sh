@@ -5,21 +5,20 @@ Usage: lsof port <port>
 Show port.
 
 Options:
-  --sudo Use sudo
   -p <protocol> Protocol, values include 'tcp' / 'udp', default is empty
   -s <state> Protocol state, values include 'listen', 'idle', etc.
+  -N Do not use sudo
+  -d, --dry-run Dry run, only print the command
 EOF
   exit 1
 }
 
 cmd_port() {
-  local port sudo protocol state
+  local sudo="sudo"
+  local port protocol state prefix_cmd
   local -a opts
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      --sudo)
-        sudo="sudo"
-        ;;
       -p)
         shift
         protocol="$1"
@@ -27,6 +26,12 @@ cmd_port() {
       -s)
         shift
         state="$1"
+        ;;
+      -N)
+        sudo=
+        ;;
+      -d | --dry-run)
+        prefix_cmd="echo"
         ;;
       -*)
         usage_port
@@ -49,6 +54,6 @@ cmd_port() {
     opts+=(-s "$protocol:$state")
   fi
 
-  $sudo lsof -nP -i "$protocol:$port" "${opts[@]}"
+  $prefix_cmd $sudo lsof -nP -i "$protocol:$port" "${opts[@]}"
 }
 alias_cmd p port
