@@ -8,16 +8,17 @@ asdf_dir="$DOTFILES_DIR/scripts/asdf"
 
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
+if [ -z "$ASDF_DATA_DIR" ]; then
+  export ASDF_DATA_DIR="$DOTFILES_TARGET_DIR/.asdf"
+fi
+
 if ! check_command asdf &>/dev/null; then
   if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
     "$DOTFILES_DIR/scripts/install/asdf"
+    source "$ASDF_DATA_DIR/asdf.sh"
   else
     abort "Please install 'asdf' first."
   fi
-fi
-
-if [ -z "$ASDF_DATA_DIR" ]; then
-  export ASDF_DATA_DIR="${DOTFILES_TARGET_DIR:-$HOME}/.asdf"
 fi
 
 usage() {
