@@ -1,4 +1,10 @@
 Host *
+  # Number of seconds that the client will wait before sending a null packet to
+  # the server (to keep the connection alive).
+  ServerAliveInterval 20
+
+  ServerAliveCountMax 3
+
   # OpenSSH runs `ProxyCommand` with `$SHELL` by `execv`. So if `$SHELL`
   # doesn't expand to an absolute path, it will fail with such error like:
   # `bash: No such file or directory`.
