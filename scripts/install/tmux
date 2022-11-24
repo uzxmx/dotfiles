@@ -69,6 +69,7 @@ if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" -a -z "$local_install" ] && is_mac; then
 fi
 
 if has_apt; then
+  sudo apt-get install -y libevent-dev >/dev/null
   # Required for copying to system clipboard.
   sudo apt-get install -y clip >/dev/null || true
 elif has_yum; then
