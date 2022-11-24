@@ -52,6 +52,15 @@ check_plugins() {
   done < <(cat "$DOTFILES_DIR/config/tmux/tmux.conf" | grep '^set-option -g @plugin' | cut -d ' ' -f 4 | sed "s/'//g")
 }
 
+version="3.3a"
+
+if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" -o -n "$local_install" ]; then
+  source "$DOTFILES_DIR/scripts/lib/utils/version.sh"
+  if check_command tmux &> /dev/null && version_lt_not_constrained "$(tmux -V | awk '{print $2}')" "$version"; then
+    force_install=1
+  fi
+fi
+
 [ -z "$force_install" ] && check_command tmux &> /dev/null && check_plugins && exit
 
 if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" -a -z "$local_install" ] && is_mac; then
@@ -59,13 +68,11 @@ if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" -a -z "$local_install" ] && is_mac; then
   exit
 fi
 
-version="3.3a"
-
 if has_apt; then
   # Required for copying to system clipboard.
-  sudo apt-get install -y clip || true
+  sudo apt-get install -y clip >/dev/null || true
 elif has_yum; then
-  sudo yum install -y libevent-devel
+  sudo yum install -y libevent-devel >/dev/null
 fi
 
 do_install() {
