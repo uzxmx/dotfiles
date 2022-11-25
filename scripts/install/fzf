@@ -7,21 +7,42 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
+usage() {
+  cat <<-EOF
+Usage: $0
+
+Install fzf.
+
+Options:
+  --force-install Force to install even if it already exists
+EOF
+  exit 1
+}
+
+parse_args="
+  --force-install)
+    force_install=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-check_command fzf &> /dev/null && exit
+[ -z "$force_install" ] && check_command fzf &> /dev/null && exit
 
 export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
 
-if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
-  brew_install fzf
-  /usr/local/opt/fzf/install --xdg --all --no-update-rc
+if test -d "$DOTFILES_TARGET_DIR/.fzf" && cd "$DOTFILES_TARGET_DIR/.fzf" && git status &>/dev/null; then
+  git pull
 else
-  if test -d "$DOTFILES_TARGET_DIR/.fzf" && cd "$DOTFILES_TARGET_DIR/.fzf" && git status &>/dev/null; then
-    git pull
-  else
-    rm -rf "$DOTFILES_TARGET_DIR/.fzf"
-    git clone --depth 1 https://github.com/junegunn/fzf.git "$DOTFILES_TARGET_DIR/.fzf"
-  fi
-  "$DOTFILES_TARGET_DIR/.fzf/install" --xdg --all --no-update-rc
+  rm -rf "$DOTFILES_TARGET_DIR/.fzf"
+  git clone --depth 1 https://github.com/junegunn/fzf.git "$DOTFILES_TARGET_DIR/.fzf"
 fi
+"$DOTFILES_TARGET_DIR/.fzf/install" --xdg --all --no-update-rc
+
+link="$DOTFILES_TARGET_DIR/bin/fzf"
+mkdir -p "$DOTFILES_TARGET_DIR/bin"
+[ -e "$link" ] && rm -rf "$link"
+create_link "$link" "$DOTFILES_TARGET_DIR/.fzf/bin/fzf"
