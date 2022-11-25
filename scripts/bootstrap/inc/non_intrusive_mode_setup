@@ -5,10 +5,21 @@ DOTFILES_DIR="$DOTFILES_PARENT_DIR/dotfiles"
 
 mkdir -p "$DOTFILES_PARENT_DIR"
 
-export http_proxy=http://localhost:8123
-export HTTP_PROXY=$http_proxy
-export https_proxy=$http_proxy
-export HTTPS_PROXY=$http_proxy
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --no-proxy)
+      no_proxy=1
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$no_proxy" ]; then
+  export http_proxy=http://localhost:8123
+  export HTTP_PROXY=$http_proxy
+  export https_proxy=$http_proxy
+  export HTTPS_PROXY=$http_proxy
+fi
 
 if ! type -p git &>/dev/null; then
   echo "You must have git installed."

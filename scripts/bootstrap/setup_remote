@@ -15,6 +15,7 @@ Options:
   --vagrant SSH via vagrant
   -o <ssh-options> SSH options
   --intrusive Intrusive setup
+  --no-proxy Do not use proxy
 EOF
   exit 1
 }
@@ -34,6 +35,9 @@ while [ "$#" -gt 0 ]; do
     --intrusive)
       intrusive_setup=1
       ;;
+    --no-proxy)
+      no_proxy=1
+      ;;
     *)
       usage
       ;;
@@ -43,11 +47,18 @@ done
 
 [ -z "$use_fzf" -a -z "$use_vagrant" ] && usage
 
+opts=()
 if [ "$intrusive_setup" = 1 ]; then
   file="$(dirname "$0")/setup"
-  opts=(-p localhost:8123 -t minimal --update-repo -v)
+  opts=(-t minimal --update-repo -v)
+  if [ -z "$no_proxy" ]; then
+    opts+=(-p localhost:8123)
+  fi
 else
   file="$(dirname "$0")/inc/non_intrusive_mode_setup"
+  if [ -n "$no_proxy" ]; then
+    opts=(--no-proxy)
+  fi
 fi
 
 if [ "$use_vagrant" = "1" ]; then
