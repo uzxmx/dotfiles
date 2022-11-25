@@ -12,17 +12,21 @@ usage() {
 SSH utilities.
 
 Subcommands:
-  ssh            - enhanced SSH command
-  setup_dotfiles - setup dotfiles repo on the remote system
+  ssh                - enhanced SSH command
+  sd, setup_dotfiles - setup dotfiles repo on the remote system
 EOF
   exit 1
 }
 
 case "$1" in
-  ssh | setup_dotfiles)
+  ssh | sd | setup_dotfiles)
     case "$1" in
+      sd)
+        name="setup_dotfiles"
+        ;;
       *)
         name="$1"
+        ;;
     esac
     source "$ssh_utils_dir/$name.sh"
     run "$@"
