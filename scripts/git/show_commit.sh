@@ -46,6 +46,8 @@ cmd_show_commit() {
     preview_window="bottom"
   fi
 
+  cd "$(git rev-parse --show-toplevel)"
+
   "${cmd[@]}" | fzf --no-mouse --cycle \
     --layout=reverse \
     --preview="$preview_cmd" \
