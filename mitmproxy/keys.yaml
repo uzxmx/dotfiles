@@ -1,4 +1,9 @@
--
+# See https://github.com/mitmproxy/mitmproxy/blob/main/mitmproxy/tools/console/defaultkeys.py
+
+- key: c
   # Copy request to clipboard as curl.
-  key: c
   cmd: export.clip curl @focus
+- key: ctrl u
+  cmd: console.nav.pageup
+- key: ctrl d
+  cmd: console.nav.pagedown
