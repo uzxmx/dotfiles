@@ -5,14 +5,15 @@
 set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 which docker-compose &> /dev/null && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
 if is_linux; then
-  "$DOTFILES_DIR/bin/get" "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" ~/bin/docker-compose
-  chmod +x ~/bin/docker-compose
+  "$DOTFILES_DIR/bin/get" "https://github.com/docker/compose/releases/download/1.26.0/docker-compose-$(uname -s)-$(uname -m)" "$DOTFILES_TARGET_DIR/docker-compose"
+  chmod +x "$DOTFILES_TARGET_DIR/docker-compose"
 else
   abort "Unsupported system"
 fi
