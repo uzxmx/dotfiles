@@ -43,7 +43,7 @@ check_enabled() {
   fi
 }
 
-if ! has_yum || ! has_apt; then
+if ! has_yum && ! has_apt; then
   abort "Unsupported system"
 fi
 
