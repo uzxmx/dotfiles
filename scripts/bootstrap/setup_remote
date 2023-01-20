@@ -6,7 +6,7 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null
 
 usage() {
   cat <<-EOF
-Usage: $0 <-f | --vagrant>
+Usage: $0 <-f | --vagrant | -o user@host>
 
 Utility to setup dotfiles repository on the remote system through SSH.
 
@@ -16,6 +16,9 @@ Options:
   -o <ssh-options> SSH options
   --intrusive Intrusive setup
   --no-proxy Do not use proxy
+
+Examples:
+  $> $0 -o "user@host -i /path/to/identify/file" --no-proxy
 EOF
   exit 1
 }
@@ -45,7 +48,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
-[ -z "$use_fzf" -a -z "$use_vagrant" ] && usage
+[ -z "$use_fzf" -a -z "$use_vagrant" -a -z "$ssh_opts" ] && echo "You need to specify one of [-f], [--vagrant], [-o] options." && exit
 
 opts=()
 if [ "$intrusive_setup" = 1 ]; then
