@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+
+import os
+import argparse
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.chrome.options import Options
+
+class Main:
+    @classmethod
+    def run(cls, opts):
+        options = Options()
+
+        if opts.user_agent:
+            options.add_argument(f'--user-agent={opts.user_agent}')
+
+        if opts.proxy_server:
+            options.add_argument(f'--proxy-server={opts.proxy_server}')
+
+        if opts.user_data_dir:
+            options.add_argument(f'--user-data-dir={opts.user_data_dir}')
+
+        if opts.devtools:
+            options.add_argument('--auto-open-devtools-for-tabs')
+            prefs = {
+                'devtools.preferences': {
+                    'currentDockState': '"bottom"',
+                    'panel-selectedTab': '"network"'
+                }
+            }
+            options.add_experimental_option('prefs', prefs)
+
+        options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        options.add_experimental_option('useAutomationExtension', False)
+
+        if opts.mobile_emulation:
+            options.add_experimental_option('mobileEmulation', { 'deviceName': 'Galaxy S5' })
+
+        if opts.maximize:
+            options.add_argument('--start-maximized')
+
+        driver = webdriver.Chrome(options=options)
+
+        try:
+            if opts.page_url:
+                page_url = opts.page_url if opts.page_url.startswith('http://') or opts.page_url.startswith('https://') else f'http://{opts.page_url}'
+            else:
+                page_url = 'chrome://newtab'
+            driver.get(page_url)
+
+            if opts.interact:
+                import code
+                code.interact(local=locals())
+            else:
+                WebDriverWait(driver, timeout=(3600 * 24 * 365)).until(lambda d: False)
+
+            driver.close()
+        finally:
+            # Close the session.
+            driver.quit()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--maximize', action='store_true', help='Maximize the window')
+    parser.add_argument('-u', '--user-agent', help='The user agent')
+    parser.add_argument('-p', '--proxy-server', help='The proxy server, e.g. http://127.0.0.1:8080')
+    parser.add_argument('-d', '--user-data-dir', help='The directory to save the session data')
+    parser.add_argument('-i', '--interact', action='store_true', help='Interact with webdriver by opening a python console')
+    parser.add_argument('--devtools', action='store_true', help='Automatically open devtools')
+    parser.add_argument('--mobile-emulation', action='store_true', help='Enable mobile emulation')
+    parser.add_argument('page_url', type=str, nargs='?', help='The url of the page to open')
+    args = parser.parse_args()
+    Main.run(args)
