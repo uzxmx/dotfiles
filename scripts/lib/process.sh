@@ -1,14 +1,34 @@
 #!/bin/sh
 
+process_get_background_job_dir() {
+  echo "$DOTFILES_DIR/tmp/background"
+}
+
+process_get_background_job_pid_file() {
+  echo "$(process_get_background_job_dir)/$1.pid"
+}
+
+process_get_background_job_log_file() {
+  echo "$(process_get_background_job_dir)/$1.log"
+}
+
+process_kill_background_job() {
+  local pid_file="$(process_get_background_job_pid_file "$1")"
+
+  if [ -e "$pid_file" ]; then
+    kill -9 "$(cat "$pid_file")" &>/dev/null
+  fi
+}
+
 # Run background job.
 #
 # @params:
 #   $1: name
 #   VARARGS: command to execute
-run_background_job() {
+process_run_background_job() {
   local name="$1"; shift
 
-  local dir="$DOTFILES_DIR/tmp/background"
+  local dir="$(process_get_background_job_dir)"
   mkdir -p "$dir"
 
   local pid_file="$dir/$name.pid"
