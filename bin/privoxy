@@ -14,14 +14,14 @@ This is a non-caching HTTP proxy, if you want the caching, you can switch to 'po
 
 Options:
   -b <address> the proxy address to bind to, default is '0.0.0.0'
-  -p <port> the proxy port to listen at, default is 8088
+  -p <port> the proxy port to listen at, default is 8118
   --socks <proxy> the parent socks proxy to forward the traffic
 EOF
   exit 1
 }
 
 proxyAddress="0.0.0.0"
-proxyPort="8088"
+proxyPort="8118"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
