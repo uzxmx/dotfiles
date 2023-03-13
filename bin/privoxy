@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for privoxy utility.
+
+This is a non-caching HTTP proxy, if you want the caching, you can switch to 'polipo'.
+
+Options:
+  -b <address> the proxy address to bind to, default is '0.0.0.0'
+  -p <port> the proxy port to listen at, default is 8088
+  --socks <proxy> the parent socks proxy to forward the traffic
+EOF
+  exit 1
+}
+
+proxyAddress="0.0.0.0"
+proxyPort="8088"
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -b)
+      shift
+      proxyAddress="$1"
+      ;;
+    -p)
+      shift
+      proxyPort="$1"
+      ;;
+    --socks)
+      shift
+      socksParentProxy="forward-socks5 / $1 ."
+      ;;
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
+create_tmpfile tmpfile
+
+cat <<EOF >"$tmpfile"
+listen-address $proxyAddress:$proxyPort
+$socksParentProxy
+debug 1
+EOF
+
+privoxy --no-daemon "$tmpfile"
