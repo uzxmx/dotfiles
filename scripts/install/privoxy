@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install privoxy (https://www.privoxy.org/user-manual/installation.html).
+
+set -eo pipefail
+
+which privoxy &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install privoxy
+else
+  abort "Unsupported system"
+fi
