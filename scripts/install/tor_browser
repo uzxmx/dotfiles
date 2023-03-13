@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Install tor browser (https://www.torproject.org/download/)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
+
+appdir="$HOME/Applications/Tor Browser.app"
+
+[ -d "$appdir" ] && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="11.0.7"
+if is_mac; then
+  platform="osx64"
+  name="TorBrowser-$version-${platform}_en-US.dmg"
+else
+  abort "Unsupported system"
+fi
+path_to_save="/tmp/$name"
+
+"$DOTFILES_DIR/bin/get" "https://www.torproject.org/dist/torbrowser/$version/$name" "$path_to_save"
+
+install_tor() {
+  local rootdir="$1"
+  cp -R "$rootdir/$(basename "$appdir")" "$appdir"
+}
+mount_dmg_and_do "$path_to_save" install_tor
+
+rm -rf "$path_to_save"
