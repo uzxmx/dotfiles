@@ -4,9 +4,11 @@
 
 set -eo pipefail
 
-type -p tor &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command tor &> /dev/null && exit
 
 if is_mac; then
   brew_install tor
