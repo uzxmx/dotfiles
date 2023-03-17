@@ -11,6 +11,4 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 dest_path="$DOTFILES_TARGET_DIR/opt/acme.sh"
 
-[ -d "$dest_path" ] && exit
-
 download_and_install_by_git "https://github.com/acmesh-official/acme.sh.git" "" "$dest_path"

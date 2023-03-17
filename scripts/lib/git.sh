@@ -12,7 +12,7 @@ git_clone() {
   local dir="$2"
   shift 2
 
-  if [ ! -d "$dir" ] || ! (cd "$dir" && git status &> /dev/null); then
+  if [ ! -d "$dir" ] || ! (cd "$dir" && git --git-dir=.git status &> /dev/null); then
     git clone "$@" "$url" "$dir"
   fi
 }
