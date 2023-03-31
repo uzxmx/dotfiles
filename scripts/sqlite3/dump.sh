@@ -101,7 +101,8 @@ select count(*) AS 'Count of rows after deletion' from $table $query_conditions;
 EOF
   fi
 
-  sed -i '' -e "s/^INSERT INTO \"$table_columns\"/INSERT INTO $table_columns/" "$file"
+  source "$DOTFILES_DIR/scripts/lib/gsed.sh"
+  "$SED" -i -e "s/^INSERT INTO \"$table_columns\"/INSERT INTO $table_columns/" "$file"
 
   echo -e "\nData dumped to $file"
 }
