@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+sqlite3_dir="$DOTFILES_DIR/scripts/sqlite3"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for sqlite3 utility.
+
+Subcommands:
+  d, dump - dump tables data as a SQL file
+  import  - import data from a SQL file
+EOF
+  exit 1
+}
+
+opts=(-header -column)
+
+case "$1" in
+  d | dump | import)
+    case "$1" in
+      d)
+        name="dump"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$sqlite3_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    rlwrap sqlite3 "${opts[@]}" "$@"
+    ;;
+  *)
+    rlwrap sqlite3 "${opts[@]}" "$@"
+    ;;
+esac
