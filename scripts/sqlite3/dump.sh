@@ -76,7 +76,7 @@ cmd_dump() {
 SELECT name FROM PRAGMA_TABLE_INFO('$table');
 EOF
 )"
-      columns=($(echo "$columns" | grep -v id))
+      columns=($(echo "$columns" | grep -v "^id$"))
       columns="$(join_by , "${columns[@]}")"
     fi
 
