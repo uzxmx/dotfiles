@@ -18,7 +18,13 @@ EOF
   exit 1
 }
 
-opts=(-header -column)
+run_sqlite3() {
+  local prefix
+  if type -p rlwrap &>/dev/null; then
+    prefix="rlwrap"
+  fi
+  $prefix sqlite3 -header -column "$@"
+}
 
 case "$1" in
   d | dump | import)
@@ -38,9 +44,9 @@ case "$1" in
     ;;
   -)
     shift
-    rlwrap sqlite3 "${opts[@]}" "$@"
+    run_sqlite3 "$@"
     ;;
   *)
-    rlwrap sqlite3 "${opts[@]}" "$@"
+    run_sqlite3 "$@"
     ;;
 esac
