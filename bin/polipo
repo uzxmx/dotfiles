@@ -38,7 +38,7 @@ polipo_is_running() {
 
 usage_start() {
   cat <<-EOF
-Usage: polipo start [package-name]
+Usage: polipo start
 
 Start polipo.
 
@@ -46,7 +46,9 @@ Options:
   -b <address> the proxy address to bind to, default is '0.0.0.0'
   -p <port> the proxy port to listen at, default is 8123
   --socks <proxy> the parent socks proxy to forward the traffic, default is '127.0.0.1:1080'
-  -D do not daemonise
+  --pid <pid-file> the pid file, default is '/tmp/polipo.pid'
+  --log <log-file> the log file, default is '/tmp/polipo.log'
+  -D do not daemonise, this will make '/dev/stdout' as the log file
 EOF
   exit 1
 }
@@ -67,8 +69,16 @@ cmd_start() {
         shift
         configs+=("socksParentProxy=$1")
         ;;
+      --pid)
+        shift
+        configs+=("pidFile=$1")
+        ;;
+      --log)
+        shift
+        configs+=("logFile=$1")
+        ;;
       -D)
-        configs+=("daemonise=false")
+        configs+=("daemonise=false" "logFile=/dev/stdout")
         ;;
       *)
         usage_start
