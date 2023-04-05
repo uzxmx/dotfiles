@@ -2,6 +2,8 @@
 
 import os
 import argparse
+import re
+import sys
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -50,6 +52,19 @@ class Main:
                 page_url = 'chrome://newtab'
             driver.get(page_url)
 
+            if opts.page_url and opts.cookie:
+                domain_pattern = re.compile('^https?://([^/]+).*$')
+                r = domain_pattern.match(page_url)
+                domain = None
+                if r:
+                    domain = r.group(1)
+                if not domain:
+                    print('Cannot parse domain from url: {}'.format(page_url))
+                    sys.exit(1)
+                for c in opts.cookie.split(';'):
+                   name, value = c.strip().split('=', 1)
+                   driver.add_cookie({ 'name': name, 'value': value, 'domain': domain })
+
             if opts.interact:
                 import code
                 code.interact(local=locals())
@@ -67,6 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--user-agent', help='The user agent')
     parser.add_argument('-p', '--proxy-server', help='The proxy server, e.g. [http://]127.0.0.1:8080, socks5://127.0.0.1:1080')
     parser.add_argument('-d', '--user-data-dir', help='The directory to save the session data')
+    parser.add_argument('-c', '--cookie', help='The cookie to set for the domain specified by the page url')
     parser.add_argument('-i', '--interact', action='store_true', help='Interact with webdriver by opening a python console')
     parser.add_argument('--devtools', action='store_true', help='Automatically open devtools')
     parser.add_argument('--mobile-emulation', action='store_true', help='Enable mobile emulation')
