@@ -4,12 +4,11 @@
 
 set -eo pipefail
 
-type -p mitmproxy &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if is_mac; then
-  brew_install mitmproxy
-else
-  abort "Unsupported system"
-fi
+check_command mitmproxy &> /dev/null && exit
+
+pip install mitmproxy
+check_command asdf &>/dev/null && asdf reshim
