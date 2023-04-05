@@ -10,6 +10,8 @@ usage() {
   cat <<-EOF
 Wrapper for polipo utility.
 
+This is a caching HTTP proxy, if you don't want the caching, you can switch to 'privoxy'.
+
 Subcommands:
   status  - show the status of polipo
   log     - tail the polipo log
