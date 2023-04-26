@@ -24,7 +24,7 @@ split_by() {
 }
 
 # Check if executable exists. If not, install it. A script with name `${executable}'
-# should exist in folder ~/.dotfiles/scripts/install.
+# should exist in folder $DOTFILES_DIR/scripts/install.
 #
 # @params:
 #   $1: executable name, multiple alias names are supported with `|` as separator, e.g. `netcat|nc`
@@ -46,7 +46,7 @@ check_and_install_executable() {
   if [ -n "$fn" ]; then
     $fn
   else
-    $HOME/.dotfiles/scripts/install/${primary_name} >/dev/null
+    "$DOTFILES_DIR/scripts/install/${primary_name}" >/dev/null
   fi
   ret=$?
   if [ $ret = 0 ]; then
