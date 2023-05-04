@@ -12,7 +12,7 @@ from selenium.webdriver.chrome.options import Options
 
 class Main:
     @classmethod
-    def run(cls, opts):
+    def run(cls, opts, chrome_options):
         options = Options()
 
         if opts.user_agent:
@@ -37,22 +37,30 @@ class Main:
         options.add_experimental_option('excludeSwitches', ['enable-automation'])
         options.add_experimental_option('useAutomationExtension', False)
 
+        if chrome_options and len(chrome_options) > 0:
+            for e in chrome_options:
+                options.add_argument(e)
+
         if opts.mobile_emulation:
             options.add_experimental_option('mobileEmulation', { 'deviceName': 'Galaxy S5' })
 
         if opts.maximize:
             options.add_argument('--start-maximized')
 
-        driver = webdriver.Chrome(options=options)
+        if opts.uc:
+            import undetected_chromedriver as uc
+            driver = uc.Chrome(options=options)
+        else:
+            driver = webdriver.Chrome(options=options)
 
         try:
-            if opts.page_url:
-                page_url = opts.page_url if opts.page_url.startswith('http://') or opts.page_url.startswith('https://') else f'http://{opts.page_url}'
+            if opts.url:
+                page_url = opts.url if opts.url.startswith('http://') or opts.url.startswith('https://') else f'http://{opts.url}'
             else:
                 page_url = 'chrome://newtab'
             driver.get(page_url)
 
-            if opts.page_url and opts.cookie:
+            if opts.url and opts.cookie:
                 domain_pattern = re.compile('^https?://([^/]+).*$')
                 r = domain_pattern.match(page_url)
                 domain = None
@@ -77,15 +85,22 @@ class Main:
             driver.quit()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    epilog = '''
+Note: Any unknown options will be passed as chrome arguments.
+
+Examples:
+  $> webdriver '--host-resolver-rules=MAP www.google.com 127.0.0.1' --ignore-certificate-errors
+'''
+    parser = argparse.ArgumentParser(epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('-u', '--url', help='The url of the page to open')
     parser.add_argument('-m', '--maximize', action='store_true', help='Maximize the window')
-    parser.add_argument('-u', '--user-agent', help='The user agent')
+    parser.add_argument('--user-agent', help='The user agent')
     parser.add_argument('-p', '--proxy-server', help='The proxy server, e.g. [http://]127.0.0.1:8080, socks5://127.0.0.1:1080')
     parser.add_argument('-d', '--user-data-dir', help='The directory to save the session data')
     parser.add_argument('-c', '--cookie', help='The cookie to set for the domain specified by the page url')
     parser.add_argument('-i', '--interact', action='store_true', help='Interact with webdriver by opening a python console')
     parser.add_argument('--devtools', action='store_true', help='Automatically open devtools')
     parser.add_argument('--mobile-emulation', action='store_true', help='Enable mobile emulation')
-    parser.add_argument('page_url', type=str, nargs='?', help='The url of the page to open')
-    args = parser.parse_args()
-    Main.run(args)
+    parser.add_argument('--uc', action='store_true', help='Use undetected_chromedriver to bypass Cloudflare')
+    args, unknown_args = parser.parse_known_args()
+    Main.run(args, unknown_args)
