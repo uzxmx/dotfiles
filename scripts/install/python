@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# To configure python with a custom OpenSSL version, execute below commands:
+#
+# export CFLAGS=-I/usr/openssl1.1.1k/include
+# export LDFLAGS=-L/usr/openssl1.1.1k/lib
+
 set -eo pipefail
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh

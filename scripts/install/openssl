@@ -17,6 +17,10 @@ Options:
   --local-install Install to user home directory
   --force-install Force to install even if it already exists
   --temp-dir <dir> Temp dir to store the src and build files
+
+Examples:
+  # Force to install another version in local directory.
+  $> $0 --local-install --force-install 1.1.1k
 EOF
   exit 1
 }
