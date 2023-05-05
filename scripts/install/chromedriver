@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# Install chromedriver with the same version as google chrome in current system.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if is_mac; then
+  google_chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  platform="mac64"
+elif is_linux; then
+  google_chrome="google-chrome"
+  platform="linux64"
+else
+  abort "Unsupported system"
+fi
+
+version=$("$google_chrome" --version | awk '{print $3}')
+
+install_fn() {
+  cd "$1"
+  if is_mac; then
+    mkdir -p "$DOTFILES_TARGET_DIR/bin"
+    mv chromedriver "$DOTFILES_TARGET_DIR/bin"
+  else
+    sudo mv chromedriver /usr/bin
+  fi
+}
+
+if ! ( check_command chromedriver &>/dev/null && [ "$(chromedriver --version | awk '{print $2}')" = "$version" ] ); then
+  download_and_install "https://chromedriver.storage.googleapis.com/$version/chromedriver_$platform.zip" install_fn
+fi
