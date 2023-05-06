@@ -104,3 +104,7 @@ create_link() {
   fi
   ln -s "$target_file" "$src_file"
 }
+
+can_visit_google() {
+  curl www.google.com --connect-timeout 5 &>/dev/null
+}
