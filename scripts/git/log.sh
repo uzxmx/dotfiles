@@ -56,7 +56,8 @@ select_commit() {
     --preview-window="$preview_window:50%:wrap" \
     --bind=f1:top \
     --bind "ctrl-y:execute-silent(echo -n {1} | trim | cb && tmux display-message yanked)" \
-    --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" \$(git log {1} -1 --oneline) \" -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {1}\")" \
+    --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" \$(git log {1} -1 --oneline) \" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g show_commit {1}'\")" \
+
     "${fzf_opts[@]}"
   )"
   if [ "$select" = "1" ]; then

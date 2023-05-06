@@ -39,7 +39,7 @@ while true; do
   unset result
   output="$(git stash list --pretty="%gd %C(yellow)%h %>(14)%Cgreen%cr %C(blue)%gs")"
   [ -z "$output" ] && echo 'No stash available, exit' && exit
-  bind_cmd="execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' {1} ' -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {2} -d {2}~1\")"
+  bind_cmd="execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' {1} ' -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g show_commit {2} -d {2}~1'\")"
   if [ "$(tput cols)" -ge 160 ]; then
     preview_window="right"
   else
