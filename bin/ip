@@ -17,12 +17,13 @@ Subcommands:
   allow_forward - allow to forward packets from one NIC to another NIC
   my            - get the external IP for the current machine
   geo           - get the geo info for an IP address
+  socks         - get socks5 proxy IP
 EOF
   exit 1
 }
 
 case "$1" in
-  l | link | rule | allow_forward | my | geo)
+  l | link | rule | allow_forward | my | geo | socks)
     case "$1" in
       l)
         name="link"
