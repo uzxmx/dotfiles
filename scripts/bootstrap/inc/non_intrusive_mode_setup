@@ -10,6 +10,11 @@ while [ "$#" -gt 0 ]; do
     --no-proxy)
       no_proxy=1
       ;;
+    --ssh-pub-key)
+      shift
+      echo "$1"
+      ssh_pub_key="$1"
+      ;;
   esac
   shift
 done
@@ -33,6 +38,8 @@ else
   git clone --depth 1 https://github.com/uzxmx/dotfiles.git "$DOTFILES_DIR"
   cd "$DOTFILES_DIR"
 fi
+
+[ -n "$ssh_pub_key" ] && SSH_PUB_KEY="$ssh_pub_key" "$DOTFILES_DIR/scripts/misc/add_ssh_pub_key"
 
 alias_cmd="alias non_intrusive_shell=\"$DOTFILES_DIR/scripts/misc/non_intrusive_shell\""
 

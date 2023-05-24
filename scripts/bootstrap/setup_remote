@@ -10,6 +10,8 @@ Usage: $0 <-f | --vagrant | -o user@host>
 
 Utility to setup dotfiles repository on the remote system through SSH.
 
+By default it sets up in non-intrusive mode.
+
 Options:
   -f Select a remote host from '~/.ssh_hosts' by fzf
   --vagrant SSH via vagrant
@@ -60,8 +62,10 @@ if [ "$intrusive_setup" = 1 ]; then
 else
   file="$(dirname "$0")/inc/non_intrusive_mode_setup"
   if [ -n "$no_proxy" ]; then
-    opts=(--no-proxy)
+    opts+=(--no-proxy)
   fi
+  ssh_pub_key="$(cat ~/.ssh/id_rsa.pub)"
+  opts+=(--ssh-pub-key "'$ssh_pub_key'")
 fi
 
 if [ "$use_vagrant" = "1" ]; then

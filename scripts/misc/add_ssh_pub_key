@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+. $(dirname "$BASH_SOURCE")/../lib/utils.sh
+
+usage() {
+  cat <<-EOF
+Usage: $0 user@host
+
+Add public key (~/.ssh/id_rsa.pub) to ~/.ssh/authorized_keys on the remote
+server for passwordless ssh login. Or when SSH_PUB_KEY environment variable is
+specified, it will add the public key to current machine.
+
+Note: if shared ssh connection is not configured, it may ask for password for
+serveral times.
+EOF
+  exit 1
+}
+
+remainder=()
+destination=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h)
+      usage
+      ;;
+    -*)
+      remainder+=("$1")
+      ;;
+    *)
+      if [ -z "$destination" ]; then
+        destination="$1"
+      else
+        remainder+=("$1")
+      fi
+      ;;
+  esac
+  shift
+done
+
+find_key() {
+  while read key; do
+    if [ "$mykey" = "$(echo $key | ssh-keygen -lf - | awk '{print $1, $2}')" ]; then
+      found="1"
+      break
+    fi
+  done
+}
+
+ssh_pub_key="$SSH_PUB_KEY"
+if [ -n "$ssh_pub_key" ]; then
+  add_to_remote="0"
+  if [ ! -e ~/.ssh ]; then
+    mkdir ~/.ssh
+    chmod 700 ~/.ssh
+  fi
+
+  mykey="$(echo "$ssh_pub_key" | ssh-keygen -lf - | awk '{print $1, $2}')"
+  if [ -f ~/.ssh/authorized_keys ]; then
+    find_key < ~/.ssh/authorized_keys
+  fi
+elif [ -n "$destination" ]; then
+  add_to_remote="1"
+  mykey="$(ssh-keygen -lf ~/.ssh/id_rsa.pub | awk '{print $1, $2}')"
+  find_key < <(ssh "$destination" "${remainder[@]}" "test -f ~/.ssh/authorized_keys || touch ~/.ssh/authorized_keys; cat ~/.ssh/authorized_keys")
+else
+  usage
+fi
+
+if [ "$found" = "1" ]; then
+  echo "SSH public key already added to authorized_keys"
+else
+  echo "Add SSH public key to authorized_keys"
+  if [ "$add_to_remote" = "1" ]; then
+    # TODO Here `scp` doesn't support the same options as `ssh`.
+    scp ~/.ssh/id_rsa.pub "$destination:/tmp/id_rsa.pub"
+    ssh "$destination" "${remainder[@]}" "cat /tmp/id_rsa.pub >> ~/.ssh/authorized_keys && rm /tmp/id_rsa.pub"
+  else
+    echo "$ssh_pub_key" >>~/.ssh/authorized_keys
+    chmod 600 ~/.ssh/authorized_keys
+  fi
+fi
