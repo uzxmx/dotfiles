@@ -3,7 +3,7 @@ if empty(glob(g:vim_home . '/autoload/plug.vim'))
   execute '!curl -fLo ' . g:vim_home . '/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
   if v:shell_error
     echom 'Failed to download vim-plug.'
-    cquit
+    finish
   endif
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
