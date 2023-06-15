@@ -97,6 +97,7 @@ if [ "$use_cwd" = "1" ]; then
 else
   directories="\
 $DOTFILES_DIR
+$DOTFILES_TARGET_DIR
 $DOTFILES_TARGET_DIR/.templates
 $DOTFILES_TARGET_DIR/.pwn\
 "
