@@ -16,6 +16,9 @@ if (!scalar(@ARGV) || !$ARGV[0]) {
   exit 1;
 }
 my $s = select_host($ARGV[0]);
+if (!$s) {
+  exit;
+}
 
 my @command = ('ssh');
 

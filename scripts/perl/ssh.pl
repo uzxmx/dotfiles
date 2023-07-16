@@ -68,7 +68,9 @@ sub select_host {
     }
   }
 
-  return new HostSelection($key, $host);
+  if ($host) {
+    return new HostSelection($key, $host);
+  }
 }
 
 package HostSelection;

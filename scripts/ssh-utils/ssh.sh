@@ -1,6 +1,6 @@
 usage_ssh() {
   cat <<-EOF
-Usage: ssh-utils ssh [host-label]
+Usage: ssh-utils ssh [host-label | user@host]
 
 Enhanced SSH command. You can specify a host label in '~/.ssh_hosts', it will
 build the ssh command and connect to the remote.
@@ -57,6 +57,10 @@ cmd_ssh() {
   [ -z "$host_label" ] && exit
 
   local cmd=$("$DOTFILES_DIR/scripts/bin/build-ssh-cmd" "$host_label")
+  if [ -z "$cmd" ]; then
+    cmd="ssh $host_label"
+  fi
+
   if [ -z "$dry_run" ]; then
     $cmd "${opts[@]}" "$@"
   else
