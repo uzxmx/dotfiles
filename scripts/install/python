@@ -12,9 +12,9 @@ set -eo pipefail
 
 echo 'Check and install python dependencies...'
 if has_yum; then
-  sudo yum install -y libffi-devel zlib-devel openssl-devel readline-devel bzip2-devel libsqlite3x-devel >/dev/null
+  sudo yum install -y libffi-devel zlib-devel openssl-devel readline-devel bzip2-devel libsqlite3x-devel xz-devel >/dev/null
 elif has_apt; then
-  sudo apt-get install -y libffi-dev zlib1g-dev libssl-dev libreadline-dev libbz2-dev libsqlite3-dev >/dev/null
+  sudo apt-get install -y libffi-dev zlib1g-dev libssl-dev libreadline-dev libbz2-dev libsqlite3-dev liblzma-dev >/dev/null
 fi
 
 echo 'Install python...'
