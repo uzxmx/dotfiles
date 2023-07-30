@@ -1,3 +1,10 @@
+# If the terminal is `alacritty`, remote commands may fail when ssh. So we
+# override TERM here.
+# See: https://github.com/alacritty/alacritty/issues/3962
+if [ "$TERM" = "alacritty" ]; then
+  TERM="xterm-256color"
+fi
+
 # Bash-like help support. To find help files, we may also need to set HELPDIR environment variable with
 # something like /path/to/zsh_help_directory.
 unalias run-help 2>/dev/null
