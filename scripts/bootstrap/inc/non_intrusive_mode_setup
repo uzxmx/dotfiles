@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-DOTFILES_PARENT_DIR="$HOME/tmp"
-DOTFILES_DIR="$DOTFILES_PARENT_DIR/dotfiles"
-
-mkdir -p "$DOTFILES_PARENT_DIR"
+export no_proxy
+export ssh_pub_key
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -12,12 +10,24 @@ while [ "$#" -gt 0 ]; do
       ;;
     --ssh-pub-key)
       shift
-      echo "$1"
       ssh_pub_key="$1"
       ;;
   esac
   shift
 done
+
+if [ "$(whoami)" = "root" ]; then
+  echo "Switch to a default user"
+#__ADD_USER_SCRIPT_STUB__
+  su -l "$default_user_name" -w "no_proxy,ssh_pub_key"
+fi
+
+set -eo pipefail
+
+DOTFILES_PARENT_DIR="$HOME/tmp"
+DOTFILES_DIR="$DOTFILES_PARENT_DIR/dotfiles"
+
+mkdir -p "$DOTFILES_PARENT_DIR"
 
 if [ -z "$no_proxy" ]; then
   export http_proxy=http://localhost:8123
@@ -26,9 +36,25 @@ if [ -z "$no_proxy" ]; then
   export HTTPS_PROXY=$http_proxy
 fi
 
-if ! type -p git &>/dev/null; then
-  echo "You must have git installed."
-  exit 1
+is_available() {
+  type -p "$1" &> /dev/null
+}
+
+if ! is_available git; then
+  if is_available apt-get; then
+    if ! sudo apt-get install -y git; then
+      sudo apt-get update
+      sudo apt-get install -y git
+    fi
+  elif is_available yum; then
+    sudo yum install -y git
+  elif is_available brew; then
+    # TODO Actually for mac, we should install brew if it is unavailable.
+    brew install git
+  else
+    echo "You must have git installed."
+    exit 1
+  fi
 fi
 
 if [ -d "$DOTFILES_DIR" ]; then

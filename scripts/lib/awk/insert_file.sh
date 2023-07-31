@@ -4,7 +4,7 @@
 #
 # @params:
 #   $1: the input file, when `-` is passed, stdin will be used
-#   $2: the target line to insert to
+#   $2: the target file to insert to
 #   $3: the line number to insert at
 #
 # @example

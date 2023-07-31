@@ -60,7 +60,16 @@ if [ "$intrusive_setup" = 1 ]; then
     opts+=(-p localhost:8123)
   fi
 else
-  file="$(dirname "$0")/inc/non_intrusive_mode_setup"
+  source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
+  source "$DOTFILES_DIR/scripts/lib/awk/find_line.sh"
+  source "$DOTFILES_DIR/scripts/lib/awk/insert_file.sh"
+
+  create_tmpfile file
+  cp "$(dirname "$0")/inc/non_intrusive_mode_setup" "$file"
+
+  lineno="$(awk_find_line "$file" "#__ADD_USER_SCRIPT_STUB__")"
+  awk_insert_file "$DOTFILES_DIR/scripts/misc/add_user.sh" "$file" "$lineno"
+
   if [ -n "$no_proxy" ]; then
     opts+=(--no-proxy)
   fi
