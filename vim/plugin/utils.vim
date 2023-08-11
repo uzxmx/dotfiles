@@ -25,12 +25,17 @@ nmap <silent> <c-w>P <Plug>(go-to-prev-tab)
 command! -nargs=1 MoveToTab call utils#tab#open_in_tab(<q-args>, v:true)
 command! -nargs=1 OpenInTab call utils#tab#open_in_tab(<q-args>, v:false)
 
+" For Mac and Windows, '*' and '+' registers are the same, but different for Linux. So
+" here we should use '+' register to copy to the clipboard.
+" See https://vi.stackexchange.com/a/22207
+"
 " Reference http://vimdoc.sourceforge.net/htmldoc/cmdline.html#filename-modifiers
-command! CopyFilePath call setreg('*', expand('%'))
-command! CopyFileName call setreg('*', expand('%:t'))
-command! CopyFilePathAbs call setreg('*', expand('%:p'))
-command! CopyFilePathParent call setreg('*', expand('%:h'))
-command! CopyFilePathParentAbs call setreg('*', expand('%:p:h'))
+command! CopyFilePath call setreg('+', expand('%'))
+command! CopyFileName call setreg('+', expand('%:t'))
+command! CopyFilePathAbs call setreg('+', expand('%:p'))
+command! CopyFilePathAbs call setreg('+', expand('%:p'))
+command! CopyFilePathParent call setreg('+', expand('%:h'))
+command! CopyFilePathParentAbs call setreg('+', expand('%:p:h'))
 
 command! Gen call utils#gen()
 
