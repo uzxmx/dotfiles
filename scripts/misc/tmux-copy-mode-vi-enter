@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Only send the content to the clipboard when it is not empty.
+
+set -eo pipefail
+
+content="$(cat)"
+
+[ -z "$content" ] && exit
+
+if uname -r | grep "Microsoft$" &>/dev/null; then
+  echo -n "$content" | /mnt/c/Windows/System32/clip.exe
+elif [ "$(uname -s)" = "Linux" ] && which xclip
+  echo -n "$content" | xclip -in -selection clipboard
+else
+  tmux display-message "#[fill=white bg=white fg=red align=centre]Cannot find a tool to copy to clipboard"
+fi
