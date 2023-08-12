@@ -99,11 +99,11 @@ while true; do
   fi
 
   if [ "$cmd_name" = "rg" ]; then
-    prompt="(C-V:vsplit C-Y:yank C-T:edit C-I:toggle-ignore C-X:exec C-R:refresh)> "
-    expect="ctrl-t,ctrl-i,ctrl-x,ctrl-r,f1"
+    prompt="(C-V:vsplit C-Y:yank C-T:edit C-I:toggle-ignore C-X:exec C-D:cd C-R:refresh)> "
+    expect="ctrl-t,ctrl-i,ctrl-x,ctrl-d,ctrl-r,f1"
   else
-    prompt="(C-V:vsplit C-Y:yank C-T:edit C-X:exec C-R:refresh)> "
-    expect="ctrl-t,ctrl-x,ctrl-r,f1"
+    prompt="(C-V:vsplit C-Y:yank C-T:edit C-X:exec C-D:cd C-R:refresh)> "
+    expect="ctrl-t,ctrl-x,ctrl-d,ctrl-r,f1"
   fi
 
   # Note: {} is single quoted in fzf, so below we use `$(echo -n {2})` to strip single quotes.
@@ -161,6 +161,10 @@ while true; do
         [ ! -x "$file" ] && echo "$file is not an executable." && exit
         echo "$(realpath "$file")" >&3
         exit 100
+        ;;
+      ctrl-d)
+        echo "cd '$(dirname "$file")'" >&3
+        exit
         ;;
       "")
         # Invoke `Rooter` command to change to correct root directory.
