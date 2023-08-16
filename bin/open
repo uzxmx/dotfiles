@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
@@ -24,7 +24,7 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 is_wsl() {
   [[ "$(uname -r)" =~ Microsoft$ ]]
@@ -61,7 +61,7 @@ if [ "$use_browser" = "1" -a ! -f "$uri" ] && ! has_http_prefix "$uri"; then
 fi
 
 if is_wsl; then
-  source "$dotfiles_dir/scripts/lib/utils.sh"
+  source "$DOTFILES_DIR/scripts/lib/utils.sh"
 
   if [ "$use_browser" = "1" ] || has_http_prefix "$uri"; then
     cmd.exe /c start "$uri"
@@ -71,11 +71,15 @@ if is_wsl; then
     abort "Directory or file '$uri' doesn't exist."
   fi
 
-  cmd.exe /c "start explorer.exe $("$dotfiles_dir/bin/wslpath" -w "$uri")"
-else
+  cmd.exe /c "start explorer.exe $("$DOTFILES_DIR/bin/wslpath" -w "$uri")"
+elif type -p open &>/dev/null; then
   if [ "$use_browser" = "1" ]; then
     open -a "Google Chrome" "$uri"
   else
     open "$uri"
   fi
+elif type -p xdg-open &>/dev/null; then
+  xdg-open "$uri"
+else
+  abort "Unsupported system"
 fi
