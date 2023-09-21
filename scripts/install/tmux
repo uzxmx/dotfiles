@@ -16,6 +16,7 @@ Options:
   --install-plugins Install plugins
   --local-install Install to user home directory
   --force-install Force to install even if it already exists
+  --temp-dir <dir> Temp dir to store the src and build files
 EOF
   exit 1
 }
@@ -32,6 +33,10 @@ parse_args="
     ;;
   --force-install)
     force_install=1
+    ;;
+  --temp-dir)
+    shift
+    temp_dir=\"\$1\"
     ;;
   *)
     usage
@@ -63,17 +68,14 @@ fi
 
 [ -z "$force_install" ] && check_command tmux &> /dev/null && check_plugins && exit
 
-if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" -a -z "$local_install" ] && is_mac; then
-  brew_install tmux
-  exit
-fi
-
 if has_apt; then
   sudo apt-get install -y libevent-dev >/dev/null
   # Required for copying to system clipboard.
   sudo apt-get install -y clip >/dev/null || true
 elif has_yum; then
   sudo yum install -y libevent-devel >/dev/null
+elif is_mac; then
+  brew_install libevent utf8proc
 fi
 
 do_install() {
@@ -86,6 +88,8 @@ do_install() {
   local dest_path="$DOTFILES_TARGET_DIR/opt/tmux-$version"
   local -a opts
   if is_mac; then
+    export CFLAGS=-I/opt/homebrew/include
+    export LDFLAGS=-L/opt/homebrew/lib
     opts+=(--enable-utf8proc)
   fi
   ./configure --prefix "$dest_path" "${opts[@]}"
@@ -108,7 +112,7 @@ else
     local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
     do_install "$dir"
   }
-  download_and_install "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" install_fn
+  download_and_install "https://github.com/tmux/tmux/releases/download/$version/tmux-$version.tar.gz" install_fn "$temp_dir"
 fi
 
 install_plugins=1
