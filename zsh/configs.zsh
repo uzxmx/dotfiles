@@ -137,7 +137,7 @@ export THEOS="$DOTFILES_TARGET_DIR/theos"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Duser.language=en"
 
 # Use a clean PATH variable
-PATH="$THEOS/bin:$DOTFILES_TARGET_DIR/.cargo/bin:$GOPATH/bin:$DOTFILES_TARGET_DIR/.dotnet/tools:$DOTFILES_TARGET_DIR/sdk/bin:/usr/local/share/dotnet:/usr/local/games:/usr/games:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin"
+PATH="$THEOS/bin:$DOTFILES_TARGET_DIR/.cargo/bin:$GOPATH/bin:$DOTFILES_TARGET_DIR/.dotnet/tools:$DOTFILES_TARGET_DIR/sdk/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/share/dotnet:/usr/local/games:/usr/games:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 if [[ "$(uname -r)" =~ Microsoft$ ]]; then
   _path="$(/mnt/c/Windows/System32/cmd.exe /c "echo %PATH%" | tr ";" "\n" | sed -Ee 's/^([C-Z]):/\/mnt\/\l\1/' -e 's/\\/\//g' | tr "\n" ":")"
@@ -145,3 +145,9 @@ if [[ "$(uname -r)" =~ Microsoft$ ]]; then
     PATH="$PATH:$_path"
   fi
 fi
+
+export HOMEBREW_PREFIX="/opt/homebrew"
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+export HOMEBREW_REPOSITORY="/opt/homebrew"
+export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:"
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
