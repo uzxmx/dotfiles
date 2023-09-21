@@ -17,6 +17,16 @@ if [ -z "$LOGNAME" ]; then
   LOGNAME=$(whoami)
 fi
 
+if ! which envsubst > /dev/null 2>&1; then
+  envsubst() {
+    local line
+    while read line; do
+      line=$( echo $line | sed 's/"/\\"/g' )
+      eval echo $line
+    done
+  }
+fi
+
 ln_v() {
   $VERBOSE "'$1' -> '$2'"
   ln -s "$1" "$2"
