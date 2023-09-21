@@ -10,6 +10,14 @@ is_mac() {
   fi
 }
 
+is_arm64() {
+  if [[ "$(uname -m)" =~ "arm64" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 is_wsl() {
   [[ "$(uname -r)" =~ Microsoft$ ]]
 }

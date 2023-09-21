@@ -10,22 +10,26 @@ test -x /usr/local/bin/v2ray && exit
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 
-version="v4.31.0"
+version="v4.45.2"
 path_to_save="/tmp/v2ray-$version.zip"
 if is_mac; then
-  platform="macos"
+  if is_arm64; then
+    platform="macos-arm64-v8a"
+  else
+    platform="macos-64"
+  fi
 elif is_linux; then
-  platform="linux"
+  platform="linux-64"
 else
   abort "Unsupported system"
 fi
 
-"$DOTFILES_DIR/bin/get" "https://github.com/v2fly/v2ray-core/releases/download/$version/v2ray-$platform-64.zip" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/v2fly/v2ray-core/releases/download/$version/v2ray-$platform.zip" "$path_to_save"
 
 dir="/tmp/v2ray-$version"
 mkdir -p "$dir"
 check_and_install_executable unzip
-(cd "$dir" && unzip "$path_to_save" && sudo cp v2ray v2ctl /usr/local/bin)
+(cd "$dir" && unzip "$path_to_save" && sudo mkdir -p /usr/local/bin && sudo cp v2ray v2ctl /usr/local/bin && sudo mkdir /usr/local/etc/v2ray && sudo cp config.json /usr/local/etc/v2ray)
 rm -rf "$dir" "$path_to_save"
 
 if is_linux; then
