@@ -9,12 +9,24 @@ export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-PATH="$DOTFILES_TARGET_DIR/bin:$PATH"
 check_command antibody &> /dev/null && exit
 
 version="v6.1.1"
 path_to_save="/tmp/antibody-$version.tgz"
 if is_mac; then
+  if is_arm64; then
+    install_fn() {
+      cd "$1"
+
+      go get -u golang.org/x/sys
+      make build
+      mv antibody "$DOTFILES_TARGET_DIR/bin"
+    }
+
+    download_and_install_by_git "https://github.com/getantibody/antibody.git" install_fn
+    exit
+  fi
+
   platform="Darwin"
 elif is_linux; then
   platform="Linux"
@@ -24,9 +36,5 @@ fi
 
 "$DOTFILES_DIR/bin/get" "https://github.com/getantibody/antibody/releases/download/$version/antibody_${platform}_x86_64.tar.gz" "$path_to_save"
 tar zxf "$path_to_save" -C /tmp antibody
-if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
-  mv /tmp/antibody "$DOTFILES_TARGET_DIR/bin"
-else
-  sudo mv /tmp/antibody /usr/local/bin
-fi
+mv /tmp/antibody "$DOTFILES_TARGET_DIR/bin"
 rm "$path_to_save"
