@@ -3,5 +3,5 @@ ruby 2.7.1
 nodejs 18.18.0
 java adoptopenjdk-11.0.20+101
 maven 3.6.3
-golang 1.17.3
+golang 1.19.2
 gradle 6.9.2
