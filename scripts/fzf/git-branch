@@ -39,9 +39,10 @@ fi
 
 . $(dirname "$BASH_SOURCE")/git-common
 
-select_branch --result --prompt '(CTRL-E:NewBranch CTRL-Y:yank CTRL-D:delete)> ' \
+select_branch --result --prompt '(C-E:NewBranch C-Y:yank C-D:delete C-V:log)> ' \
   --expect "ctrl-e,ctrl-d" \
   --bind "ctrl-y:execute-silent(echo -n {} | sed 's/^* //' | awk '{print \$1}' | trim | cb)+abort" \
+  --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \"Log for \$(echo {1})\" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g l {1}'\")" \
   "${branch_opts[@]}"
 
 key="${result[0]}"
