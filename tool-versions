@@ -1,6 +1,8 @@
 python 3.11.5
 ruby 2.7.1
-nodejs 18.18.0
+# Downgrade nodejs to v16 to avoid openssl error, or use `export NODE_OPTIONS=--openssl-legacy-provider`.
+# Ref: https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported
+nodejs 16.20.2
 java adoptopenjdk-11.0.20+101
 maven 3.6.3
 golang 1.19.2
