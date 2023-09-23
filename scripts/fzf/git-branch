@@ -39,40 +39,43 @@ fi
 
 . $(dirname "$BASH_SOURCE")/git-common
 
-select_branch --result --prompt '(C-E:NewBranch C-Y:yank C-D:delete C-V:log)> ' \
-  --expect "ctrl-e,ctrl-d" \
-  --bind "ctrl-y:execute-silent(echo -n {} | sed 's/^* //' | awk '{print \$1}' | trim | cb)+abort" \
-  --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \"Log for \$(echo {1})\" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g l {1}'\")" \
-  "${branch_opts[@]}"
+while true; do
+  unset result
+  select_branch --result --prompt '(C-E:NewBranch C-Y:yank C-D:delete C-V:log)> ' \
+    --expect "ctrl-e,ctrl-d" \
+    --bind "ctrl-y:execute-silent(echo -n {} | sed 's/^* //' | awk '{print \$1}' | trim | cb)+abort" \
+    --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" Log for \$($DOTFILES_DIR/scripts/fzf/sanitize_branch {}) \" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g l \$($DOTFILES_DIR/scripts/fzf/sanitize_branch {})'\")" \
+    "${branch_opts[@]}"
 
-key="${result[0]}"
-selection="${result[1]}"
-if [ "$key" = "ctrl-e" ]; then
-  branch="$(parse_branch "$selection" 1)"
-  new_branch="$(rlwrap -S "From $branch, create new branch: " -o cat)"
-  git checkout -b "$new_branch" "$branch"
-elif [ "$key" = "ctrl-d" ]; then
-  branch="$(parse_branch "$selection")"
-  . "$(dirname "$BASH_SOURCE")/../lib/prompt.sh"
-  if is_remote_branch "$selection"; then
-    origin="$(parse_origin_from_branch "$selection")"
-    reply="$(yesno "Are you sure you want to delete this remote branch: $branch from $origin? (y/N)" "no")"
-    [ "$reply" != "yes" ] && echo 'Cancelled' && exit
-    git push -d "$origin" "$branch"
-  else
-    reply="$(yesno "Are you sure you want to delete this branch: $branch? (y/N)" "no")"
-    [ "$reply" != "yes" ] && echo 'Cancelled' && exit
-    git branch -D "$branch"
-  fi
-elif [ -n "$selection" ]; then
-  if is_remote_branch "$selection"; then
-    local_branch="$(parse_branch "$selection")"
-    if ! has_local_branch "$local_branch"; then
-      git checkout -b "$local_branch" "$(parse_branch "$selection" 1)"
-      exit
+  key="${result[0]}"
+  selection="${result[1]}"
+  if [ "$key" = "ctrl-e" ]; then
+    branch="$(parse_branch "$selection" 1)"
+    new_branch="$(rlwrap -S "From $branch, create new branch: " -o cat)"
+    git checkout -b "$new_branch" "$branch"
+    exit
+  elif [ "$key" = "ctrl-d" ]; then
+    branch="$(parse_branch "$selection")"
+    . "$(dirname "$BASH_SOURCE")/../lib/prompt.sh"
+    if is_remote_branch "$selection"; then
+      origin="$(parse_origin_from_branch "$selection")"
+      reply="$(yesno "Are you sure you want to delete this remote branch: $branch from $origin? (y/N)" "no")"
+      [ "$reply" = "yes" ] && git push -d "$origin" "$branch"
+    else
+      reply="$(yesno "Are you sure you want to delete this branch: $branch? (y/N)" "no")"
+      [ "$reply" = "yes" ] && git branch -D "$branch"
     fi
+  elif [ -n "$selection" ]; then
+    if is_remote_branch "$selection"; then
+      local_branch="$(parse_branch "$selection")"
+      if ! has_local_branch "$local_branch"; then
+        git checkout -b "$local_branch" "$(parse_branch "$selection" 1)"
+        exit
+      fi
+    fi
+    git checkout "$(parse_branch "$selection" 1)"
+    exit
+  else
+    exit 1
   fi
-  git checkout "$(parse_branch "$selection" 1)"
-else
-  exit 1
-fi
+done

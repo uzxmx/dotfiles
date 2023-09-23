@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Strip off '*' when current branch selected.
+echo "$1" | sed "s/^ *\* *//" | awk '{print $1}'
