@@ -54,8 +54,8 @@ url_encode_by_jq() {
 }
 
 url_encode_by_curl() {
-  local result="$(curl -s -o /dev/null -w %{url_effective} --get --data-urlencode "=$1" "")"
-  echo "${result##/?}"
+  local result="$(curl -s -o /dev/null --max-time 0.001 -w %{url_effective} --get --data-urlencode "=$1" "http://localhost:1")"
+  echo "${result##http://localhost:1/?}"
 }
 
 url_encode_by_ruby() {
