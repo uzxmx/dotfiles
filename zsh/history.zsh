@@ -68,6 +68,8 @@ bindkey "^[[B" down-line-or-local-history
 # Below function is borrowed from [here](https://github.com/junegunn/fzf/blame/master/shell/key-bindings.zsh).
 #
 # Ref: https://zsh.sourceforge.io/Doc/Release/Shell-Builtin-Commands.html (search `fc -l`)
+#
+# TODO it seems that every time `ctrl-r` is issued, the history file will be rewritten.
 _search_global_history() {
   local selected num
   setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null

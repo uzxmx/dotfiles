@@ -31,3 +31,25 @@ make
 sudo make install
 
 rm -rf "$dir"
+
+git clone https://github.com/libimobiledevice/libimobiledevice-glue.git
+cd libimobiledevice-glue
+./autogen.sh
+make
+sudo make install
+
+git clone https://github.com/libimobiledevice/libirecovery.git
+cd libirecovery
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+./autogen.sh
+make
+sudo make install
+
+git clone https://github.com/libimobiledevice/idevicerestore.git
+cd idevicerestore
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/Cellar/openssl@1.1/1.1.1k/lib/pkgconfig
+./autogen.sh
+make
+sudo make install
+
+# There is also a similar program called FutureRestore

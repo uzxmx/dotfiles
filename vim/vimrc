@@ -1,5 +1,9 @@
 let g:current_colorscheme = 'solarized dark'
 
+" set runtimepath^=/Users/xmx/projects/coc-java-intellicode
+" set runtimepath^=/Users/xmx/projects/coc-java-vimspector
+set runtimepath^=/Users/xmx/projects/custom/coc-java-debug
+
 let mapleader = "\<Space>"
 let maplocalleader = "\<Space>"
 

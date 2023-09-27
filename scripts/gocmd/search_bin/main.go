@@ -7,13 +7,17 @@ import (
 	"strconv"
 )
 
+// TODO add option to specify hexadecimal string
 func usage() {
-	fmt.Fprintf(os.Stderr, `Usage: search_bin <pattern-file> <src-file>
+	fmt.Fprintf(os.Stderr, `Usage: search_bin [-f <pattern-file>] <src-file>
 
 Search in the binary src-file for a sequence of bytes generated from the pattern-file.
 
 Options:
-  -l <min-length> The minimum length of the sequence of bytes to be matched, default is 4
+  -f <pattern-file>
+  -l <min-length> The minimum length of the sequence of bytes to be matched,
+                  default is 4, only valid when a pattern file is specified
+  -h <hex-string>
 `)
 	os.Exit(1)
 }

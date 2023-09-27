@@ -27,3 +27,8 @@ else
 fi
 
 rm "$path_to_save"
+
+# sudo apt-get -y --only-upgrade install google-chrome-stable
+# get https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip
+
+# sudo yum update -y google-chrome --nogpgcheck

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+
+usage() {
+  cat <<-EOF
+Utility to run a java file, or java project managed by maven or gradle.
+EOF
+  exit 1
+}
+
+mvn exec:java -Dexec.mainClass=foo.App

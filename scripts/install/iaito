@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+#
+# Install iaito (https://github.com/radareorg/iaito)
+
+set -eo pipefail
+
+dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+
+source "$dotfiles_dir/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+
+# type -p iaito &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if is_mac; then
+  brew_install qt@5
+  PATH="/usr/local/Cellar/qt@5/5.15.2/bin:$PATH"
+fi
+
+dir="$HOME/iaito"
+git_clone https://github.com/radareorg/iaito "$dir" --depth 1
+
+cd "$dir"
+
+translations_dir="src/translations"
+if [ ! -e "$translations_dir" ] || [ "$(ls "$translations_dir" | wc -l)" -eq 0 ]; then
+  [ -d src/translations ] && rm -rf src/translations
+  git_clone https://github.com/radareorg/iaito-translations "$translations_dir" --depth 1
+fi
+
+
+# iaito will run `git submodule update --init` to download radare2, which may be slow.
+radare2_dir="$HOME/radare2"
+if [ ! -e "$radare2_dir" ] || [ "$(ls "$radare2_dir" | wc -l)" -eq 0 ]; then
+  abort "You must run scripts/install/radare2 first."
+fi
+
+if [ ! -e radare2 ] || ! is_link radare2; then
+  [ -e radare2 ] && rm -rf radare2
+  ln -s "$radare2_dir" radare2
+fi
+
+./configure
+make
+make run
+# rm -rf "$dir"
+
+
+# ld: warning: dylib (/usr/local/lib/libr_egg.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_search.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_reg.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_socket.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_syscall.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_fs.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_anal.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_magic.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_util.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# ld: warning: dylib (/usr/local/lib/libr_crypto.dylib) was built for newer macOS version (11.0) than being linked (10.13)
+# rarun2 libpath=/usr/local/lib program=build/iaito.app/Contents/MacOS/iaito
+# dyld: Symbol not found: __cg_jpeg_resync_to_restart
+#   Referenced from: /System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO
+#   Expected in: /usr/local/lib/libJPEG.dylib
+#  in /System/Library/Frameworks/ImageIO.framework/Versions/A/ImageIO
+# make: *** [run] Abort trap: 6

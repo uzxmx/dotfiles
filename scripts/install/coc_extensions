@@ -62,6 +62,8 @@ case "$extension" in
     mkdir -p "$serverdir"
     curl -o "$tmpfile" -L "http://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
     tar zxf "$tmpfile" -C "$serverdir"
+    npm_install coc-java-dependency@0.1.2
+    # TODO we also need to configure JAVA_HOME env, otherwise, it will complain when launching vim.
     ;;
   python)
     npm_install coc-python@1.2.13
@@ -70,7 +72,7 @@ case "$extension" in
     npm_install coc-clangd@0.4.7
     ;;
   omnisharp)
-    npm_install coc-omnisharp@0.0.26
+    npm_install coc-omnisharp@0.0.28
     ;;
   sourcekit)
     npm_install coc-sourcekit@0.0.2

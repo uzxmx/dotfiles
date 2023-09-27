@@ -1,4 +1,16 @@
 allprojects {
+    // afterEvaluate {
+    // task runWithExec(type: Exec) {
+    //     // dependsOn build
+    //     group = "Execution"
+    //     description = "Run the main class with ExecTask"
+    //     commandLine "java", "-classpath", sourceSets.main.runtimeClasspath.getAsPath(), "com.example.Excel"
+    // }
+    // }
+
+    // Ref: https://www.baeldung.com/gradle-run-java-main
+    // https://stackoverflow.com/questions/21358466/gradle-to-execute-java-class-without-modifying-build-gradle
+
     apply plugin: 'java'
 
     afterEvaluate {

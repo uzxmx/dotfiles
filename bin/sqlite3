@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
+# pip install litecli
+# TODO https://github.com/dbcli/litecli
+
+# See: https://stackoverflow.com/questions/1210664/no-module-named-sqlite3
+# sudo apt-get install libsqlite3-dev
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 sqlite3_dir="$DOTFILES_DIR/scripts/sqlite3"
@@ -12,6 +17,7 @@ usage() {
 Wrapper for sqlite3 utility.
 
 Subcommands:
+  i, repl - read, evaluate, print and loop
   d, dump - dump tables data as a SQL file
   import  - import data from a SQL file
 EOF
@@ -50,3 +56,5 @@ case "$1" in
     run_sqlite3 "$@"
     ;;
 esac
+
+# litecli "$@"

@@ -40,6 +40,8 @@ is_available() {
   type -p "$1" &> /dev/null
 }
 
+# TODO system update?  e.g. for ubuntu
+
 if ! is_available git; then
   if is_available apt-get; then
     if ! sudo apt-get install -y git; then
@@ -84,3 +86,8 @@ fi
   $DOTFILES_DIR/scripts/install/nvim --do-all-steps
   $DOTFILES_DIR/scripts/install/tmux --install-plugins
 EOF
+
+# TODO
+# input your user name for git:
+# git config --global user.name 'foo'
+# git config --global user.email 'bar'

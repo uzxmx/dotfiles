@@ -61,7 +61,7 @@ EOF
 cmd_repo_list() {
   check_workspace
 
-  req "repositories/$workspace" | jq -r '.values[] | "Name: \(.name)\tCreated at: \(.created_on)\tUpdated at: \(.updated_on)"' | column -t -s $'\t'
+  req "repositories/$workspace?pagelen=100" | jq -r '.values[] | "Name: \(.name)\tCreated at: \(.created_on)\tUpdated at: \(.updated_on)"' | column -t -s $'\t'
 }
 
 usage_repo_get() {
