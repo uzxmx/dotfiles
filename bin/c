@@ -106,11 +106,15 @@ $DOTFILES_TARGET_DIR/.pwn\
     directories="$directories
 $(find "$DOTFILES_TARGET_DIR/.resources" -maxdepth 1 -type d | grep -v .git)\
 "
+  else
+    directories="$directories
+$DOTFILES_TARGET_DIR/.resources\
+"
   fi
 
   if [ -d ~/.private ]; then
     directories="$directories
-$(find ~/.private -maxdepth 1 -type d)\
+$(find ~/.private -maxdepth 1 -type d | grep -v .git)\
 "
   fi
 
