@@ -73,13 +73,13 @@ if [ -z "$local_install" ]; then
   create_tmpfile mirror_cmd_file
   cat <<'EOF' >"$mirror_cmd_file"
 #!/usr/bin/env bash
-echo "${package_url/cache.ruby-lang.org/cache.ruby-china.com}"
+echo "${1/cache.ruby-lang.org/cache.ruby-china.com}"
 EOF
   chmod +x "$mirror_cmd_file"
 
   export RUBY_BUILD_MIRROR_CMD="$mirror_cmd_file"
 
-  install_plugin_package ruby "$1"
+  install_plugin_package ruby "$version"
   exit
 fi
 

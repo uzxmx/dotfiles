@@ -38,6 +38,18 @@ install_plugin_package() {
   if [ -z "$package_version" ]; then
     package_version="$(parse_package_version $plugin)"
   fi
+
+  if [ "$plugin" = "ruby" -a "$package_version" = "2.4.10" ]; then
+    if is_mac; then
+      local ssldir="$(brew --prefix openssl@1.1 2>/dev/null || true)"
+      export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$ssldir"
+
+      # error: call to undeclared function 'ffi_prep_closure'
+      # Ref: https://github.com/ffi/ffi/issues/869
+      export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
+    fi
+  fi
+
   asdf install "$plugin" "$package_version"
 }
 
