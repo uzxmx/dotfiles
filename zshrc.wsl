@@ -8,3 +8,13 @@ export VAGRANT_WSL_ENABLE_WINDOWS_ACCESS=1
 
 eval "$(dircolors ~/.dircolors)"
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+
+if [ -z "$WSL_INTEROP" ]; then
+  # When this environment variable is not set, we cannot launch Windows .exe program from tmux, because
+  # tmux-server stops to find the socket from the parent process.
+  #
+  # strace -o strace.txt -ff /mnt/c/Windows/System32/cmd.exe
+  #
+  # Ref: https://github.com/microsoft/WSL/issues/5065
+  export WSL_INTEROP="/run/WSL/$(ls -tr /run/WSL | head -1)"
+fi
