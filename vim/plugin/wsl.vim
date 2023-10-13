@@ -1,5 +1,5 @@
 " FIXME has('wsl') doesn't work, but accroding to https://github.com/neovim/neovim/issues/6227#issuecomment-501128566, it should work.
-if system('uname -r') =~ 'Microsoft'
+if system('uname -r') =~ '[Mm]icrosoft'
   let g:clipboard = {
     \ 'name': 'WSLClipboard',
     \ 'copy': {

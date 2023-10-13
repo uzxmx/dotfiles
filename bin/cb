@@ -36,7 +36,7 @@ done
 if [[ "$OSTYPE" =~ ^darwin.* ]]; then
   copy_cmd="pbcopy"
   paste_cmd="pbpaste"
-elif [[ "$(uname -r)" =~ Microsoft$ ]]; then
+elif [[ "$(uname -r)" =~ [Mm]icrosoft ]]; then
   copy_cmd="clip.exe"
   paste_cmd="pbpaste.exe"
 else

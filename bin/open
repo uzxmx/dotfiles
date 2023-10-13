@@ -27,7 +27,7 @@ EOF
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 is_wsl() {
-  [[ "$(uname -r)" =~ Microsoft$ ]]
+  [[ "$(uname -r)" =~ [Mm]icrosoft ]]
 }
 
 if ! is_wsl && [ "$#" -gt 0 -a "$1" = "-" ]; then

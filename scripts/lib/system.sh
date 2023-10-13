@@ -19,7 +19,7 @@ is_arm64() {
 }
 
 is_wsl() {
-  [[ "$(uname -r)" =~ Microsoft$ ]]
+  [[ "$(uname -r)" =~ [Mm]icrosoft ]]
 }
 
 is_linux() {

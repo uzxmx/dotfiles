@@ -8,7 +8,7 @@ content="$(cat)"
 
 [ -z "$content" ] && exit
 
-if uname -r | grep "Microsoft$" &>/dev/null; then
+if uname -r | grep "[Mm]icrosoft" &>/dev/null; then
   echo -n "$content" | /mnt/c/Windows/System32/clip.exe
 elif [ "$(uname -s)" = "Linux" ] && which xclip
   echo -n "$content" | xclip -in -selection clipboard
