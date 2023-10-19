@@ -21,6 +21,7 @@ Options:
 Examples:
   # Force to install another version in local directory.
   $> $0 --local-install --force-install 1.1.1k
+  $> $0 --local-install --force-install 1.0.2u
 EOF
   exit 1
 }
@@ -58,9 +59,9 @@ install_fn() {
 
   local dest_path="$DOTFILES_TARGET_DIR/opt/openssl-$version"
   if [ -z "$local_install" ]; then
-    ./config
+    ./config shared
   else
-    ./config --prefix="$dest_path" --openssldir="$dest_path/ssl"
+    ./config shared --prefix="$dest_path" --openssldir="$dest_path/ssl"
   fi
   make
   make install
