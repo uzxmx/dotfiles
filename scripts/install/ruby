@@ -18,6 +18,9 @@ Options:
   --temp-dir <dir> Temp dir to store the src and build files
 
   --openssl-dir <dir> Optional openssl dir to find include and library files, also support LibreSSL
+
+Examples:
+  $0 --force-install --openssl-dir ~/opt/openssl-1.0.2u 2.3.8
 EOF
   exit 1
 }
@@ -62,9 +65,15 @@ if [ -z "$local_install" ]; then
     source "$DOTFILES_DIR/scripts/lib/utils/version.sh"
 
     if is_ubuntu && ! version_lt_not_constrained "$(lsb_release_number)" 20; then
-      sudo apt-get install -y libssl-dev libreadline-dev
+      if [ -z "$openssl_dir" ]; then
+        sudo apt-get install -y libssl-dev
+      fi
+      sudo apt-get install -y libreadline-dev
     else
-      sudo apt-get install -y libssl1.0-dev libreadline-dev
+      if [ -z "$openssl_dir" ]; then
+        sudo apt-get install -y libssl1.0-dev
+      fi
+      sudo apt-get install -y libreadline-dev
     fi
   fi
 
@@ -78,6 +87,10 @@ EOF
   chmod +x "$mirror_cmd_file"
 
   export RUBY_BUILD_MIRROR_CMD="$mirror_cmd_file"
+
+  if [ -n "$openssl_dir" -a -d "$openssl_dir" ]; then
+    export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$openssl_dir"
+  fi
 
   install_plugin_package ruby "$version"
   exit
