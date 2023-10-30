@@ -8,7 +8,7 @@ set -eo pipefail
 
 srcfile=
 
-username="$(cmd.exe /c 'echo %USERNAME%' | sed 's/[[:space:]]$//')"
+username="$(cmd.exe /c 'echo %USERNAME%' 2>/dev/null | sed 's/[[:space:]]$//')"
 if [ "$USE_WINDOWS_TERMINAL_DEV_BUILD" = "1" ]; then
   dir="/mnt/c/Users/$username/AppData/Local/Packages/WindowsTerminalDev_8wekyb3d8bbwe/LocalState"
 else
@@ -20,10 +20,10 @@ fi
 
 srcfile="${1:-$HOME/.dotfiles/windows/terminal_settings.json.ofc}"
 file="$dir/settings.json"
-cat >"$file" <<EOF
+cat | sudo tee "$file" >/dev/null <<EOF
 // Automatically generated from $srcfile. DO NOT EDIT.
 //
 EOF
-cat "$srcfile" >>"$file"
+cat "$srcfile" | sudo tee -a "$file" >/dev/null
 
 echo 'Successful.'

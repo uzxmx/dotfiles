@@ -25,6 +25,12 @@
         "colorScheme": "Solarized Dark"
       },
       {
+        "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
+        "hidden": false,
+        "name": "PowerShell",
+        "source": "Windows.Terminal.PowershellCore"
+      },
+      {
         "guid": "{bc31776d-40b2-43c2-81e9-7718f775303a}",
         "name": "Command Prompt",
         "commandline": "cmd.exe /K \"%USERPROFILE%\\.profile.bat\""
@@ -35,10 +41,17 @@
   // Add custom color schemes to this array
   "schemes": [],
 
+  "actions": [
+    { "name": "PowerShell | New Tab", "command": { "action": "newTab", "profile": "PowerShell" }  },
+    { "name": "PowerShell | Split Horizontally", "command": { "action": "splitPane", "split": "horizontal", "profile": "PowerShell" }  },
+    { "name": "PowerShell | Split Vertically", "command": { "action": "splitPane", "split": "vertical", "profile": "PowerShell" }  }
+  ],
+
   // Add any keybinding overrides to this array.
   // To unbind a default keybinding, set the command to "unbound"
   "keybindings": [
     { "command": "newTab", "keys": "ctrl+shift+t" },
+    { "command": "newTab", "keys": "alt+t" },
     { "command": { "action": "switchToTab", "index": 0 }, "keys": "alt+1" },
     { "command": { "action": "switchToTab", "index": 1 }, "keys": "alt+2" },
     { "command": { "action": "switchToTab", "index": 2 }, "keys": "alt+3" },
