@@ -91,6 +91,9 @@ Plug 'puremourning/vimspector'
 " language plugins. So as a reference, we keep this plugin as a comment.
 " Plug 'sheerun/vim-polyglot'
 
+" Windows PowerShell plugin.
+Plug 'pprovost/vim-ps1'
+
 call plug#end()
 
 augroup nerd_loader
