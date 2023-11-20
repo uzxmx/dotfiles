@@ -1,0 +1,9 @@
+#!/usr/bin/env expect
+
+set arguments [lrange $argv 0 end]
+spawn adb shell {*}$arguments
+expect "$" {
+    sleep 0.1
+    send "export PATH=\$PATH:/data/local/tmp/busybox/bin\ncd /data/local/tmp\n"
+}
+interact

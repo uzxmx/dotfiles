@@ -15,6 +15,7 @@ Subcommands:
   l, logcat  - enhanced adb logcat
   ps         - show all processes
   root       - wrapped root command
+  s          - run adb shell with custom setup
 EOF
   exit 1
 }
@@ -65,6 +66,10 @@ case "$1" in
   d)
     shift
     adb devices "$@"
+    ;;
+  s)
+    shift
+    "$adb_dir/shell" "$@"
     ;;
   -h)
     usage
