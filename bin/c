@@ -121,6 +121,8 @@ $(find ~/.private -maxdepth 1 -type d | grep -v .git)\
   directories="$directories
 $DOTFILES_TARGET_DIR/tmp
 $DOTFILES_TARGET_DIR/.vim/plugged
+$DOTFILES_TARGET_DIR/.config/tmux
+$DOTFILES_TARGET_DIR/.asdf
 $DOTFILES_TARGET_DIR/.config/coc\
 "
 
