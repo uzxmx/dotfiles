@@ -4,14 +4,11 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-type -p sshuttle &> /dev/null && exit
-
-source "$dotfiles_dir/scripts/lib/install.sh"
+check_command sshuttle &> /dev/null && exit
 
 version="v1.0.5"
 dir="/tmp/sshuttle"
@@ -20,4 +17,4 @@ git_clone "https://github.com/sshuttle/sshuttle" "$dir" -b "$version" --depth 1
 (cd "$dir"; ./setup.py install)
 rm -rf "$dir"
 
-echo 'Installation finished. If sshuttle still cannot be found, you may need to run `asdf reshim`.'
+asdf reshim
