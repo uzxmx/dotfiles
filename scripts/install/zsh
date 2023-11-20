@@ -66,22 +66,7 @@ install_fn() {
 
   [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ] && mkdir -p "$DOTFILES_TARGET_DIR/bin" && create_link "$DOTFILES_TARGET_DIR/bin/zsh" "$DOTFILES_TARGET_DIR/opt/zsh-$version/bin/zsh"
 
-  local platform
-  if is_mac; then
-    platform=osx
-  elif is_wsl; then
-    platform=wsl
-  fi
-
-  if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
-    if [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ]; then
-      if [ $? != 0 -o "$(readlink "$DOTFILES_TARGET_DIR/.zshrc.platform")" != "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
-        warn "Failed to link '$DOTFILES_TARGET_DIR/.zshrc.platform' to '$DOTFILES_TARGET_DIR/.zshrc.$platform', please check '$DOTFILES_TARGET_DIR/.zshrc.platform'"
-      fi
-    else
-      ln -s "$DOTFILES_TARGET_DIR/.zshrc.$platform" "$DOTFILES_TARGET_DIR/.zshrc.platform"
-    fi
-  fi
+  "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
 }
 
 download_and_install "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" install_fn

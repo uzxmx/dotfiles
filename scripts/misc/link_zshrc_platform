@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/utils.sh"
+
+if is_mac; then
+  platform=osx
+elif is_wsl; then
+  platform=wsl
+fi
+
+if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+  if [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ]; then
+    if [ $? != 0 -o "$(readlink "$DOTFILES_TARGET_DIR/.zshrc.platform")" != "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then
+      warn "Failed to link '$DOTFILES_TARGET_DIR/.zshrc.platform' to '$DOTFILES_TARGET_DIR/.zshrc.$platform', please check '$DOTFILES_TARGET_DIR/.zshrc.platform'"
+    fi
+  else
+    ln -s "$DOTFILES_TARGET_DIR/.zshrc.$platform" "$DOTFILES_TARGET_DIR/.zshrc.platform"
+  fi
+fi
