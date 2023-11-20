@@ -29,4 +29,28 @@ fi
 source "$DOTFILES_DIR/scripts/adb/common.sh"
 
 device="$(select_device)"
-adb -s "$device" push "$dest_path/arm/bin" /data/local/tmp/busybox/bin
+result="$(adb -s "$device" shell uname -m)"
+case "$result" in
+  aarch64)
+    arch="arm64"
+    ;;
+  *)
+    arch="$result"
+    ;;
+esac
+
+dir="$dest_path/$arch/bin"
+if [ ! -d "$dir" ]; then
+  echo "Unknown arch: $arch"
+  exit 1
+fi
+
+target_dir="/data/local/tmp/busybox"
+if adb -s "$device" shell ls "$target_dir/bin/busybox" &>/dev/null; then
+  echo "busybox already exists at $target_dir/bin"
+  exit
+fi
+
+adb -s "$device" push "$dir" "$target_dir"
+
+adb -s "$device" shell "$target_dir/bin/busybox" --install -s "$target_dir/bin"
