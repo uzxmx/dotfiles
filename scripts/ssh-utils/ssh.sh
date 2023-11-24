@@ -14,7 +14,7 @@ disable this behavior by specifying '--disable-http-proxy'.
 Options:
   -d, --dry-run Only output SSH command
   --http-proxy <proxy> Default is 'localhost:8123'
-  --disable-http-proxy
+  -N, --disable-http-proxy
 
 EOF
   exit 1
@@ -30,7 +30,7 @@ cmd_ssh() {
       -d)
         dry_run=1
         ;;
-      --disable-http-proxy)
+      -N | --disable-http-proxy)
         disable_http_proxy=1
         ;;
       --http-proxy)
