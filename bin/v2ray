@@ -12,6 +12,7 @@ usage() {
 Wrapper for v2ray utility.
 
 Subcommands:
+  run                - run v2ray in foreground
   start/stop/restart - start/stop/restart v2ray service
   s, status          - show status of v2ray service
   l, log             - show logs of v2ray service
@@ -35,6 +36,10 @@ v2ray_is_running() {
   else
     false
   fi
+}
+
+cmd_run() {
+  /usr/local/bin/v2ray -config /usr/local/etc/v2ray/config.json
 }
 
 cmd_start() {
@@ -90,7 +95,7 @@ cmd_log() {
 alias_cmd l log
 
 case "$1" in
-  start | stop | restart | s | status | l | log | c | config)
+  run | start | stop | restart | s | status | l | log | c | config)
     case "$1" in
       c | config)
         source "$v2ray_dir/config.sh"
