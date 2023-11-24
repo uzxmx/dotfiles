@@ -11,7 +11,13 @@ plugin_installed() {
 }
 
 parse_package_version() {
-  grep "$1" "$DOTFILES_DIR/tool-versions" | cut -d ' ' -f 2 | head -1
+  grep "^$1 " "$DOTFILES_DIR/tool-versions" | cut -d ' ' -f 2 | head -1
+}
+
+_ruby_ffi_workaround() {
+  # error: call to undeclared function 'ffi_prep_closure'
+  # Ref: https://github.com/ffi/ffi/issues/869
+  export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
 }
 
 install_plugin_package() {
@@ -39,14 +45,19 @@ install_plugin_package() {
     package_version="$(parse_package_version $plugin)"
   fi
 
-  if [ "$plugin" = "ruby" -a "$package_version" = "2.4.10" ]; then
-    if is_mac; then
-      local ssldir="$(brew --prefix openssl@1.1 2>/dev/null || true)"
-      export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$ssldir"
+  if is_mac; then
+    if [ "$plugin" = "ruby" ]; then
+      case "$package_version" in
+        2.4.10)
+          local ssldir="$(brew --prefix openssl@1.1 2>/dev/null || true)"
+          export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$ssldir"
 
-      # error: call to undeclared function 'ffi_prep_closure'
-      # Ref: https://github.com/ffi/ffi/issues/869
-      export RUBY_CFLAGS=-DUSE_FFI_CLOSURE_ALLOC
+          _ruby_ffi_workaround
+          ;;
+        2.7.1)
+          _ruby_ffi_workaround
+          ;;
+      esac
     fi
   fi
 
