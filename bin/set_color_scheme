@@ -3,6 +3,7 @@
 # Change color scheme for iTerm2 and vim permanently.
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 select_color_scheme() {
   local schemes=(
@@ -30,7 +31,7 @@ set_iterm2_color() {
 
 set_vim_color() {
  local scheme="$(echo "$1" | tr 'A-Z' 'a-z')"
-  local vimfile="$HOME/.vim/vimrc.before.local"
+  local vimfile="$DOTFILES_TARGET_DIR/.vim/vimrc.before.local"
   if [ -f "$vimfile" ]; then
     local regexp="^(let g:current_colorscheme = ').*(')$"
     if grep -E "$regexp" "$vimfile" &>/dev/null; then
