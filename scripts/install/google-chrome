@@ -7,23 +7,55 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
+usage() {
+  cat <<-EOF
+Install google-chrome.
+
+Options:
+  -u Update google-chrome
+EOF
+  exit 1
+}
+
+update=""
+
+parse_args="
+  -u)
+    update=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-check_command google-chrome &> /dev/null && exit
+if check_command google-chrome &> /dev/null; then
+  [ -z "$update" ] && exit
+else
+  update=""
+fi
 
-version="3.0.77"
 if has_apt; then
-  path_to_save="/tmp/google-chrome-stable_current_amd64.deb"
-  "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb "$path_to_save"
-  # Let it continue.
-  sudo dpkg -i "$path_to_save" || true
-  sudo apt install -y --fix-broken
+  if [ "$update" = "1" ]; then
+    sudo apt-get -y --only-upgrade install google-chrome-stable
+  else
+    path_to_save="/tmp/google-chrome-stable_current_amd64.deb"
+    "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb "$path_to_save"
+    # Let it continue.
+    sudo dpkg -i "$path_to_save" || true
+    sudo apt install -y --fix-broken
+  fi
 elif has_yum; then
-  path_to_save="/tmp/google-chrome-stable_current_x86_64.rpm"
-  "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm "$path_to_save"
-  sudo yum localinstall -y "$path_to_save"
+  if [ "$update" = "1" ]; then
+    sudo yum update -y google-chrome --nogpgcheck
+  else
+    path_to_save="/tmp/google-chrome-stable_current_x86_64.rpm"
+    "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm "$path_to_save"
+    sudo yum localinstall -y "$path_to_save"
+  fi
 else
   abort "Unsupported system"
 fi
 
-rm "$path_to_save"
+[ -f "$path_to_save" ] && rm "$path_to_save"
