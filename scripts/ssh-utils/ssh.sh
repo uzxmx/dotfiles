@@ -13,10 +13,14 @@ disable this behavior by specifying '--disable-http-proxy'.
 
 Options:
   -d, --dry-run Only output SSH command
+  --http-proxy <proxy> Default is 'localhost:8123'
   --disable-http-proxy
+
 EOF
   exit 1
 }
+
+proxy="localhost:8123"
 
 cmd_ssh() {
   local host_label dry_run disable_http_proxy
@@ -28,6 +32,10 @@ cmd_ssh() {
         ;;
       --disable-http-proxy)
         disable_http_proxy=1
+        ;;
+      --http-proxy)
+        shift
+        proxy="$1"
         ;;
       -)
         shift
@@ -48,7 +56,7 @@ cmd_ssh() {
   done
 
   if [ -z "$disable_http_proxy" ]; then
-    opts+=(-R 8123:localhost:8123)
+    opts+=(-R 8123:$proxy)
   fi
 
   if [ -z "$host_label" ]; then

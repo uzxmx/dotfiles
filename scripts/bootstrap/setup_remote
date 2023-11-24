@@ -17,6 +17,7 @@ Options:
   --vagrant SSH via vagrant
   -o <ssh-options> SSH options
   --intrusive Intrusive setup
+  --proxy <proxy> Default is 'localhost:8125'
   --no-proxy Do not use proxy
 
 Examples:
@@ -24,6 +25,8 @@ Examples:
 EOF
   exit 1
 }
+
+proxy="localhost:8125"
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -39,6 +42,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --intrusive)
       intrusive_setup=1
+      ;;
+    --proxy)
+      shift
+      proxy="$1"
       ;;
     --no-proxy)
       no_proxy=1
@@ -78,11 +85,11 @@ else
 fi
 
 if [ "$use_vagrant" = "1" ]; then
-    vagrant ssh -- $ssh_opts -R 8123:localhost:8123 "bash -s -- ${opts[@]}" < "$file"
+    vagrant ssh -- $ssh_opts -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
 else
   if [ -z "$ssh_opts" ]; then
-    "$DOTFILES_DIR/bin/ssh-utils" ssh - "bash -s -- ${opts[@]}" < "$file"
+    "$DOTFILES_DIR/bin/ssh-utils" ssh --http-proxy "$proxy" - "bash -s -- ${opts[@]}" < "$file"
   else
-    ssh $ssh_opts -R 8123:localhost:8123 "bash -s -- ${opts[@]}" < "$file"
+    ssh $ssh_opts -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
   fi
 fi
