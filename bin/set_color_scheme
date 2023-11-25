@@ -21,11 +21,12 @@ set_iterm2_color() {
   local preset="$1"
   emit_code SetColors preset "$preset"
 
-  if grep -E '^export ITERM2_COLOR_PRESET=.*$' ~/.zshrc.local &>/dev/null; then
+  zshrc_local_path="$DOTFILES_TARGET_DIR/.zshrc.local"
+  if grep -E '^export ITERM2_COLOR_PRESET=.*$' "$zshrc_local_path" &>/dev/null; then
     source "$DOTFILES_DIR/scripts/lib/gsed.sh"
-    $SED -i -E "s/^export ITERM2_COLOR_PRESET=.*$/export ITERM2_COLOR_PRESET=\"$preset\"/" ~/.zshrc.local
+    $SED -i -E "s/^export ITERM2_COLOR_PRESET=.*$/export ITERM2_COLOR_PRESET=\"$preset\"/" "$zshrc_local_path"
   else
-    echo "export ITERM2_COLOR_PRESET=\"$preset\"" >>~/.zshrc.local
+    echo "export ITERM2_COLOR_PRESET=\"$preset\"" >>"$zshrc_local_path"
   fi
 }
 
@@ -35,7 +36,8 @@ set_vim_color() {
   if [ -f "$vimfile" ]; then
     local regexp="^(let g:current_colorscheme = ').*(')$"
     if grep -E "$regexp" "$vimfile" &>/dev/null; then
-      sed -Ee "s/${regexp}/\1${scheme}\2/" -i "" "$vimfile"
+      source "$DOTFILES_DIR/scripts/lib/gsed.sh"
+      $SED -Ee "s/${regexp}/\1${scheme}\2/" -i "$vimfile"
       exit
     fi
   fi
