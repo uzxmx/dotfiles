@@ -13,7 +13,16 @@ check_command antibody &> /dev/null && exit
 
 if is_arm64; then
   "$DOTFILES_DIR/scripts/install/asdf"
+
+  if [ -z "$ASDF_DATA_DIR" ]; then
+    export ASDF_DATA_DIR="$DOTFILES_TARGET_DIR/.asdf"
+  fi
+
   "$DOTFILES_DIR/scripts/install/golang"
+
+  source "$DOTFILES_DIR/scripts/lib/asdf.sh"
+
+  asdf shell golang "$(parse_package_version golang)"
 
   install_fn() {
     cd "$1"
