@@ -11,22 +11,24 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_command antibody &> /dev/null && exit
 
+if is_arm64; then
+  "$DOTFILES_DIR/scripts/install/golang"
+
+  install_fn() {
+    cd "$1"
+
+    go get -u golang.org/x/sys
+    make build
+    mv antibody "$DOTFILES_TARGET_DIR/bin"
+  }
+
+  download_and_install_by_git "https://github.com/getantibody/antibody.git" install_fn
+  exit
+fi
+
 version="v6.1.1"
 path_to_save="/tmp/antibody-$version.tgz"
 if is_mac; then
-  if is_arm64; then
-    install_fn() {
-      cd "$1"
-
-      go get -u golang.org/x/sys
-      make build
-      mv antibody "$DOTFILES_TARGET_DIR/bin"
-    }
-
-    download_and_install_by_git "https://github.com/getantibody/antibody.git" install_fn
-    exit
-  fi
-
   platform="Darwin"
 elif is_linux; then
   platform="Linux"
