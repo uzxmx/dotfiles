@@ -24,11 +24,19 @@ if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
     abort "Unsupported system"
   fi
 else
-  version="13.0.0"
-  if is_mac; then
-    platform="x86_64-apple-darwin"
+  version="14.0.3"
+  if is_arm64; then
+    if is_mac; then
+      platform="aarch64-apple-darwin"
+    else
+      platform="aarch64-unknown-linux-gnu"
+    fi
   else
-    platform="x86_64-unknown-linux-musl"
+    if is_mac; then
+      platform="x86_64-apple-darwin"
+    else
+      platform="x86_64-unknown-linux-musl"
+    fi
   fi
   install_fn() {
     local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"

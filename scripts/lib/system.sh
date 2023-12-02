@@ -11,7 +11,7 @@ is_mac() {
 }
 
 is_arm64() {
-  if [[ "$(uname -m)" =~ "arm64" ]]; then
+  if [[ "$(uname -m)"  =~ "arm64|aarch64" ]]; then
     return 0
   else
     return 1
