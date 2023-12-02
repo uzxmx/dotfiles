@@ -12,6 +12,7 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 check_command antibody &> /dev/null && exit
 
 if is_arm64; then
+  "$DOTFILES_DIR/scripts/install/asdf"
   "$DOTFILES_DIR/scripts/install/golang"
 
   install_fn() {
