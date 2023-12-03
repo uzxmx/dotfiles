@@ -20,7 +20,7 @@ Options:
   --openssl-dir <dir> Optional openssl dir to find include and library files, also support LibreSSL
 
 Examples:
-  $0 --force-install --openssl-dir ~/opt/openssl-1.0.2u 2.3.8
+  $0 --force-install --openssl-dir $DOTFILES_TARGET_DIR/opt/openssl-1.0.2u 2.3.8
 EOF
   exit 1
 }
@@ -59,22 +59,10 @@ if [ -z "$local_install" ]; then
   if has_yum; then
     sudo yum install -y openssl-devel readline-devel
   elif has_apt; then
-    source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
-    source "$DOTFILES_DIR/scripts/lib/utils/lines_to_array.sh"
-    source "$DOTFILES_DIR/scripts/lib/utils/split.sh"
-    source "$DOTFILES_DIR/scripts/lib/utils/version.sh"
-
-    if is_ubuntu && ! version_lt_not_constrained "$(lsb_release_number)" 20; then
-      if [ -z "$openssl_dir" ]; then
-        sudo apt-get install -y libssl-dev
-      fi
-      sudo apt-get install -y libreadline-dev
-    else
-      if [ -z "$openssl_dir" ]; then
-        sudo apt-get install -y libssl1.0-dev
-      fi
-      sudo apt-get install -y libreadline-dev
+    if [ -z "$openssl_dir" ]; then
+      sudo apt-get install -y libssl-dev
     fi
+    sudo apt-get install -y libreadline-dev
   fi
 
   source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
