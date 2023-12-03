@@ -8,19 +8,19 @@ build the ssh command and connect to the remote.
 All arguments after '-' should be valid ssh arguments, and will be passed into
 ssh intactly.
 
-By default an HTTP proxy will be listening at 8123 port on the remote. You can
+By default an HTTP proxy will be listening at 8125 port on the remote. You can
 disable this behavior by specifying '--disable-http-proxy'.
 
 Options:
   -d, --dry-run Only output SSH command
-  --http-proxy <proxy> Default is 'localhost:8123'
+  --http-proxy <proxy> Default is 'localhost:8125'
   -N, --disable-http-proxy
 
 EOF
   exit 1
 }
 
-proxy="localhost:8123"
+proxy="localhost:8125"
 
 cmd_ssh() {
   local host_label dry_run disable_http_proxy
@@ -56,7 +56,7 @@ cmd_ssh() {
   done
 
   if [ -z "$disable_http_proxy" ]; then
-    opts+=(-R 8123:$proxy)
+    opts+=(-R 8125:$proxy)
   fi
 
   if [ -z "$host_label" ]; then
