@@ -126,12 +126,15 @@ $DOTFILES_TARGET_DIR/.asdf
 $DOTFILES_TARGET_DIR/.config/coc\
 "
 
+  [ -d "$DOTFILES_TARGET_DIR/projects" ] || mkdir "$DOTFILES_TARGET_DIR/projects"
+  directories="$directories
+$(find "$DOTFILES_TARGET_DIR/projects" -maxdepth 1 -type d)\
+"
+
   if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
     [ -d ~/vagrant_boxes ] || mkdir ~/vagrant_boxes
-    [ -d ~/projects ] || mkdir ~/projects
     directories="$directories
-$(find ~/vagrant_boxes -maxdepth 1 -type d)
-$(find ~/projects -maxdepth 1 -type d)\
+$(find ~/vagrant_boxes -maxdepth 1 -type d)\
 "
   fi
 
