@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Install mysql 5.7
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command mysql &> /dev/null && exit
+
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir"
+
+  mkdir -p build
+  cd build
+  cmake .. -DDOWNLOAD_BOOST=1 -DWITH_BOOST=/tmp/mysql-boost -DCMAKE_INSTALL_PREFIX="$DOTFILES_TARGET_DIR/opt/mysql-5.7.44"
+
+  make
+  make install
+}
+download_and_install "https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.44.tar.gz" install_fn
