@@ -23,7 +23,7 @@ else
 fi
 
 if [ -z "$lineno" ]; then
-  ~/.vim/plugged/fzf.vim/bin/preview.sh "$filename"
+  "$(dirname "$0")/fzf_preview.sh" "$filename"
 else
-  ~/.vim/plugged/fzf.vim/bin/preview.sh "$filename:$lineno"
+  "$(dirname "$0")/fzf_preview.sh" "$filename:$lineno"
 fi
