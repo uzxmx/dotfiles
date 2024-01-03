@@ -53,15 +53,35 @@ List repositories.
 
 Options:
   -w <workspace slug> workspace to use
+  --page <page> default is 1
+  --pagelen <page-size> page size, default is 100
 EOF
   exit 1
 }
 
-# TODO add page and sort support
 cmd_repo_list() {
   check_workspace
 
-  req "repositories/$workspace" | jq -r '.values[] | "Name: \(.name)\tCreated at: \(.created_on)\tUpdated at: \(.updated_on)"' | column -t -s $'\t'
+  local page=1
+  local pagelen=100
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --page)
+        shift
+        page=$1
+        ;;
+      --pagelen)
+        shift
+        pagelen=$1
+        ;;
+      *)
+        usage_repo_list
+        ;;
+    esac
+    shift
+  done
+
+  req "repositories/$workspace?pagelen=$pagelen&page=$page" | jq -r '.values[] | "Name: \(.name)\tCreated at: \(.created_on)\tUpdated at: \(.updated_on)"' | column -t -s $'\t'
 }
 
 usage_repo_get() {
