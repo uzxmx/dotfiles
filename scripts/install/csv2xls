@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#
+# Install the utility that converts csv to excel.
+
+set -eo pipefail
+
+go install github.com/sergrom/csv2xls/v3@v3.0.1
