@@ -1,10 +1,12 @@
+highlight link CocFloating NormalFloat
+
 " Uncomment below if you want to start coc server manually by `:CocStart`.
 " let g:coc_start_at_startup = 0
 
 " You will have bad experience for diagnostic messages when it's default 4000.
 set updatetime=300
 
-function! s:check_back_space() abort
+function! CheckBackSpace() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
@@ -13,7 +15,7 @@ endfunction
 " Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
 inoremap <silent><expr> <TAB>
     \ pumvisible() ? "\<C-n>" :
-    \ <SID>check_back_space() ? "\<TAB>" :
+    \ CheckBackSpace() ? "\<TAB>" :
     \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 

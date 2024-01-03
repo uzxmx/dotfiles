@@ -6,6 +6,10 @@ autocmd InsertLeave * if &modifiable && &ft != 'ctrlsf' | match TrailingWhitespa
 autocmd BufWinLeave * call clearmatches()
 autocmd FileType ctrlsf call clearmatches()
 
+" For nvim v0.9.2.
+" Do not highlight whitespaces when using fzf.
+autocmd TermOpen * call clearmatches()
+
 function s:RemoveTrailingWhiteSpace()
   %s/\s*$//
   ''
