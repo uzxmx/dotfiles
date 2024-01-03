@@ -2,7 +2,8 @@
   // \"http.proxy\": \"http://localhost:8125\",
 
   // \"coc.preferences.noselect\": true,
-  \"coc.preferences.currentFunctionSymbolAutoUpdate\": true
+  \"suggest.noselect\": true,
+  \"coc.preferences.currentFunctionSymbolAutoUpdate\": true,
 
   \"codeLens.enable\": false,
   \"codeLens.position\": \"eol\",

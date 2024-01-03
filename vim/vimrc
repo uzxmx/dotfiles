@@ -1,5 +1,7 @@
 let g:current_colorscheme = 'solarized dark'
 
+" set runtimepath^=/projects/coc-java-debug
+
 let mapleader = "\<Space>"
 let maplocalleader = "\<Space>"
 

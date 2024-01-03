@@ -77,6 +77,7 @@ Plug 'maxmellon/vim-jsx-pretty'
 Plug 'udalov/kotlin-vim'
 
 Plug 'iamcco/markdown-preview.nvim', { 'do': { -> mkdp#util#install() } }
+Plug 'mzlogin/vim-markdown-toc'
 
 Plug 'airblade/vim-rooter'
 
@@ -86,6 +87,10 @@ Plug 'uzxmx/vim-widgets'
 
 Plug 'puremourning/vimspector'
 
+Plug 'kkvh/vim-docker-tools'
+
+Plug 'decrement/logos.vim'
+
 " A collection of language packs (syntax, indentation, etc.) for Vim.
 " In my case, the performance is a bit worse than only importing specific
 " language plugins. So as a reference, we keep this plugin as a comment.
@@ -93,6 +98,12 @@ Plug 'puremourning/vimspector'
 
 " Windows PowerShell plugin.
 Plug 'pprovost/vim-ps1'
+
+Plug 'arrufat/vala.vim'
+
+Plug 'michaeljsmith/vim-indent-object'
+
+Plug 'Vimjas/vim-python-pep8-indent'
 
 call plug#end()
 
