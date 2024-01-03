@@ -14,4 +14,4 @@ path_to_save="/tmp/cpanm-$version.tar.gz"
 tar zxf $path_to_save -C ~/bin --strip-components=2 App-cpanminus-1.7044/bin/cpanm
 chmod a+x ~/bin/cpanm
 
-sudo rm -rf $path_to_save
+rm -rf $path_to_save

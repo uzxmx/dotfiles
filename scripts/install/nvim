@@ -58,6 +58,10 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
+if is_arm64; then
+  from_source=1
+fi
+
 check_link() {
   local always_make="$1"
   [ ! -d "$DOTFILES_TARGET_DIR/bin" ] && mkdir "$DOTFILES_TARGET_DIR/bin"
@@ -111,7 +115,7 @@ install_from_source() {
   if has_yum; then
     sudo yum install -y cmake gcc-c++ patch libtool >/dev/null
   elif has_apt; then
-    sudo apt-get install -y cmake g++ pkg-config libtool-bin >/dev/null
+    sudo apt-get install -y cmake g++ pkg-config libtool-bin unzip gettext >/dev/null
   fi
 
   local dest_dir="$DOTFILES_TARGET_DIR/nvim-$version"
