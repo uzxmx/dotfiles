@@ -2,7 +2,7 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
@@ -71,8 +71,8 @@ if [ "${#files}" -eq 0 ]; then
   files=(.)
 fi
 
-source "$dotfiles_dir/scripts/lib/utils/common.sh"
-source "$dotfiles_dir/scripts/lib/fzf.sh"
+source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
+source "$DOTFILES_DIR/scripts/lib/fzf.sh"
 
 # rg doesn't support --binary well. So we resort to grep.
 if [ "$search_binary" = "1" ]; then
@@ -110,12 +110,12 @@ while true; do
   # Ref:
   #   https://github.com/junegunn/fzf#executing-external-programs
   #   https://github.com/junegunn/fzf/issues/1586#issuecomment-495961993
-  call_fzf result --delimiter=: --nth=3.. --preview "$dotfiles_dir/scripts/misc/preview {}" \
+  call_fzf result --delimiter=: --nth=3.. --preview "$DOTFILES_DIR/scripts/misc/preview {}" \
     --preview-window="$preview_window" \
     --query="$query" --print-query \
     --prompt "$prompt" \
     --expect "$expect" \
-    --bind "ctrl-v:execute($dotfiles_dir/scripts/misc/edit_file_for_search {})" \
+    --bind "ctrl-v:execute($DOTFILES_DIR/scripts/misc/edit_file_for_search {})" \
     < <("${cmd[@]}"; [ "$search_filename" = "1" ] && fd --type f . "${files[@]}" | awk '{printf "::%s\n", $1}')
 
   [ -z "${result[*]}" ] && break
