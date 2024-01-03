@@ -31,4 +31,10 @@ cmd_geo() {
   else
     curl "https://cip.cc/$1"
   fi
+
+  # if [ -z "$1" ]; then
+  #   curl ipinfo.io
+  # else
+  #   curl "ipinfo.io/$1"
+  # fi
 }
