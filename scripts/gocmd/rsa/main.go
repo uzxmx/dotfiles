@@ -193,6 +193,10 @@ func main() {
 					fmt.Println("Public key exponent is required.")
 					os.Exit(1)
 				}
+				if len(exponent) < 4 {
+					// Prepend zeros to exponent
+				}
+				fmt.Printf("Exponent: %v\n", int(binary.BigEndian.Uint32(exponent)))
 				publicKey = &rsa.PublicKey{
 					N: new(big.Int).SetBytes(modulus),
 					E: int(binary.BigEndian.Uint32(exponent)),
@@ -276,6 +280,8 @@ func (r *randReader) Read(p []byte) (int, error) {
 		r.pos += n
 		return n, nil
 	} else {
-		return 0, errors.New("Cannot get more random.")
+		return 0, errors.New(`Cannot get more random.
+Note: If you are sure the random size is not less than (key size - msg size - 3), then you can try several times,
+because there is 50% possibility that Golang RSA may consume the first random byte, which causes not enough random bytes.`)
 	}
 }
