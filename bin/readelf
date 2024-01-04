@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+READELF_CMD="${READELF_CMD:-readelf}"
+
+usage() {
+  cat <<-EOF
+Wrapper for readelf utility.
+
+Examples:
+  # Show symbol table without truncating the name
+  $> readelf -W -s /bin/ls
+EOF
+  exit 1
+}
+
+case "$1" in
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    "$READELF_CMD" "$@"
+    ;;
+  *)
+    "$READELF_CMD" "$@"
+    ;;
+esac
