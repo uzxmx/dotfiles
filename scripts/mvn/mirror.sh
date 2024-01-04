@@ -27,9 +27,9 @@ show_aliyun_mirror() {
 }
 
 enable_aliyun_mirror() {
-  [ -f "$settings" ] || "$dotfiles_dir/bin/gen" mvn_settings --no-editor
-  source "$dotfiles_dir/scripts/lib/awk/find_line.sh"
-  source "$dotfiles_dir/scripts/lib/awk/insert_file.sh"
+  [ -f "$settings" ] || "$DOTFILES_DIR/bin/gen" mvn_settings --no-editor
+  source "$DOTFILES_DIR/scripts/lib/awk/find_line.sh"
+  source "$DOTFILES_DIR/scripts/lib/awk/insert_file.sh"
 
   local lineno="$(awk_find_line "$settings" "</mirrors>")"
   awk_insert_file - "$settings" "$lineno" <<EOF
@@ -49,7 +49,7 @@ EOF
 #     ...
 #   </mirror>
 disable_aliyun_mirror() {
-  source "$dotfiles_dir/scripts/lib/awk/find_line.sh"
+  source "$DOTFILES_DIR/scripts/lib/awk/find_line.sh"
   local range="$(awk_find_line_range "$settings" "<id>aliyun</id>" "<mirror>" "</mirror>")"
   [ -n "$range" ] && sed -i "$(echo "$range" | tr " " ,)d" "$settings"
 }

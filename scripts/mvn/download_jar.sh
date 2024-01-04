@@ -35,7 +35,7 @@ cmd_download_jar() {
         ;;
     esac
   done
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   ask_for_input group_id "Group id: "
   ask_for_input artifact_id "Artifact id: "
   ask_for_input version "Version: "

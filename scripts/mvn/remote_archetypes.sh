@@ -9,7 +9,7 @@ EOF
 
 cmd_remote_archetypes() {
   local tmpfile="$(mktemp)"
-  "$dotfiles_dir/bin/get" "https://repo.maven.apache.org/maven2/archetype-catalog.xml" "$tmpfile"
+  "$DOTFILES_DIR/bin/get" "https://repo.maven.apache.org/maven2/archetype-catalog.xml" "$tmpfile"
   "${EDITOR:-vim}" "$tmpfile"
   rm -rf "$tmpfile"
 }
