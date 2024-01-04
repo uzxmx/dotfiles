@@ -14,6 +14,11 @@ Wrapper for sqlite3 utility.
 Subcommands:
   d, dump - dump tables data as a SQL file
   import  - import data from a SQL file
+
+Examples:
+  # Open a database in read-only mode, even though it is locked by other program.
+  sqlite3 "file:Default/History?immutable=1"
+  sqlite3 "file:Default/History?mode=ro&nolock=1"
 EOF
   exit 1
 }
