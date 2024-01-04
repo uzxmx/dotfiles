@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+jdtls_dir="$DOTFILES_DIR/scripts/jdtls"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility for eclipse.jdt.ls project.
+
+Subcommands:
+  fast-build - fast build eclipse.jdt.ls project
+  watch      - watch for file changes and build
+  run        - run jdtls server
+EOF
+  exit 1
+}
+
+case "$1" in
+  fast-build | watch | run)
+    case "$1" in
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$jdtls_dir/$name.sh"
+    underscore_and_run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
