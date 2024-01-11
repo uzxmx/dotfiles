@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+utm_dir="$DOTFILES_DIR/scripts/utm"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for UTM(Universal Turing Machine) utility.
+
+Subcommands:
+  start - start a vm
+  stop  - power off a vm
+  tty   - connect to the vm by screen
+EOF
+  exit 1
+}
+
+case "$1" in
+  start | stop | tty)
+    case "$1" in
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$utm_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
