@@ -20,6 +20,7 @@ Show commands:
 Remove commands:
   rm         - remove docker containers
   prune      - remove unused data
+  rmi        - remove images in batch by editor
 
 Misc commands:
   p          - pull image from a mirror
@@ -75,7 +76,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | e | exec | p | r | run | rm | s | ps)
+  l | e | exec | p | r | run | rm | s | ps | rmi)
     case "$1" in
       l)
         name="logs"
