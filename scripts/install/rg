@@ -11,6 +11,11 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_command rg &> /dev/null && exit
 
+if is_termux; then
+  pkg install ripgrep
+  exit
+fi
+
 if [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   if is_mac; then
     brew_install ripgrep

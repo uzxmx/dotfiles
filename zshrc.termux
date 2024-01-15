@@ -1,0 +1,14 @@
+# ssh-agent generates a socket file in $TMPDIR. If we quit from termux, files
+# in the default $TMPDIR will be deleted.
+TMPDIR="$DOTFILES_DIR/tmp"
+
+source ~/.zsh/ssh-agent.zsh
+
+if [ -n "$TERMUX_VERSION" ]; then
+  export TERMUX_DIR="$(dirname "$HOME")"
+  PATH="$PATH:$TERMUX_DIR/usr/bin"
+fi
+
+if [ -f "$DOTFILES_DIR/tmp/id_rsa" ] && ! ssh-add -l | awk '{ print $3 }' | grep -Fx "$DOTFILES_DIR/tmp/id_rsa" &>/dev/null; then
+  ssh-add "$DOTFILES_DIR/tmp/id_rsa"
+fi

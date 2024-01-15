@@ -1,4 +1,15 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/system.sh"
+
+if is_termux; then
+  RESULT="$(termux-battery-status)"
+  PERCENTAGE="$(echo "$RESULT" | grep percentage | awk '{ print $2 }' | awk -F, '{ print $1 }')%"
+  echo $PERCENTAGE
+  exit
+fi
 
 platform=`uname`
 

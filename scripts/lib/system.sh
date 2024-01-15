@@ -26,6 +26,10 @@ is_linux() {
   [[ "$OSTYPE" =~ ^linux ]]
 }
 
+is_termux() {
+  [ -n "$TERMUX_VERSION" ]
+}
+
 is_vagrant() {
   [ -d /home/vagrant ]
 }

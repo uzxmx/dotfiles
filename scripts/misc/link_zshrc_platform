@@ -8,6 +8,8 @@ if is_mac; then
   platform=osx
 elif is_wsl; then
   platform=wsl
+elif is_termux; then
+  platform=termux
 fi
 
 if [ -n "$platform" -a -f "$DOTFILES_TARGET_DIR/.zshrc.$platform" ]; then

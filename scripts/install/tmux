@@ -68,14 +68,16 @@ fi
 
 [ -z "$force_install" ] && check_command tmux &> /dev/null && check_plugins && exit
 
-if has_apt; then
-  sudo apt-get install -y libevent-dev >/dev/null
-  # Required for copying to system clipboard.
-  sudo apt-get install -y clip >/dev/null || true
-elif has_yum; then
-  sudo yum install -y libevent-devel >/dev/null
-elif is_mac; then
-  brew_install libevent utf8proc
+if ! is_termux; then
+  if has_apt; then
+    sudo apt-get install -y libevent-dev >/dev/null
+    # Required for copying to system clipboard.
+    sudo apt-get install -y clip >/dev/null || true
+  elif has_yum; then
+    sudo yum install -y libevent-devel >/dev/null
+  elif is_mac; then
+    brew_install libevent utf8proc
+  fi
 fi
 
 do_install() {
@@ -101,7 +103,9 @@ do_install() {
   create_link "$link" "$dest_path/bin/tmux"
 }
 
-if [ -n "$from_git_repo" ]; then
+if is_termux; then
+  pkg install tmux
+elif [ -n "$from_git_repo" ]; then
   dir="/tmp/tmux-$version"
   git_clone https://github.com/tmux/tmux.git "$dir" --branch "$version" --depth 1
 

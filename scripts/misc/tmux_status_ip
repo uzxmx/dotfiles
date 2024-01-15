@@ -10,11 +10,16 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
-source "$dotfiles_dir/scripts/lib/system.sh"
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/system.sh"
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
+
+if is_termux; then
+  ifconfig 2>/dev/null | grep '^\s*inet ' | awk '{print $2}' | grep -v 127.0.0.1
+  exit
+fi
 
 if type -p ip &>/dev/null; then
   result="$(ip -o addr | grep ': eth[[:digit:]] \+inet \|: en.\+ \+inet ')"

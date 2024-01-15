@@ -34,6 +34,6 @@ case "$1" in
   *)
     # TODO do not install to system
     # cpanm --local-lib=~/perl5 local::lib
-    perl ~/bin/cpanm --sudo --mirror https://mirrors.tuna.tsinghua.edu.cn/CPAN "$@"
+    perl ~/bin/cpanm --mirror https://mirrors.tuna.tsinghua.edu.cn/CPAN "$@"
     ;;
 esac
