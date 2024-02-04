@@ -13,18 +13,18 @@ EOF
 }
 
 mirrors=(
-  registry=https://registry.npm.taobao.org
-  disturl=https://npm.taobao.org/dist
+  registry=https://registry.npmmirror.com
+  disturl=https://registry.npmmirror.com/dist
 
   # Optional
-  sass_binary_site=https://npm.taobao.org/mirrors/node-sass
-  electron_mirror=https://npm.taobao.org/mirrors/electron/
-  puppeteer_download_host=https://npm.taobao.org/mirrors
-  chromedriver_cdnurl=https://npm.taobao.org/mirrors/chromedriver
-  operadriver_cdnurl=https://npm.taobao.org/mirrors/operadriver
-  phantomjs_cdnurl=https://npm.taobao.org/mirrors/phantomjs
-  selenium_cdnurl=https://npm.taobao.org/mirrors/selenium
-  node_inspector_cdnurl=https://npm.taobao.org/mirrors/node-inspector
+  sass_binary_site=https://registry.npmmirror.com/node-sass
+  electron_mirror=https://registry.npmmirror.com/electron/
+  puppeteer_download_host=https://registry.npmmirror.com
+  chromedriver_cdnurl=https://registry.npmmirror.com/chromedriver
+  operadriver_cdnurl=https://registry.npmmirror.com/operadriver
+  phantomjs_cdnurl=https://registry.npmmirror.com/phantomjs
+  selenium_cdnurl=https://registry.npmmirror.com/selenium
+  node_inspector_cdnurl=https://registry.npmmirror.com/node-inspector
 )
 
 cmd_mirror() {
