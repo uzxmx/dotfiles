@@ -1,3 +1,9 @@
+$(sh -c "
+  if [ -n '$TERMUX_VERSION' ]; then
+    echo let g:current_colorscheme = \'\'
+  fi
+")
+
 let g:loaded_python_provider = 1
 let g:python_host_skip_check = 1
 let g:python_host_prog = '$PYTHON2_PATH'

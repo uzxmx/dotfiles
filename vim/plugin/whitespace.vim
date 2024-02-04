@@ -8,7 +8,9 @@ autocmd FileType ctrlsf call clearmatches()
 
 " For nvim v0.9.2.
 " Do not highlight whitespaces when using fzf.
-autocmd TermOpen * call clearmatches()
+if has('nvim')
+  autocmd TermOpen * call clearmatches()
+endif
 
 function s:RemoveTrailingWhiteSpace()
   %s/\s*$//

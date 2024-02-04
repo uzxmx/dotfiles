@@ -1,3 +1,5 @@
+let g:vim_home = get(g:, 'vim_home', expand('~/.vim/'))
+
 let g:current_colorscheme = 'solarized dark'
 
 " set runtimepath^=/projects/coc-java-debug

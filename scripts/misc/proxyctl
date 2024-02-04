@@ -2,9 +2,9 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
-. "$dotfiles_dir/scripts/lib/system.sh"
+. "$DOTFILES_DIR/scripts/lib/system.sh"
 
 usage() {
   cat <<-EOF
@@ -40,6 +40,9 @@ We can also specify socks5 protocol in HTTP proxy env variables. For example:
   export http_proxy=socks5://127.0.0.1:1080 https_proxy=socks5://127.0.0.1:1080
 
 Options:
+  -p <http_proxy> optional, some candidates will be tried
+  -s <socks5_proxy> can be specified to use a socks5 proxy
+
   -a Try port 8123 first
   -d Dry run, currently output commands for enabling HTTP proxy in a shell
   --no-check Don't check if the proxy server is running or not
@@ -71,7 +74,7 @@ fatal() {
 
 test_proxy() {
   if ! type -p nc &>/dev/null; then
-    "$dotfiles_dir/scripts/install/netcat"
+    "$DOTFILES_DIR/scripts/install/netcat"
   fi
 
   local ary host port
@@ -93,6 +96,10 @@ while [ "$#" -gt 0 ]; do
     -p)
       shift
       user_http_proxy="$1"
+      ;;
+    -s)
+      shift
+      user_socks_proxy="$1"
       ;;
     -d)
       subcommand="enable"
@@ -118,8 +125,12 @@ if [ "$subcommand" = "enable" -a -z "$no_check" -a -n "$user_http_proxy" ]; then
   test_proxy "$user_http_proxy" || fatal "HTTP Proxy $user_http_proxy is unreachable."
 fi
 
+if [ "$subcommand" = "enable" -a -z "$no_check" -a -n "$user_socks_proxy" ]; then
+  test_proxy "$user_socks_proxy" || fatal "Socks5 Proxy $user_socks_proxy is unreachable."
+fi
+
 if [ "$subcommand" = "enable" ]; then
-  if [[ -z "$user_http_proxy" ]]; then
+  if [[ -z "$user_http_proxy" -o -z "$user_socks_proxy" ]]; then
     echo 'Choosing a working proxy server...'
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       user_http_proxy="$DEFAULT_HTTP_PROXY"
@@ -135,6 +146,8 @@ if [ "$subcommand" = "enable" ]; then
       user_http_proxy="10.0.2.2:8124"
     elif [ -d /home/vagrant ] && test_proxy "10.0.2.2:$last_port_to_try"; then
       user_http_proxy="10.0.2.2:$last_port_to_try"
+    elif test_proxy "localhost:1080"; then
+      user_socks_proxy="localhost:1080"
     else
       fatal "Not found any working HTTP Proxy."
     fi
@@ -165,11 +178,17 @@ else
 fi
 
 enable_http_proxy() {
+  local proxy
+  if [ -n "$user_socks_proxy" ]; then
+    proxy="socks5h://$user_socks_proxy"
+  else
+    proxy="http://$user_http_proxy"
+  fi
   local commands="
-export http_proxy=http://$user_http_proxy
-export HTTP_PROXY=http://$user_http_proxy
-export https_proxy=http://$user_http_proxy
-export HTTPS_PROXY=http://$user_http_proxy"
+export http_proxy=$proxy
+export HTTP_PROXY=$proxy
+export https_proxy=$proxy
+export HTTPS_PROXY=$proxy"
 
   if [ "$dry_run" = "1" ]; then
     echo "$commands"
@@ -200,9 +219,15 @@ EOF
 }
 
 enable_git_proxy() {
-  git config --file ~/.gitconfig.local http.proxy http://$user_http_proxy
+  local proxy
+  if [ -n "$user_socks_proxy" ]; then
+    proxy="socks5h://$user_socks_proxy"
+  else
+    proxy="http://$user_http_proxy"
+  fi
+  git config --file ~/.gitconfig.local http.proxy "$proxy"
   # TODO test if this works
-  git config --file ~/.gitconfig.local https.proxy https://$user_http_proxy
+  git config --file ~/.gitconfig.local https.proxy "$proxy"
   dump_git_proxy
 }
 
@@ -224,11 +249,18 @@ enable_curl_proxy() {
     touch ~/.curlrc
   fi
 
-  if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
-    source "$dotfiles_dir/scripts/lib/gsed.sh"
-    $SED -i -E "s/^proxy ?= ?.*$/proxy = $user_http_proxy/" ~/.curlrc
+  local proxy
+  if [ -n "$user_socks_proxy" ]; then
+    proxy="socks5h://$user_socks_proxy"
   else
-    echo "proxy = $user_http_proxy" >>~/.curlrc
+    proxy="http://$user_http_proxy"
+  fi
+
+  if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
+    source "$DOTFILES_DIR/scripts/lib/gsed.sh"
+    $SED -i -E "s;^proxy ?= ?.*$;proxy = $proxy;" ~/.curlrc
+  else
+    echo "proxy = $proxy" >>~/.curlrc
   fi
 
   dump_curl_proxy
@@ -236,7 +268,7 @@ enable_curl_proxy() {
 
 disable_curl_proxy() {
   if grep -E '^proxy ?= ?.*$' ~/.curlrc &>/dev/null; then
-    source "$dotfiles_dir/scripts/lib/gsed.sh"
+    source "$DOTFILES_DIR/scripts/lib/gsed.sh"
     $SED -i -E '/^proxy ?= ?.*$/d' ~/.curlrc
   fi
 
@@ -293,7 +325,7 @@ dump_docker_proxy() {
 
 enable_yum_proxy() {
   if type -p yum &>/dev/null; then
-    source "$dotfiles_dir/scripts/lib/gsed.sh"
+    source "$DOTFILES_DIR/scripts/lib/gsed.sh"
     if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
       sudo $SED -i -E "s/^proxy=.*$/proxy=http:\\/\\/$user_http_proxy/" /etc/yum.conf
     else
@@ -308,7 +340,7 @@ enable_yum_proxy() {
 disable_yum_proxy() {
   if type -p yum &>/dev/null; then
     if grep -E '^proxy=.*$' /etc/yum.conf &>/dev/null; then
-      source "$dotfiles_dir/scripts/lib/gsed.sh"
+      source "$DOTFILES_DIR/scripts/lib/gsed.sh"
       sudo $SED -i -E '/^proxy=.*$/d' /etc/yum.conf
     fi
 
