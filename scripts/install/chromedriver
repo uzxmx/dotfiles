@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install chromedriver with the same version as google chrome in current system.
+# Install chromedriver with the same version as google chrome in current system. (https://chromedriver.chromium.org/)
 
 set -eo pipefail
 
