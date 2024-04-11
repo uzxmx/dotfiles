@@ -47,6 +47,8 @@ is_available() {
   type -p "$1" &> /dev/null
 }
 
+#__SETUP_SYSTEM_REPO_MIRROR_SCRIPT_STUB__
+
 if ! is_available git; then
   if is_available apt-get; then
     if ! sudo apt-get install -y git; then

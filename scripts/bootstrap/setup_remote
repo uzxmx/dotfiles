@@ -77,6 +77,9 @@ else
   lineno="$(awk_find_line "$file" "#__ADD_USER_SCRIPT_STUB__")"
   awk_insert_file "$DOTFILES_DIR/scripts/misc/add_user.sh" "$file" "$lineno"
 
+  lineno="$(awk_find_line "$file" "#__SETUP_SYSTEM_REPO_MIRROR_SCRIPT_STUB__")"
+  awk_insert_file "$DOTFILES_DIR/scripts/misc/setup_system_repo_mirror" "$file" "$lineno"
+
   if [ -n "$no_proxy" ]; then
     opts+=(--no-proxy)
   fi
