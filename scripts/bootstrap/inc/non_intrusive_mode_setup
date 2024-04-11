@@ -20,18 +20,24 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+args_file="/tmp/setup_args.env"
+
 if [ "$(whoami)" = "root" ]; then
   echo "Switch to a default user"
 #__ADD_USER_SCRIPT_STUB__
-  cat <<EOF >/tmp/setup_args.env
+  cat <<EOF >"$args_file"
 no_proxy="$no_proxy"
 ssh_pub_key="$ssh_pub_key"
 setup_system_repo_mirror="$setup_system_repo_mirror"
 EOF
 
   su -l "$default_user_name"
+fi
 
-  source /tmp/setup_args.env
+args_file="/tmp/setup_args.env"
+if [ -e "$args_file" ]; then
+  source "$args_file"
+  sudo rm "$args_file"
 fi
 
 set -eo pipefail
@@ -82,7 +88,6 @@ else
 fi
 
 if [ -n "$ssh_pub_key" ]; then
-  echo "ssh_pub_key exists"
   SSH_PUB_KEY="$ssh_pub_key" "$DOTFILES_DIR/scripts/misc/add_ssh_pub_key"
 fi
 

@@ -130,7 +130,7 @@ if [ "$subcommand" = "enable" -a -z "$no_check" -a -n "$user_socks_proxy" ]; the
 fi
 
 if [ "$subcommand" = "enable" ]; then
-  if [[ -z "$user_http_proxy" -o -z "$user_socks_proxy" ]]; then
+  if [ -z "$user_http_proxy" -o -z "$user_socks_proxy" ]; then
     echo 'Choosing a working proxy server...'
     if [[ -n "$DEFAULT_HTTP_PROXY" ]] && test_proxy $DEFAULT_HTTP_PROXY_HOST; then
       user_http_proxy="$DEFAULT_HTTP_PROXY"
