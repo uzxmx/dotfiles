@@ -2,6 +2,7 @@
 
 export no_proxy
 export ssh_pub_key
+export setup_system_repo_mirror
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -11,6 +12,9 @@ while [ "$#" -gt 0 ]; do
     --ssh-pub-key)
       shift
       ssh_pub_key="$1"
+      ;;
+    --setup-system-repo-mirror)
+      setup_system_repo_mirror=1
       ;;
   esac
   shift
@@ -22,6 +26,7 @@ if [ "$(whoami)" = "root" ]; then
   cat <<EOF >/tmp/setup_args.env
 no_proxy="$no_proxy"
 ssh_pub_key="$ssh_pub_key"
+setup_system_repo_mirror="$setup_system_repo_mirror"
 EOF
 
   su -l "$default_user_name"
@@ -47,7 +52,9 @@ is_available() {
   type -p "$1" &> /dev/null
 }
 
+if [ -n "$setup_system_repo_mirror" ]; then
 #__SETUP_SYSTEM_REPO_MIRROR_SCRIPT_STUB__
+fi
 
 if ! is_available git; then
   if is_available apt-get; then
@@ -74,7 +81,10 @@ else
   cd "$DOTFILES_DIR"
 fi
 
-[ -n "$ssh_pub_key" ] && SSH_PUB_KEY="$ssh_pub_key" "$DOTFILES_DIR/scripts/misc/add_ssh_pub_key"
+if [ -n "$ssh_pub_key" ]; then
+  echo "ssh_pub_key exists"
+  SSH_PUB_KEY="$ssh_pub_key" "$DOTFILES_DIR/scripts/misc/add_ssh_pub_key"
+fi
 
 alias_cmd="alias non_intrusive_shell=\"$DOTFILES_DIR/scripts/misc/non_intrusive_shell\""
 
