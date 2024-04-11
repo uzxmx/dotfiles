@@ -19,7 +19,14 @@ done
 if [ "$(whoami)" = "root" ]; then
   echo "Switch to a default user"
 #__ADD_USER_SCRIPT_STUB__
-  su -l "$default_user_name" -w "no_proxy,ssh_pub_key"
+  cat <<EOF >/tmp/setup_args.env
+no_proxy="$no_proxy"
+ssh_pub_key="$ssh_pub_key"
+EOF
+
+  su -l "$default_user_name"
+
+  source /tmp/setup_args.env
 fi
 
 set -eo pipefail
