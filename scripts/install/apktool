@@ -4,14 +4,12 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
-
-type -p apktool &> /dev/null && exit
+check_command apktool &> /dev/null && exit
 
 version="2.6.0"
 if is_mac; then
@@ -22,8 +20,8 @@ else
   abort "Unsupported system"
 fi
 
-"$dotfiles_dir/bin/get" "$wrapper_url" /tmp/apktool
-"$dotfiles_dir/bin/get" "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_$version.jar" /tmp/apktool.jar
+"$DOTFILES_DIR/bin/get" "$wrapper_url" /tmp/apktool
+"$DOTFILES_DIR/bin/get" "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_$version.jar" /tmp/apktool.jar
 
 chmod a+x /tmp/apktool /tmp/apktool.jar
-sudo mv /tmp/apktool /tmp/apktool.jar /usr/local/bin
+mv /tmp/apktool /tmp/apktool.jar "$DOTFILES_TARGET_DIR/bin"
