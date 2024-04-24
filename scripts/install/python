@@ -7,17 +7,27 @@
 
 set -eo pipefail
 
+usage() {
+  cat <<-EOF
+Usage: $0 [version]
+EOF
+  exit 1
+}
+
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 . $(dirname "$BASH_SOURCE")/../lib/asdf.sh
 
 echo 'Check and install python dependencies...'
-if has_yum; then
+if is_mac; then
+  brew_install xz
+elif has_yum; then
   sudo yum install -y libffi-devel zlib-devel openssl-devel readline-devel bzip2-devel libsqlite3x-devel xz-devel >/dev/null
 elif has_apt; then
   sudo apt-get install -y libffi-dev zlib1g-dev libssl-dev libreadline-dev libbz2-dev libsqlite3-dev liblzma-dev >/dev/null
 fi
 
 echo 'Install python...'
-export PYTHON_BUILD_MIRROR_URL=npm.taobao.org/mirrors/python
-export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1
+# The mirror cannot be found.
+# export PYTHON_BUILD_MIRROR_URL=npm.taobao.org/mirrors/python
+# export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1
 install_plugin_package python "$1"
