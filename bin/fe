@@ -16,6 +16,7 @@ Options:
   [-q query] The query
   [-I,--no-ignore] Show search results from files and directories that would
                    otherwise be ignored by .gitignore, .ignore or .fdignore files
+  [--print] Only print selected file, do not open it to edit
   [-h] Show help
 
 Examples:
@@ -46,6 +47,9 @@ while [ $# -gt 0 ]; do
       ;;
     -I | --no-ignore)
       no_ignore=1
+      ;;
+    --print)
+      no_edit=1
       ;;
     -*)
       usage
@@ -140,6 +144,11 @@ while true; do
 done
 
 if [ "${#result[@]}" -ne 0 ]; then
+  if [ "$no_edit" = "1" ]; then
+    echo "${result[0]}"
+    exit
+  fi
+
   if [[ "${#result[@]}" -eq 1 && "${result[0]}" =~ \.(png|jpg|jpeg|pdf)$ ]]; then
     source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     if [ "$(yesno "Using open utility to handle this file? (Y/n)" "yes")" = "yes" ]; then
