@@ -49,7 +49,9 @@ fi
 
 check_command docker &> /dev/null && check_group && check_enabled && exit
 
-if has_yum; then
+if is_amazon_linux; then
+  sudo yum install -y docker
+elif has_yum; then
   # See https://github.com/containerd/containerd/issues/6209
   sudo yum install -y libseccomp-devel
 

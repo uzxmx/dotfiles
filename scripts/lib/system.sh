@@ -34,6 +34,10 @@ is_vagrant() {
   [ -d /home/vagrant ]
 }
 
+is_amazon_linux() {
+  [[ "$(uname -r)"  =~ amzn2023 ]]
+}
+
 has_apt() {
   type -p apt-get &>/dev/null
 }
