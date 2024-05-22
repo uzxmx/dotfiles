@@ -1,0 +1,16 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [{
+    "port": 1080,
+    "listen": "0.0.0.0",
+    "tag": "socks-inbound",
+    "protocol": "socks"
+  }],
+  "outbounds": [{
+    "protocol": "freedom",
+    "settings": {},
+    "tag": "direct"
+  }]
+}
