@@ -50,6 +50,7 @@ cmd_config() {
     sudo mkdir -p "$(dirname "$configfile")"
     sudo cp "$DOTFILES_DIR/v2ray/$template" "$configfile"
     "$DOTFILES_DIR/bin/v2ray" restart
+    exit
   fi
 
   local old_md5
