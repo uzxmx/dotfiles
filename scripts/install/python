@@ -30,5 +30,6 @@ fi
 echo 'Install python...'
 # The mirror cannot be found.
 # export PYTHON_BUILD_MIRROR_URL=npm.taobao.org/mirrors/python
-# export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1
+export PYTHON_BUILD_MIRROR_URL=mirrors.huaweicloud.com/python
+export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1
 install_plugin_package python "$1"
