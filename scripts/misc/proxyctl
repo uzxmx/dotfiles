@@ -5,6 +5,7 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
 . "$DOTFILES_DIR/scripts/lib/system.sh"
+. "$DOTFILES_DIR/scripts/lib/path.sh"
 
 usage() {
   cat <<-EOF
@@ -285,8 +286,30 @@ dump_curl_proxy() {
   fi
 }
 
+restart_docker_for_mac() {
+  curl -H "Content-Type: application/json" -d '{ "openContainerView": true }' -ks --unix-socket ~/Library/Containers/com.docker.docker/Data/backend.sock http://localhost/engine/restart
+}
+
 enable_docker_proxy() {
-  if has_systemd; then
+  if is_mac; then
+    if ! check_command jq &>/dev/null; then
+      echo "Error: to enable docker proxy, jq is required."
+      return
+    fi
+    if [[ "$user_http_proxy" =~ ^localhost ]]; then
+      local host_ip
+      host_ip=$("$DOTFILES_DIR/scripts/misc/tmux_status_ip")
+      user_http_proxy="$(echo "$user_http_proxy" | sed "s/localhost/$host_ip/")"
+    fi
+    local content
+    content="$(cat ~/.docker/daemon.json)"
+    if ! [ "$(echo "$content" | jq '.proxies."http-proxy"' -r)" = http://$user_http_proxy ]; then
+      echo "$content" | jq '. += {"proxies": { "http-proxy": "'"http://$user_http_proxy"'", "https-proxy": "'"http://$user_http_proxy"'" }}' >~/.docker/daemon.json
+      restart_docker_for_mac
+    fi
+
+    dump_docker_proxy
+  elif has_systemd; then
     # See https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
     sudo mkdir -p /etc/systemd/system/docker.service.d
     sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf >/dev/null <<EOF
@@ -306,7 +329,20 @@ EOF
 }
 
 disable_docker_proxy() {
-  if has_systemd; then
+  if is_mac; then
+    if ! check_command jq &>/dev/null; then
+      echo "Error: to disable docker proxy, jq is required."
+      return
+    fi
+    local content
+    content="$(cat ~/.docker/daemon.json)"
+    if [ -n "$(echo "$content" | jq '.proxies."http-proxy"' -r)" ]; then
+      echo "$content" | jq "del(.proxies)" >~/.docker/daemon.json
+      restart_docker_for_mac
+    fi
+
+    dump_docker_proxy
+  elif has_systemd; then
     sudo rm /etc/systemd/system/docker.service.d/{http,https}-proxy.conf
     sudo systemctl daemon-reload
     sudo systemctl restart docker
@@ -316,7 +352,12 @@ disable_docker_proxy() {
 }
 
 dump_docker_proxy() {
-  if has_systemd; then
+  if is_mac; then
+    local result
+    if result="$(cat ~/.docker/daemon.json | jq .proxies -cM 2>/dev/null)"; then
+      echo "echo Current Docker proxy: $result" >&3
+    fi
+  elif has_systemd; then
     echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
   else
     echo "echo Current Docker proxy: N/A" >&3
