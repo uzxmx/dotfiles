@@ -4,4 +4,4 @@
 
 set -e
 
-cd /tmp && go get golang.org/x/tools/gopls@latest
+cd /tmp && go install golang.org/x/tools/gopls@latest

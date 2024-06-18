@@ -12,6 +12,8 @@ check_command privoxy &> /dev/null && exit
 
 if is_mac; then
   brew_install privoxy
+elif has_apt; then
+  sudo apt-get install -y privoxy
 else
   abort "Unsupported system"
 fi
