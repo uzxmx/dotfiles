@@ -16,6 +16,7 @@ Options:
   [-q query] The query
   [-I,--no-ignore] Show search results from files and directories that would
                    otherwise be ignored by .gitignore, .ignore or .fdignore files
+  [-d depth] Set maximum search depth
   [--print] Only print selected file, do not open it to edit
   [-h] Show help
 
@@ -31,6 +32,7 @@ EOF
 
 directories=()
 no_ignore=
+max_depth=
 while [ $# -gt 0 ]; do
   case "$1" in
     -t)
@@ -47,6 +49,10 @@ while [ $# -gt 0 ]; do
       ;;
     -I | --no-ignore)
       no_ignore=1
+      ;;
+    -d)
+      shift
+      max_depth="$1"
       ;;
     --print)
       no_edit=1
@@ -78,9 +84,14 @@ source "$DOTFILES_DIR/scripts/lib/fzf.sh"
 while true; do
   unset result
 
-  fd_opts=(--type f)
+  fd_opts=()
   if [ -n "$no_ignore" ]; then
     fd_opts+=(-I -H)
+  fi
+  if [ -n "$max_depth" ]; then
+    fd_opts+=(-d "$max_depth")
+  else
+    fd_opts+=(--type f)
   fi
 
   call_fzf result --query="$query" --print-query --multi --exit-0 \
