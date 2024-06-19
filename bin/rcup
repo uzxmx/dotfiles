@@ -10,4 +10,8 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 PATH="$DOTFILES_DIR/scripts/rcm/bin:$PATH"
 rcup -T "${DOTFILES_TARGET_DIR:-$HOME}" -d "$DOTFILES_DIR" "$@"
 
+if [ ! -e ~/.irbrc ]; then
+  ln -s "$DOTFILES_DIR/irbrc" ~/.irbrc
+fi
+
 "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
