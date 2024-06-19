@@ -27,6 +27,7 @@ Misc commands:
   e, exec    - execute a comand in a container selected by fzf
   r, run     - run a docker image
   s          - manage services
+  engine     - manage engine
 EOF
   exit 1
 }
@@ -76,7 +77,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | e | exec | p | r | run | rm | s | ps | rmi)
+  l | e | exec | p | r | run | rm | s | ps | rmi | engine)
     case "$1" in
       l)
         name="logs"
