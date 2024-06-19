@@ -17,6 +17,10 @@ Options:
   --local-install Install to user home directory
   --force-install Force to install even if it already exists
   --temp-dir <dir> Temp dir to store the src and build files
+
+Examples:
+  # Only install plugins.
+  $0 --install-plugins
 EOF
   exit 1
 }
@@ -58,6 +62,8 @@ check_plugins() {
 }
 
 version="3.3a"
+
+[ -z "$force_install" -a -n "$install_plugins" ] && check_plugins && exit
 
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" -o -n "$local_install" ]; then
   source "$DOTFILES_DIR/scripts/lib/utils/version.sh"
