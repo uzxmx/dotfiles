@@ -2,4 +2,7 @@
 
 set -eo pipefail
 
-vi ~/.config/nvim/coc-settings.json
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+vi "$DOTFILES_TARGET_DIR/.config/nvim/coc-settings.json"
