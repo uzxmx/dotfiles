@@ -65,5 +65,19 @@ install_fn() {
   fi
   make
   make install
+
+  cat <<EOF
+Installation finished.
+
+**NOTE**:
+
+Please run below command to check if OpenSSL works. On success, it should
+output something like 'Verify return code: 0 (ok)'. If the output is like
+'Verify return code: 20 (unable to get local issuer certificate)', it means
+OpenSSL cannot find CA certificates, you need to copy them manually. For
+Ubuntu, you can find CA certificates at '/etc/ssl/certs'.
+
+openssl s_client -showcerts -connect www.baidu.com:443 </dev/null 2>/dev/null | grep 'Verify return code:'
+EOF
 }
 download_and_install "https://www.openssl.org/source/openssl-$version.tar.gz" install_fn "$temp_dir"
