@@ -28,6 +28,9 @@ EOF
 case "$1" in
   "")
     dirs=()
+    if [ -d ~/.private ]; then
+      dirs+=(~/.private)
+    fi
     if [ -d ~/.resources/docs/src ]; then
       dirs+=(~/.resources/docs/src)
     fi

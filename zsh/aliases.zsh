@@ -49,7 +49,7 @@ alias la="ls -a"
 
 alias lg="lazygit"
 
-alias m="mkdir -p"
+alias m='_mkcd(){ mkdir -p "$@" && cd "$_"; unset -f _mkcd; }; _mkcd'
 alias migrate="bundle exec rake db:migrate"
 alias mg="echo mg is aliased as no-op, if you want to use it, please remove the alias"
 alias ncz="nc -z -v"
