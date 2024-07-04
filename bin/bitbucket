@@ -2,8 +2,10 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-bitbucket_dir="$dotfiles_dir/scripts/bitbucket"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+bitbucket_dir="$DOTFILES_DIR/scripts/bitbucket"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -22,19 +24,6 @@ EOF
   exit 1
 }
 
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
 req() {
   if [ -z "$BITBUCKET_USER" -o -z "$BITBUCKET_PASSWORD" ]; then
     echo "Both BITBUCKET_USER and BITBUCKET_PASSWORD environment variables must be specified." >&2
@@ -45,17 +34,6 @@ req() {
   local api="$1"
   shift
   curl "${curl_opts[@]}" -Ss "https://api.bitbucket.org/2.0/$api" "$@"
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
 }
 
 case "$1" in

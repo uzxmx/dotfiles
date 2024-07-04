@@ -122,7 +122,7 @@ cmd_repo_get() {
   done
 
   if [ -z "$name" ]; then
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     ask_for_input name "Name for the repo to get: "
   fi
   local resp="$(req "repositories/$workspace/$name")"
@@ -158,10 +158,11 @@ cmd_repo_create() {
 
   local name="$1"
   if [ -z "$name" ]; then
-    source "$dotfiles_dir/scripts/lib/prompt.sh"
+    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
     ask_for_input name "Name for the repo to create: "
   fi
-  local resp="$(req "repositories/$workspace/$name" -XPOST -H "Content-Type: application/json" -d"{
+  local resp
+  resp="$(req "repositories/$workspace/$name" -XPOST -H "Content-Type: application/json" -d"{
   \"scm\": \"git\",
   \"project\": { \"key\": \"$project_key\" },
   \"is_private\": true
@@ -169,7 +170,7 @@ cmd_repo_create() {
   local slug="$(echo "$resp" | jq -r '.slug')"
   if [ "$slug" = "$name" ]; then
     local remote_url="$(git_url_from_full_name "$(echo "$resp" | jq -r '.full_name')")"
-    source "$dotfiles_dir/scripts/lib/git.sh"
+    source "$DOTFILES_DIR/scripts/lib/git.sh"
     git_try_initial_push "$remote_url" origin bitbucket
   else
     echo "$resp" >&2
@@ -193,7 +194,7 @@ cmd_repo_delete() {
   check_workspace
 
   local name="$1"
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   if [ -z "$name" ]; then
     ask_for_input name "Name for the repo to delete: "
   fi

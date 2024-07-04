@@ -63,7 +63,7 @@ cmd_init() {
     if [ -z "$name" ]; then
       name="$(basename "$rootdir")"
       if [ -z "$no_interactive" ]; then
-        source "$dotfiles_dir/scripts/lib/prompt.sh"
+        source "$DOTFILES_DIR/scripts/lib/prompt.sh"
         ask_for_input name "Name for which repo to create: " "$name"
       fi
     fi
