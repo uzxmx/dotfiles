@@ -15,7 +15,7 @@ Wrapper for openssl utility. Use 'openssl help' to get the original help.
 
 Subcommands:
   e, exp      - show expiration info of a cert (source can be a host, file or pipe)
-  v, verify   - verify a host
+  v           - verify a host
   pubkey      - get public key for a cert (source can be a host, file or pipe)
   cert        - get certificate for a host, or its content
   chain       - get intermediate certificate for a host
@@ -27,6 +27,10 @@ Subcommands:
   rsa         - RSA key utilities
   p12         - PKCS#12 utilities
   m, match    - check if a key pair matches (also support cert)
+
+Examples:
+  $> openssl x509 -in cert.bin -inform der -out cert.pem
+  $> openssl verify -verbose -CAfile <(cat ca_cert.pem) cert.pem
 EOF
   exit 1
 }
@@ -48,7 +52,7 @@ run_fallback() {
 }
 
 case "$1" in
-  e | exp | v | verify | pubkey | cert |\
+  e | exp | v | pubkey | cert |\
   chain | tlsversions | ocsp_req | rm_pass |\
   g | gen | s | show | p12 | m | match)
     case "$1" in
