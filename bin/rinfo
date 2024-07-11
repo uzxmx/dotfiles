@@ -40,6 +40,14 @@ fi
 
 content="$LC_REMOTE_USER@$LC_REMOTE_IP"
 if [ -n "$file" ]; then
+  if [ -f "$file" ]; then
+    size="$(stat -c '%s' "$file")"
+    if [ "$size" -gt 10485760 ]; then
+      echo "Not allowed because file size is $size, which is over 10M."
+      exit 1
+    fi
+  fi
+
   file="$(realpath "$file")"
   content="$content:$file"
 fi
