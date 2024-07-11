@@ -69,6 +69,15 @@ cmd_ssh() {
     cmd="ssh $host_label"
   fi
 
+  for e in $cmd; do
+    if [[ "$e" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      export LC_REMOTE_USER="${e%@*}"
+      export LC_REMOTE_IP="${e#*@}"
+      opts+=(-o SendEnv="LC_REMOTE_USER LC_REMOTE_IP")
+      break
+    fi
+  done
+
   if [ -z "$dry_run" ]; then
     $cmd "${opts[@]}" "$@"
   else

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Usage: rinfo [file|dir]
+
+Copy remote file path to clipboard.
+EOF
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      [ -n "$file" ] && abort "Only one file is supported"
+      file="$1"
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$LC_REMOTE_USER" -o -z "$LC_REMOTE_IP" ]; then
+  cat <<EOF
+LC_REMOTE_USER and LC_REMOTE_IP must be set. On remote machine, execute below command:
+
+sudo cat /etc/ssh/sshd_config | grep 'AcceptEnv' | grep ' LC_\*' >/dev/null ||
+  (echo 'AcceptEnv LC_REMOTE_USER LC_REMOTE_IP' | sudo tee -a /etc/ssh/sshd_config >/dev/null && echo 'Please restart the SSH daemon')
+EOF
+  exit 1
+fi
+
+content="$LC_REMOTE_USER@$LC_REMOTE_IP"
+if [ -n "$file" ]; then
+  file="$(realpath "$file")"
+  content="$content:$file"
+fi
+
+echo "Copying below content to clipboard..."
+echo "$content"
+echo -n "$content" | "$DOTFILES_DIR/bin/osc52"
+echo "Copied."
