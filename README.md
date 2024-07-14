@@ -40,6 +40,41 @@ $ curl -s "https://raw.githubusercontent.com/uzxmx/dotfiles/master/scripts/boots
     | bash -s -- fzf
 ```
 
+## Setup for Mac OSX
+
+```
+# Check if `ApplePressAndHoldEnabled` is turned off.
+defaults read -g ApplePressAndHoldEnabled
+
+# Turn off `ApplePressAndHoldEnabled` to enable key-repeat.
+# After this, we need to log out and log in again or restart the machine.
+# Ref: https://macos-defaults.com/misc/applepressandholdenabled.html
+defaults write -g ApplePressAndHoldEnabled -bool false
+```
+
+Install `iTerm2`, and run below command to configure.
+
+```
+$DOTFILES_DIR/scripts/misc/setup_iterm2.sh
+```
+
+Install `homebrew`, and then install below dependencies.
+
+```
+brew install pkg-config
+brew install gnu-sed
+brew install coreutils
+# brew install openssl@1.1
+brew install openssl
+brew install rar
+```
+
+Install `vscode`, and run below command to configure.
+
+```
+vscode rcup
+```
+
 ## NeoVim
 
 When you execute `vi` for the first time, `vim-plug` will be automatically installed and then plugins

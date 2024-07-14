@@ -141,7 +141,7 @@ func main() {
 		for i, _ := range cols {
 			t := types[i].DatabaseTypeName()
 			switch t {
-			case "BIGINT":
+			case "BIGINT", "UNSIGNED BIGINT":
 				vals[i] = new(sql.NullInt64)
 			case "BIT":
 				vals[i] = new(BitBool)

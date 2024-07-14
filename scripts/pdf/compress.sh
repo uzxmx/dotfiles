@@ -14,6 +14,7 @@ cmd_compress() {
   [ -z "$infile" ] && abort "An input pdf file is required."
   [ -z "$outfile" ] && abort "An output pdf file is required."
 
+  # PDFSETTINGS: screen, ebook, printer, prepress, default
   gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dNOPAUSE -dQUIET -dBATCH -sOutputFile="$outfile" "$infile"
 }
 alias_cmd c compress

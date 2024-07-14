@@ -35,3 +35,12 @@ emit_code() {
 
   printf "$code" "$@"
 }
+
+open_new_tab_and_run_vi() {
+  osascript \
+    -e 'tell application "iTerm" to activate' \
+    -e 'tell application "System Events" to tell process "iTerm" to keystroke "t" using command down' \
+    -e 'delay 0.2' \
+    -e "tell application \"System Events\" to tell process \"iTerm\" to keystroke \"exec vi $1\"" \
+    -e 'tell application "System Events" to tell process "iTerm" to key code 52'
+}
