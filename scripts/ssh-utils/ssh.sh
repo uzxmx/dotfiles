@@ -78,9 +78,9 @@ cmd_ssh() {
     fi
   done
 
+  echo $cmd "${opts[@]}" "$@"
+
   if [ -z "$dry_run" ]; then
     $cmd "${opts[@]}" "$@"
-  else
-    echo $cmd "${opts[@]}" "$@"
   fi
 }
