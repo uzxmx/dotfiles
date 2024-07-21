@@ -106,5 +106,5 @@ create_link() {
 }
 
 can_visit_google() {
-  curl www.google.com --connect-timeout 5 &>/dev/null
+  curl --noproxy "*" www.google.com --connect-timeout 2 &>/dev/null
 }
