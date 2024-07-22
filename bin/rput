@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+
+usage() {
+  cat <<-EOF
+Usage: rput <file>
+
+Copy local file to remote.
+EOF
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      [ -n "$file" ] && abort "Only one file is supported"
+      file="$1"
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$file" ]; then
+  echo "A file must be specified."
+  exit 1
+elif [ ! -f "$file" ]; then
+  echo "$file is not a file."
+  exit 1
+fi
+
+content="$(pbpaste)"
+
+if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
+  echo "Clipboard content doesn't match the format: user@ip:/path/to/file"
+  exit 1
+fi
+
+echo scp "$file" "$content"
+
+scp "$file" "$content"

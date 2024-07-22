@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+
+usage() {
+  cat <<-EOF
+Usage: rget
+
+Copy remote file to local.
+EOF
+  exit 1
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    *)
+      usage
+      ;;
+  esac
+  shift
+done
+
+content="$(pbpaste)"
+
+if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
+  echo "Clipboard content doesn't match the format: user@ip:/path/to/file"
+  exit 1
+fi
+
+remote_file="${content#*:}"
+
+filename="$(basename "$remote_file")"
+
+if [ -f "$filename" ]; then
+  if [ "$(yesno "File $filename already exists. Do you want to overwrite it? (y/N)" "no")" != "yes" ]; then
+    exit 1
+  fi
+fi
+
+echo scp "$content" "$filename"
+
+scp "$content" "$filename"
