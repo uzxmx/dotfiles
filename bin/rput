@@ -31,8 +31,8 @@ done
 if [ -z "$file" ]; then
   echo "A file must be specified."
   exit 1
-elif [ ! -f "$file" ]; then
-  echo "$file is not a file."
+elif [ ! -e "$file" ]; then
+  echo "File $file doesn't exist."
   exit 1
 fi
 
@@ -43,6 +43,12 @@ if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
   exit 1
 fi
 
-echo scp "$file" "$content"
+if [ -d "$file" ]; then
+  cmd="scp -r"
+else
+  cmd="scp"
+fi
 
-scp "$file" "$content"
+echo $cmd "$file" "$content"
+
+$cmd "$file" "$content"

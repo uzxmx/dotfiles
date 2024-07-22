@@ -50,6 +50,9 @@ if [ -n "$file" ]; then
 
   file="$(realpath "$file")"
   content="$content:$file"
+  if [ -d "$file" ]; then
+    content="-r $content"
+  fi
 fi
 
 echo "Copying below content to clipboard..."
