@@ -11,12 +11,18 @@ usage() {
 Usage: rinfo [file|dir]
 
 Copy remote file path to clipboard.
+
+Options:
+  [-g] Gzip text file
 EOF
   exit 1
 }
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    -g)
+      gzip="1"
+      ;;
     -*)
       usage
       ;;
@@ -38,12 +44,32 @@ EOF
   exit 1
 fi
 
-content="$LC_REMOTE_USER@$LC_REMOTE_IP"
 if [ -n "$file" ]; then
+  content="$LC_REMOTE_USER@$LC_REMOTE_IP"
   if [ -f "$file" ]; then
+    if [ -n "$gzip" ]; then
+      if [ ! -f "$file.gz" ]; then
+        if touch "$file.gz" &>/dev/null; then
+          gzip -c "$file" >"$file.gz"
+        else
+          gzip -c "$file" | sudo tee "$file.gz" >/dev/null
+        fi
+      fi
+
+      file="$file.gz"
+    fi
     size="$(stat -c '%s' "$file")"
     if [ "$size" -gt 10485760 ]; then
-      echo "Not allowed because file size is $size, which is over 10M."
+      cat <<EOF
+Not allowed because file size is $size, which is over 10M.
+EOF
+      if [ -z "$gzip" ]; then
+        cat <<EOF
+
+If the file is a text file, you can specify '-g' option to gzip the file to
+make the size smaller.
+EOF
+      fi
       exit 1
     fi
   fi
@@ -53,6 +79,8 @@ if [ -n "$file" ]; then
   if [ -d "$file" ]; then
     content="-r $content"
   fi
+else
+  content="$LC_REMOTE_IP"
 fi
 
 echo "Copying below content to clipboard..."
