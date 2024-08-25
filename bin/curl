@@ -19,6 +19,10 @@ Subcommands:
   https_ip - request an HTTPS server by IP address
   gzip     - check if a remote resource is gzipped
   mail     - send a mail by smtp
+
+Examples:
+  # Url encode in query string.
+  curl --get example.com/foo --data-urlencode "q=中文" --data-urlencode "f=foo"
 EOF
   exit 1
 }
