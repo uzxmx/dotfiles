@@ -10,16 +10,17 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null
 
 check_command wat2wasm &> /dev/null && exit
 
-version="1.0.24"
+version="1.0.36"
 path_to_save="/tmp/wabt-$version.tgz"
 if is_mac; then
-  platform="macos"
+  platform="macos-14"
 elif is_linux; then
-  platform="ubuntu"
+  platform="ubuntu-20.04"
 else
   abort "Unsupported system"
 fi
 
-"$DOTFILES_DIR/bin/get" "https://github.com/WebAssembly/wabt/releases/download/$version/wabt-$version-$platform.tar.gz" "$path_to_save"
-tar zxf "$path_to_save" -C ~/bin --strip-components=2 --wildcards "wabt-$version/bin/*"
-rm -rf "$path_to_save"
+install_fn() {
+  mv "$1"/wabt-$version/bin/* ~/bin
+}
+download_and_install "https://github.com/WebAssembly/wabt/releases/download/$version/wabt-$version-$platform.tar.gz" install_fn
