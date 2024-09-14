@@ -3,3 +3,7 @@
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 "$DOTFILES_DIR/bin/vscode" rcup &> /dev/null || true
+
+if [ -f "$PWN_DIR/hooks/post-up" ]; then
+  "$PWN_DIR/hooks/post-up"
+fi
