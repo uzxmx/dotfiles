@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Install mihomo (https://github.com/MetaCubeX/mihomo)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+test -x /usr/bin/mihomo && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+version="v1.18.9"
+path_to_save="/tmp/mihomo-$version.gz"
+if is_linux; then
+  platform="linux-amd64"
+else
+  abort "Unsupported system"
+fi
+
+"$DOTFILES_DIR/bin/get" "https://github.com/MetaCubeX/mihomo/releases/download/v1.18.9/mihomo-$platform-$version.gz" "$path_to_save"
+
+gunzip "$path_to_save"
+(cd /tmp && chmod a+x "mihomo-$platform-$version" && sudo mv "mihomo-$platform-$version" /usr/bin/mihomo)
