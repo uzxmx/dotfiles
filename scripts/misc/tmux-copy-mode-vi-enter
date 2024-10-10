@@ -10,7 +10,7 @@ content="$(cat)"
 
 if uname -r | grep "[Mm]icrosoft" &>/dev/null; then
   echo -n "$content" | /mnt/c/Windows/System32/clip.exe
-elif [ "$(uname -s)" = "Linux" ] && which xclip
+elif [ "$(uname -s)" = "Linux" ] && which xclip; then
   echo -n "$content" | xclip -in -selection clipboard
 else
   tmux display-message "#[fill=white bg=white fg=red align=centre]Cannot find a tool to copy to clipboard"
