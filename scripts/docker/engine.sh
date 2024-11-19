@@ -15,15 +15,12 @@ EOF
 cmd_engine() {
   case "$1" in
     restart)
-      check_system
       cmd_restart
       ;;
     enable-mirror)
-      check_system
       cmd_enable_mirror
       ;;
     disable-mirror)
-      check_system
       cmd_disable_mirror
       ;;
     *)
@@ -33,7 +30,11 @@ cmd_engine() {
 }
 
 cmd_restart() {
-  curl -H "Content-Type: application/json" -d '{ "openContainerView": false }' -ks --unix-socket ~/Library/Containers/com.docker.docker/Data/backend.sock http://localhost/engine/restart
+  if is_mac; then
+    curl -H "Content-Type: application/json" -d '{ "openContainerView": false }' -ks --unix-socket ~/Library/Containers/com.docker.docker/Data/backend.sock http://localhost/engine/restart
+  else
+    sudo systemctl restart docker
+  fi
 }
 
 cmd_enable_mirror() {
@@ -55,12 +56,5 @@ cmd_disable_mirror() {
   if ! [ "$(echo "$content" | jq '."registry-mirrors"' -cMr)" = null ]; then
     echo "$content" | jq 'del(."registry-mirrors")' >~/.docker/daemon.json
     cmd_restart
-  fi
-}
-
-check_system() {
-  if ! is_mac; then
-    echo "Only Mac OSX system is supported."
-    exit 1
   fi
 }
