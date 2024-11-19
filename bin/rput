@@ -47,6 +47,8 @@ if [[ "$content" =~ ^\-r[[:space:]] ]]; then
   content="$(echo "$content" | sed "s/\-r //")"
 fi
 
+file="$(realpath "$file")"
+
 if [ -d "$file" ]; then
   cmd="scp -r"
   content="$content/$(basename "$file")"
