@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
 if type -p apt-get &> /dev/null; then
+  # The main archive is for amd64, i386.
+  # `ports` is for architectures, which include arm64, armhf, s390x, riscv64, ppc64el.
+
   # sudo sed -i.bak -Ee 's:[0-9a-zA-Z\.]+\.ubuntu\.com/ubuntu/:mirrors.tuna.tsinghua.edu.cn/ubuntu/:' \
   #   /etc/apt/sources.list
 
   sudo sed -i.bak -Ee 's:[0-9a-zA-Z\.]+\.ubuntu\.com/ubuntu/:mirrors.aliyun.com/ubuntu/:' \
+    -e 's:[0-9a-zA-Z\.]+\.ubuntu\.com/ubuntu-ports/:mirrors.aliyun.com/ubuntu-ports/:' \
     /etc/apt/sources.list
 
   sudo apt-get update
