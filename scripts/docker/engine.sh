@@ -42,19 +42,35 @@ cmd_enable_mirror() {
     abort "DOCKER_REGISTRY_MIRROR environment variable must be set."
   fi
 
+  local file sudo
+  if is_mac; then
+    file="$HOME/.docker/daemon.json"
+  else
+    file="/etc/docker/daemon.json"
+    sudo="sudo"
+  fi
+
   local content
-  content="$(cat ~/.docker/daemon.json)"
+  content="$(cat "$file")"
   if [ "$(echo "$content" | jq '."registry-mirrors"' -cMr)" = null ]; then
-    echo "$content" | jq '. += {"registry-mirrors": [ "'"$DOCKER_REGISTRY_MIRROR"'" ]}' >~/.docker/daemon.json
+    echo "$content" | jq '. += {"registry-mirrors": [ "'"$DOCKER_REGISTRY_MIRROR"'" ]}' | $sudo tee "$file" >/dev/null
     cmd_restart
   fi
 }
 
 cmd_disable_mirror() {
+  local file sudo
+  if is_mac; then
+    file="$HOME/.docker/daemon.json"
+  else
+    file="/etc/docker/daemon.json"
+    sudo="sudo"
+  fi
+
   local content
-  content="$(cat ~/.docker/daemon.json)"
+  content="$(cat "$file")"
   if ! [ "$(echo "$content" | jq '."registry-mirrors"' -cMr)" = null ]; then
-    echo "$content" | jq 'del(."registry-mirrors")' >~/.docker/daemon.json
+    echo "$content" | jq 'del(."registry-mirrors")' | $sudo tee "$file" >/dev/null
     cmd_restart
   fi
 }
