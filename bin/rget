@@ -8,17 +8,25 @@ source "$DOTFILES_DIR/scripts/lib/prompt.sh"
 
 usage() {
   cat <<-EOF
-Usage: rget
+Usage: rget [out-file]
 
 Copy remote file to local.
 EOF
   exit 1
 }
 
+out_file=""
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    *)
+    -*)
       usage
+      ;;
+    *)
+      if [ -n "$out_file" ]; then
+        abort "Only one output file can be specified."
+      fi
+      out_file="$1"
       ;;
   esac
   shift
@@ -33,14 +41,16 @@ fi
 
 remote_file="${content#*:}"
 
-filename="$(basename "$remote_file")"
+if [ -z "$out_file" ]; then
+  out_file="$(basename "$remote_file")"
+fi
 
-if [ -f "$filename" ]; then
-  if [ "$(yesno "File $filename already exists. Do you want to overwrite it? (y/N)" "no")" != "yes" ]; then
+if [ -f "$out_file" ]; then
+  if [ "$(yesno "File $out_file already exists. Do you want to overwrite it? (y/N)" "no")" != "yes" ]; then
     exit 1
   fi
 fi
 
-echo scp "$content" "$filename"
+echo scp "$content" "$out_file"
 
-scp $content "$filename"
+scp $content "$out_file"
