@@ -6,14 +6,16 @@ Enhanced log utility by fzf.
 
 Options:
   -r, --range use range mode. This will ask you to select a start and end commit.
-  -f Show a file history. This will ask you to select a file by fzf.
+  -f [file] Show a file history. If no file is given, it will ask you to select a file by fzf.
+  -D Select a deleted file by fzf.
 
 Commit format:
   commit1..commit2: This will show you commits that can be reached from
                     commit2, but not from commit1. (a.k.a between)
 
 Examples:
-  $> g l -f
+  $> g l -f -D
+  $> g l -f path/to/file.txt
 EOF
   exit 1
 }
@@ -93,7 +95,7 @@ show_history_for_file() {
 }
 
 cmd_l() {
-  local range_mode commit show_file_history
+  local range_mode arg show_file_history select_deleted_file
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -r | --range)
@@ -102,11 +104,14 @@ cmd_l() {
       -f)
         show_file_history=1
         ;;
+      -D)
+        select_deleted_file=1
+        ;;
       -*)
         usage_l
         ;;
       *)
-        commit="$1"
+        arg="$1"
         ;;
     esac
     shift
@@ -122,12 +127,19 @@ cmd_l() {
       select_commit "$start_commit~1..$end_commit"
     fi
   elif [ "$show_file_history" = "1" ]; then
-    local file=$(fe --print)
+    local file="$arg"
+    if [ -z "$file" ]; then
+      if [ -z "$select_deleted_file" ]; then
+        file="$(fe --print)"
+      else
+        file="$(git log --diff-filter=D --summary | grep 'delete mode ' | awk '{print $NF}' | fzf)"
+      fi
+    fi
     if [ -n "$file" ]; then
       show_history_for_file "$file"
     fi
   else
-    local commit="$(select_commit --select $commit)"
+    local commit="$(select_commit --select $arg)"
     if [ -n "$commit" ]; then
       source "$DOTFILES_DIR/scripts/lib/prompt.sh"
       [ "$(yesno "Checkout $commit? (Y/n)" "yes")" = "no" ] && echo "Cancelled" && exit
