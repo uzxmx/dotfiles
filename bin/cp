@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-cp_dir="$dotfiles_dir/scripts/cp"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+cp_dir="$DOTFILES_DIR/scripts/cp"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -13,6 +13,7 @@ Wrapper for cp utility.
 
 Subcommands:
   tree         - copy files to a dir with the intermediate paths kept.
+  sync         - sync src dir to target dir
   git_modified - copy modified files in git repository to a dir with the intermediate paths kept.
   java         - copy java package to another location with package/import statements substituted.
 EOF
@@ -20,7 +21,7 @@ EOF
 }
 
 case "$1" in
-  tree | git_modified | java)
+  tree | sync | git_modified | java)
     case "$1" in
       *)
         name="$1"

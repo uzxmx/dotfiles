@@ -27,7 +27,7 @@ cmd_java() {
     create_subdir=1
   fi
 
-  source "$dotfiles_dir/scripts/lib/gsed.sh"
+  source "$DOTFILES_DIR/scripts/lib/gsed.sh"
 
   local file target_dir
   for file in "${@:1:$(($# - 1))}"; do
