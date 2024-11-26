@@ -14,6 +14,8 @@ Copy remote file path to clipboard.
 
 Options:
   [-g] Gzip text file
+  [-f] Do not limit size
+  [--dry-run]
 EOF
   exit 1
 }
@@ -22,6 +24,12 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -g)
       gzip="1"
+      ;;
+    -f)
+      no_limit_size="1"
+      ;;
+    --dry-run)
+      dry_run="1"
       ;;
     -*)
       usage
@@ -35,19 +43,21 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$LC_REMOTE_USER" -o -z "$LC_REMOTE_IP" ]; then
-  cat <<EOF
+  if [ -z "$dry_run" ]; then
+    cat <<EOF
 LC_REMOTE_USER and LC_REMOTE_IP must be set. On remote machine, execute below command:
 
 sudo cat /etc/ssh/sshd_config | grep 'AcceptEnv' | grep ' LC_\*' >/dev/null ||
   (echo 'AcceptEnv LC_REMOTE_USER LC_REMOTE_IP' | sudo tee -a /etc/ssh/sshd_config >/dev/null && echo 'Please restart the SSH daemon')
 EOF
-  exit 1
+    exit 1
+  fi
 fi
 
 if [ -n "$file" ]; then
   content="$LC_REMOTE_USER@$LC_REMOTE_IP"
   if [ -f "$file" ]; then
-    if [ -n "$gzip" ]; then
+    if [ -z "$dry_run" -a -n "$gzip" ]; then
       if [ ! -f "$file.gz" ]; then
         if touch "$file.gz" &>/dev/null; then
           gzip -c "$file" >"$file.gz"
@@ -58,19 +68,21 @@ if [ -n "$file" ]; then
 
       file="$file.gz"
     fi
-    size="$(stat -c '%s' "$file")"
-    if [ "$size" -gt 10485760 ]; then
-      cat <<EOF
+    if [ -z "$no_limit_size" ]; then
+      size="$(stat -c '%s' "$file")"
+      if [ "$size" -gt 10485760 ]; then
+        cat <<EOF
 Not allowed because file size is $size, which is over 10M.
 EOF
-      if [ -z "$gzip" ]; then
-        cat <<EOF
+        if [ -z "$gzip" ]; then
+          cat <<EOF
 
 If the file is a text file, you can specify '-g' option to gzip the file to
-make the size smaller.
+make the size smaller. Or specify '-f' to disable the limit.
 EOF
+        fi
+        exit 1
       fi
-      exit 1
     fi
   fi
 
@@ -85,5 +97,7 @@ fi
 
 echo "Copying below content to clipboard..."
 echo "$content"
-echo -n "$content" | "$DOTFILES_DIR/bin/osc52"
+if [ -z "$dry_run" ]; then
+  echo -n "$content" | "$DOTFILES_DIR/bin/osc52"
+fi
 echo "Copied."
