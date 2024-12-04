@@ -2,7 +2,9 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/../..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -16,6 +18,7 @@ Options:
   --tls use TLS
   --cert <cert-file> the path to the certificate file
   --priv-key <private-key-file> the path to the private key file
+  --sudo run as super user
 
 Examples:
   # Start https server
@@ -51,6 +54,9 @@ while [ "$#" -gt 0 ]; do
       shift
       priv_key="$1"
       ;;
+    --sudo)
+      sudo="sudo"
+      ;;
     *)
       usage
   esac
@@ -61,7 +67,7 @@ done
   echo "You must specify a certificate file and private key file when using TLS." && exit 1
 
 run_go_http_server() {
-  source "$dotfiles_dir/scripts/lib/tmpfile.sh"
+  source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
 
   create_tmpdir tmpdir
   if [ "$use_tls" ]; then
@@ -90,17 +96,17 @@ func main() {
 EOF
   fi
 
-  go run "$tmpdir/main.go"
+  $sudo go run "$tmpdir/main.go"
 }
 
 run_ruby_http_server() {
-  ruby -r webrick -e "WEBrick::HTTPServer.new(BindAddress: '$host', Port: $port, DocumentRoot: Dir.pwd).start"
+  $sudo ruby -r webrick -e "WEBrick::HTTPServer.new(BindAddress: '$host', Port: $port, DocumentRoot: Dir.pwd).start"
 }
 
 run_netcat() {
   echo "HTTP server will be listening at $port"
   while true; do
-    echo -e "HTTP/1.1 200 OK\n\n $(date)" | nc -l "$port"
+    echo -e "HTTP/1.1 200 OK\n\n $(date)" | $sudo nc -l "$port"
   done
 }
 
@@ -109,7 +115,13 @@ if type -p go &>/dev/null; then
 elif type -p ruby &>/dev/null; then
   run_ruby_http_server
 elif type -p python3 &>/dev/null; then
-  python3 -m http.server --bind "$host" "$port"
+  if [ "$port" -eq 80 -o "$port" -eq 443 ]; then
+    if [ -z "$sudo" ]; then
+      echo "Run as super user for privileged port: $port"
+      sudo="sudo"
+    fi
+  fi
+  $sudo python3 -m http.server --bind "$host" "$port"
 elif type -p nc &>/dev/null; then
   run_netcat
 else
