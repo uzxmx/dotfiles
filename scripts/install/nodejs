@@ -12,4 +12,6 @@ EOF
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 . $(dirname "$BASH_SOURCE")/../lib/asdf.sh
 
+export NODEJS_ORG_MIRROR="https://registry.npmmirror.com/node/"
+
 install_plugin_package nodejs "$1"
