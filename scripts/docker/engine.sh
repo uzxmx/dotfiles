@@ -39,8 +39,10 @@ cmd_restart() {
 
 cmd_enable_mirror() {
   if [ -z "$DOCKER_REGISTRY_MIRROR" ]; then
-    abort "DOCKER_REGISTRY_MIRROR environment variable must be set."
+    # See https://www.coderjia.cn/archives/dba3f94c-a021-468a-8ac6-e840f85867ea
+    DOCKER_REGISTRY_MIRROR="https://docker.unsee.tech"
   fi
+  echo "Use docker registry mirror: $DOCKER_REGISTRY_MIRROR"
 
   local file sudo
   if is_mac; then

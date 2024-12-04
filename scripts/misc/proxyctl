@@ -314,7 +314,11 @@ enable_docker_proxy() {
       user_http_proxy="$(echo "$user_http_proxy" | sed "s/localhost/$host_ip/")"
     fi
     local content
-    content="$(cat "$file")"
+    if [ -f "$file" ]; then
+      content="$(cat "$file")"
+    else
+      content="{}"
+    fi
     if ! [ "$(echo "$content" | jq '.proxies."http-proxy"' -r)" = http://$user_http_proxy ]; then
       echo "$content" | jq '. += {"proxies": { "http-proxy": "'"http://$user_http_proxy"'", "https-proxy": "'"http://$user_http_proxy"'" }}' | $sudo tee "$file" >/dev/null
       restart_docker
