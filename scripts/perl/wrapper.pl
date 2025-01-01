@@ -2,7 +2,11 @@ use strict;
 use warnings;
 
 use File::Basename;
-use String::ShellQuote 'shell_quote';
+
+use Cwd;
+my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+
+require $dotfiles_dir . '/scripts/perl/shellquote.pl';
 
 sub remove_path_from_env {
   my ($target) = @_;
@@ -20,7 +24,7 @@ sub print_and_exit {
   my ($cmdline, $code) = @_;
 
   if (open(SIGNAL, ">&=3")) {
-    print SIGNAL shell_quote(@$cmdline);
+    print SIGNAL String::ShellQuote::shell_quote(@$cmdline);
     close(SIGNAL);
     exit $code;
   } else {

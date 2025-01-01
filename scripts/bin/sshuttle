@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use String::ShellQuote 'shell_quote';
 use File::Basename;
 use Cwd;
 
@@ -33,7 +32,7 @@ if (my $ssh_options = $s->get_ssh_options()) {
 }
 
 if (scalar(@ssh_args)) {
-  push @command, '-e', shell_quote(@ssh_args);
+  push @command, '-e', String::ShellQuote::shell_quote(@ssh_args);
 }
 
 push @command, '-r', $s->get_user_host();

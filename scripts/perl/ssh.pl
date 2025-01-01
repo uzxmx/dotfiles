@@ -114,8 +114,7 @@ sub build_command {
 
   my @tmp = ::shellwords($self->{_command}->{template});
   my @cmdline = ();
-  use String::ShellQuote 'shell_quote';
-  my $cmd_str = shell_quote(@command);
+  my $cmd_str = String::ShellQuote::shell_quote(@command);
   for my $e (@tmp) {
     if ($e eq '{{COMMAND}}') {
       push @cmdline, $_ for @command;

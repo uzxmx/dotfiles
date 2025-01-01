@@ -5,7 +5,6 @@ use warnings;
 
 use File::Basename;
 use Cwd;
-use String::ShellQuote 'shell_quote';
 
 my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
 
@@ -38,4 +37,4 @@ if (my $ssh_options = $s->get_ssh_options()) {
   push @command, '-o', $_ for @$ssh_options;
 }
 
-print shell_quote($s->build_command(@command));
+print String::ShellQuote::shell_quote($s->build_command(@command));
