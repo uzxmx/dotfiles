@@ -4,4 +4,7 @@
 
 set -e
 
-cd /tmp && go install golang.org/x/tools/gopls@latest
+# version="latest"
+version="v0.15.3"
+
+cd /tmp && go install golang.org/x/tools/gopls@$version
