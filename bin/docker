@@ -63,11 +63,13 @@ cmd_pids() {
 }
 
 cmd_prune() {
-  # source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
   # local reply="$(yesno "Are you sure you want to remove all unused images and volumes? (y/N)" "no")"
   # [ "$reply" = "no" ] && echo Cancelled && exit
   # docker image prune -a -f
   # docker volume prune -f
+  echo "This operation will remove build cache (base images need to be downloaded again). Are you sure to proceed?"
+  [ "$(yesno "(y/N)" "no")" = "no" ] && echo Cancelled && exit
   docker system prune -a
 }
 

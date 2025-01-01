@@ -102,9 +102,23 @@ fi
   # it manually.
   source $DOTFILES_TARGET_DIR/.zshrc
 
+  echo "---- Setup fzf ----"
   $DOTFILES_DIR/scripts/install/fzf
+  echo "---- Setup fzf done ----"
+
+  echo "---- Setup fd ----"
   $DOTFILES_DIR/scripts/install/fd
+  echo "---- Setup fd done ----"
+
+  echo "---- Setup rg ----"
   $DOTFILES_DIR/scripts/install/rg
+  echo "---- Setup rg done ----"
+
+  echo "---- Setup nvim ----"
   $DOTFILES_DIR/scripts/install/nvim --do-all-steps
+  echo "---- Setup nvim done ----"
+
+  echo "---- Setup tmux ----"
   $DOTFILES_DIR/scripts/install/tmux --install-plugins
+  echo "---- Setup tmux done ----"
 EOF
