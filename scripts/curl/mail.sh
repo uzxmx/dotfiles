@@ -24,6 +24,8 @@ Options:
   -f <file>    file to be attached, can be specified multiple times
 
 Example:
+  $> curl mail --to to@example.com -s subject message
+
   $> curl mail --url smtp.exmail.qq.com:465 --from from@example.com -p password --to to@example.com -s subject message
 EOF
   exit 1
