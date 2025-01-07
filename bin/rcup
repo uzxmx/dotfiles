@@ -10,8 +10,34 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 PATH="$DOTFILES_DIR/scripts/rcm/bin:$PATH"
 rcup -T "${DOTFILES_TARGET_DIR:-$HOME}" -d "$DOTFILES_DIR" "$@"
 
-if [ ! -e ~/.irbrc ]; then
-  ln -s "$DOTFILES_DIR/irbrc" ~/.irbrc
+if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  link_global_config() {
+    src="$HOME/.$1"
+    if [ -n "$2" ]; then
+      target="$2"
+    else
+      target="$DOTFILES_DIR/$1"
+    fi
+    if [ ! -e "$src" ]; then
+      ln -s "$target" "$src"
+    elif ! is_link "$src" "$target"; then
+      echo "$src: link failed because it already exists"
+    fi
+  }
+
+  files=(
+    irbrc
+    tool-versions
+    gitconfig
+  )
+
+  for file in "${files[@]}"; do
+    link_global_config "$file"
+  done
+
+  if [ -f "$DOTFILES_TARGET_DIR/.zshrc.local" ]; then
+    link_global_config zshrc.local "$DOTFILES_TARGET_DIR/.zshrc.local"
+  fi
 fi
 
 "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
