@@ -11,7 +11,7 @@ _create_tmp() {
   else
     _tmp="$(mktemp)"
   fi
-  eval $name="$_tmp"
+  eval $name='$_tmp'
   trap_add "[ -e \"$_tmp\" ] && rm -rf \"$_tmp\"" EXIT
 }
 
