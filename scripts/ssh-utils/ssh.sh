@@ -15,7 +15,7 @@ Options:
   -d, --dry-run Only output SSH command
   --http-proxy <proxy> Default is 'localhost:8125'
   -N, --disable-http-proxy
-
+  -C Remote forward port 2224 and 2225 to access OSX system clipboard
 EOF
   exit 1
 }
@@ -24,6 +24,7 @@ proxy="localhost:8125"
 
 cmd_ssh() {
   local host_label dry_run disable_http_proxy
+  local osx_clipboard_shared
   local -a opts
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -36,6 +37,9 @@ cmd_ssh() {
       --http-proxy)
         shift
         proxy="$1"
+        ;;
+      -C)
+        osx_clipboard_shared="1"
         ;;
       -)
         shift
@@ -57,6 +61,10 @@ cmd_ssh() {
 
   if [ -z "$disable_http_proxy" ]; then
     opts+=(-R 8125:$proxy)
+  fi
+
+  if [ -n "$osx_clipboard_shared" ]; then
+    opts+=(-R 2224:localhost:2224 -R 2225:localhost:2225)
   fi
 
   if [ -z "$host_label" ]; then

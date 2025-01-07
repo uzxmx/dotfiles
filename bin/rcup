@@ -38,6 +38,12 @@ if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   if [ -f "$DOTFILES_TARGET_DIR/.zshrc.local" ]; then
     link_global_config zshrc.local "$DOTFILES_TARGET_DIR/.zshrc.local"
   fi
+else
+  if is_mac; then
+    if [ ! -e ~/Library/LaunchAgents/pbpaste.plist ]; then
+      ln -s "$DOTFILES_DIR/osx/LaunchAgents/pbpaste.plist" ~/Library/LaunchAgents/pbpaste.plist
+    fi
+  fi
 fi
 
 "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
