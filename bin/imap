@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import argparse
+
+import imaplib
+import email
+import time
+
+class IMAPCommand:
+    def __init__(self):
+        parser = argparse.ArgumentParser(prog='imap', description='IMAP utility.')
+        parser.add_argument('-u', '--user', required=True, help='The email user')
+        parser.add_argument('-p', '--password', required=True, help='The email password')
+        parser.add_argument('--imap-host', help='The IMAP host, can be implied from the email user')
+        parser.add_argument('--all', action='store_true', help='Get all emails')
+        parser.add_argument('--criteria', help='IMAP criteria. For example: (UNSEEN FROM "foo@example.com" SUBJECT "Test Subject")')
+        parser.add_argument('--uid', help='Fetch an email by UID')
+        parser.add_argument('--save-raw', action='store_true', help='Save raw email to a file')
+        self.parser = parser
+
+        self.data_dir = None
+
+    def run(self, args):
+        self.options = self.parser.parse_args(args)
+        self.imap_host = self.options.imap_host
+        if not self.imap_host:
+            domain = self.options.user.split('@')[-1]
+            ary = domain.split('.')
+            if domain == 'gmail.com':
+                self.imap_host = 'imap.gmail.com'
+            elif len(ary) == 2:
+                self.imap_host = 'mail.' + domain
+            else:
+                self.imap_host = domain
+            print('The implied IMAP host is: {}'.format(self.imap_host))
+        self.get_emails()
+
+    def get_emails(self):
+        conn = imaplib.IMAP4_SSL(self.imap_host)
+
+        print('Connect to IMAP server')
+        conn.login(self.options.user, self.options.password)
+        try:
+            print('Select Inbox')
+            conn.select('Inbox')
+
+            if self.options.uid:
+                try:
+                    result, msg = conn.fetch(self.options.uid, '(RFC822)')
+                    data = msg[0][1].decode('utf-8')
+                    self.parse_email(self.options.uid, data)
+                except imaplib.IMAP4.error as e:
+                    if 'Invalid messageset' in str(e):
+                        print('Cannot find email message for uid: {}'.format(self.options.uid))
+                    else:
+                        print("Error: {}".format(e))
+            else:
+                if self.options.criteria:
+                    criteria = self.options.criteria
+                elif self.options.all:
+                    criteria = '(ALL)'
+                else:
+                    criteria = '(UNSEEN)'
+
+                _, result = conn.search(None, criteria)
+                msgs = []
+                for num in result[0].split():
+                    _, msg = conn.fetch(num, '(RFC822)')
+                    msgs.append(msg)
+
+                print('Got {} emails'.format(len(msgs)))
+
+                for msg in msgs[::-1]:
+                    uid = msg[0][0].decode('utf-8').split()[0]
+                    data = msg[0][1].decode('utf-8')
+                    self.parse_email(uid, data)
+        finally:
+            conn.close()
+            conn.logout()
+
+    def parse_email(self, uid, data):
+        print('---- MAIL #{} ----'.format(uid))
+
+        email_message = email.message_from_string(data)
+
+        print('From: {}'.format(email_message['From']))
+        print('To: {}'.format(email_message['To']))
+        print('Date: {}'.format(email_message['Date']))
+        print('Subject: {}'.format(email_message['Subject']))
+
+        if self.options.save_raw:
+            self.save_email(uid, 'Raw', 'raw.txt', lambda: data.encode())
+
+        for part in email_message.walk():
+            if part.get_content_maintype() == 'multipart':
+                continue
+            if part.get('Content-Disposition') is None:
+                continue
+            self.save_email(uid, 'Attachment', part.get_filename(), lambda: part.get_payload(decode=True))
+
+        if email_message.is_multipart():
+            for part in email_message.walk():
+                if part.get_content_type() == 'text/plain' and part.get('Content-Disposition') is None:
+                    print('Body: {}'.format(part.get_payload()))
+        else:
+            content_type = email_message.get_content_type()
+            if content_type == 'text/html':
+                self.save_email(uid, 'Body', 'body.html', lambda: email_message.get_payload(decode=True))
+            else:
+                raise Exception('Unhandled content type: {}'.format(content_type))
+                # import code
+                # code.interact(local=locals())
+
+    def save_email(self, uid, tag, filename, content_lambda):
+        if self.data_dir is None:
+            self.data_dir = os.path.join(os.getcwd(), self.options.user)
+        email_dir = os.path.join(self.data_dir, uid)
+        os.makedirs(email_dir, exist_ok=True)
+        file = os.path.join(email_dir, filename)
+        if os.path.isfile(file):
+            print('{}: {} (Skip creation because it already existed)'.format(tag, file))
+            return file
+        with open(file, 'wb') as f:
+            f.write(content_lambda())
+        print('{}: {}'.format(tag, file))
+        return file
+
+if __name__ == '__main__':
+    IMAPCommand().run(sys.argv[1:])
