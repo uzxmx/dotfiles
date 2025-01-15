@@ -36,7 +36,8 @@ elif [ ! -e "$file" ]; then
   exit 1
 fi
 
-content="$(pbpaste)"
+source "$DOTFILES_DIR/scripts/lib/clipboard.sh"
+get_clipboard content
 
 if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
   echo "Clipboard content doesn't match the format: user@ip:/path/to/file"
