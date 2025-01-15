@@ -45,16 +45,20 @@ download_and_install() {
 #   $1: git url
 #   $2: install function
 #   $3: optional temp dir. One will be generated if not specified
+#   VARARGS: arguments which are passed to the clone command
 download_and_install_by_git() {
+  local url="$1"
+  local install_fn=$2
   local tmpdir="$3"
+  shift 3
   if [ -z "$tmpdir" ]; then
     create_tmpdir tmpdir
   else
     mkdir -p "$tmpdir"
   fi
-  git_shallow_clone "$1" "$tmpdir"
-  if [ -n "$2" ]; then
-    $2 "$tmpdir"
+  git_shallow_clone "$url" "$tmpdir"
+  if [ -n "$install_fn" ]; then
+    $install_fn "$tmpdir"
   fi
 }
 

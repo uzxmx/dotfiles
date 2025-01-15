@@ -10,11 +10,14 @@ source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_command sshuttle &> /dev/null && exit
 
-version="v1.0.5"
-dir="/tmp/sshuttle"
-git_clone "https://github.com/sshuttle/sshuttle" "$dir" -b "$version" --depth 1
+install_fn() {
+  cd "$1"
 
-(cd "$dir"; ./setup.py install)
-rm -rf "$dir"
+  rm -rf .tool-versions
+  ln -s "$DOTFILES_DIR/tool-versions" .tool-versions
+  ./setup.py install
+  asdf reshim
+}
 
-asdf reshim
+version="v1.1.2"
+download_and_install_by_git "https://github.com/sshuttle/sshuttle" install_fn "" -b "$version"
