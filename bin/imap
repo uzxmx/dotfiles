@@ -103,7 +103,11 @@ class IMAPCommand:
         if email_message.is_multipart():
             for part in email_message.walk():
                 if part.get_content_type() == 'text/plain' and part.get('Content-Disposition') is None:
-                    print('Body: {}'.format(part.get_payload()))
+                    payload = part.get_payload()
+                    if len(payload) > 512:
+                        self.save_email(uid, 'Body', 'body.txt', lambda: payload.encode())
+                    else:
+                        print('Body: {}'.format(payload))
         else:
             content_type = email_message.get_content_type()
             if content_type == 'text/html':
