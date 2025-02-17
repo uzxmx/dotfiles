@@ -15,6 +15,11 @@ Wrapper for readelf utility.
 Examples:
   # Show symbol table without truncating the name
   $> readelf -W -s /bin/ls
+
+  # Show executable or shared library dependencies
+  $> readelf --dynamic /bin/ls | grep NEEDED
+  $> readelf --dynamic /libc.so.6 | grep NEEDED
+  $> ldd --verbose /libc.so.6
 EOF
   exit 1
 }
