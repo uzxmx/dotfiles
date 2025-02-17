@@ -120,6 +120,8 @@ func main() {
 	}
 	defer db.Close()
 
+	// db.Exec("SET SESSION sql_mode = sys.list_drop(@@SESSION.sql_mode, 'ONLY_FULL_GROUP_BY');")
+
 	rows, err := db.Query(query)
 	if err != nil {
 		panic(err)

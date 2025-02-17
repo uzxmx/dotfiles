@@ -4,6 +4,7 @@ set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 source "$DOTFILES_DIR/scripts/lib/prompt.sh"
 
 usage() {

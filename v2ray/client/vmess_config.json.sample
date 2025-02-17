@@ -44,16 +44,25 @@
       "protocol": "vmess",
       "settings": {
         "vnext": [
-        {
-          "address": "SERVER_ADDRESS",
-          "port": SERVER_PORT,
-          "users": [
-            {
-              "id": "YOUR_UUID"
-            }
-          ]
-        }
+          {
+            "address": "SERVER_ADDRESS",
+            "port": SERVER_PORT,
+            "users": [
+              {
+                "id": "YOUR_UUID"
+                "alterId": 0,
+                "security": "none"
+              }
+            ]
+          }
         ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "wsSettings": {
+            "path": "/_ohmysocket"
+        }
       },
       "tag": "vmess-outbound"
     }

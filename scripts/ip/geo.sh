@@ -10,6 +10,8 @@ EOF
   exit 1
 }
 
+# Another website: https://ip.sb/
+
 cmd_geo() {
   # local result="$(curl -s "http://api.geoiplookup.net/?query=$1")"
   # if [ -n "$result" ]; then
@@ -27,9 +29,9 @@ cmd_geo() {
 
   # Note: we get our external IP geo info when query is empty.
   if [ -z "$1" ]; then
-    curl https://cip.cc
+    curl cip.cc
   else
-    curl "https://cip.cc/$1"
+    curl "http://cip.cc/$1"
   fi
 
   # if [ -z "$1" ]; then
