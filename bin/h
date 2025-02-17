@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
 usage() {
   cat <<-EOF
@@ -34,19 +34,22 @@ case "$1" in
     if [ -d ~/.resources/docs/src ]; then
       dirs+=(~/.resources/docs/src)
     fi
-    if [ -d ~/.resources/snippets/src ]; then
-      dirs+=(~/.resources/snippets/src)
+    if [ -d ~/.resources/examples ]; then
+      dirs+=(~/.resources/examples)
+    fi
+    if [ -d ~/.templates/src ]; then
+      dirs+=(~/.templates/src)
     fi
     if [ -d ~/.pwn ]; then
       dirs+=(~/.pwn)
     fi
-    dirs+=("$dotfiles_dir")
+    dirs+=("$DOTFILES_DIR")
     s --filename "${dirs[@]}"
     ;;
   -*)
     usage
     ;;
   *)
-    "$dotfiles_dir/bin/v" "$@" --help
+    "$DOTFILES_DIR/bin/v" "$@" --help
     ;;
 esac
