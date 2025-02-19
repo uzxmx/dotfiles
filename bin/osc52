@@ -3,9 +3,9 @@
 # OSC52 copy to clipboard.
 
 if [ ! -t 0 ]; then
-  content="$(base64)"
+  content="$(base64 -w 0)"
 else
-  content="$(echo -n "$1" | base64)"
+  content="$(echo -n "$1" | base64 -w 0)"
 fi
 
 if [ -t 1 ]; then
