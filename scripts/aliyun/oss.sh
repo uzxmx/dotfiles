@@ -33,8 +33,12 @@ cmd_oss() {
       esac
       "cmd_oss_$cmd" "$@"
       ;;
-    *)
+    -*)
       usage_oss
+      ;;
+    *)
+      aliyun oss "$cmd" "$@"
+      exit
       ;;
   esac
 }
