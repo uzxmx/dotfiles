@@ -5,6 +5,8 @@ set -e
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 git_dir="$DOTFILES_DIR/scripts/git"
 
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
 usage() {
   cat <<-EOF
 Wrapper for git utility.
@@ -24,36 +26,13 @@ Subcommands:
   update_commit   - change the last commit message (the commit has not been pushed)
   init_hooks      - initialize git hooks and trigger post-checkout hook
   cleanb          - clean local branches that are gone on the remote
+  clean           - clean untracked files interactively
   w, worktree     - worktree utilities
   root            - show git root directory
   ignore_status   - check whether a file is ignored by git
   unshallow       - make a full clone for a shallow one
 EOF
   exit 1
-}
-
-alias_cmd() {
-  local new_name="$1"
-  local old_name="$2"
-  eval "
-    usage_$new_name() {
-      usage_$old_name \"\$@\"
-    }
-    cmd_$new_name() {
-      cmd_$old_name \"\$@\"
-    }
-  "
-}
-
-run() {
-  local cmd="$1"
-  shift
-  case "$1" in
-    -h)
-      type "usage_$cmd" &>/dev/null && "usage_$cmd"
-      ;;
-  esac
-  "cmd_$cmd" "$@"
 }
 
 case "$1" in
@@ -63,7 +42,7 @@ case "$1" in
   a | cl | d | l | show_commit | pt | rm_from_history | \
   s | search | g | grep | update_commit | ignore_for | cm | \
   init_hooks | cleanb | w | worktree | root | ignore_status | \
-  unshallow)
+  unshallow | clean)
     case "$1" in
       a)
         name="archive"
