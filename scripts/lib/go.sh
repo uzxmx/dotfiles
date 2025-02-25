@@ -34,7 +34,7 @@ go_run_compiled() {
     create_tmpdir tmpdir
     cp "$src_file" "$tmpdir"
 
-    cd "$tmpdir" && go mod init github.com/uzxmx/dotfiles &>/dev/null && go mod tidy &>/dev/null && go build -o "$executable_path" "$(basename "$src_file")" >/dev/null
+    cd "$tmpdir" && go mod init github.com/uzxmx/dotfiles >/dev/null && go mod tidy >/dev/null && go build -o "$executable_path" "$(basename "$src_file")" >/dev/null
     local result="$?"
     [ "$result" -ne 0 ] && exit "$result"
   fi
