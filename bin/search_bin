@@ -4,5 +4,84 @@ set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
-source "$DOTFILES_DIR/scripts/lib/go.sh"
-go_run_compiled "$DOTFILES_DIR/scripts/gocmd/search_bin/main.go" "$@"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility for searching binary file.
+
+Subcommands:
+  prefix - search files by prefix hexadecimal
+  s      - common search utility
+EOF
+  exit 1
+}
+
+check_file() {
+  local prefix="$1"
+  local file="$2"
+  local output
+  local len="$((${#prefix} / 2))"
+  echo "Check $file"
+  output="$(xxd -ps -l "$len" "$file")"
+  if [ "$output" = "$prefix" ]; then
+    echo "$file matched"
+  fi
+}
+
+usage_prefix() {
+  cat <<-EOF
+Usage: search_bin prefix <hex> <files-pattern>
+
+Search files by prefix hexadecimal.
+
+Example:
+  $> search_bin prefix bf26a246a8a53bd29fb9c28fc6ed220a '*.db'
+EOF
+  exit 1
+}
+
+cmd_prefix() {
+  local prefix files_pattern
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -*)
+        usage_prefix
+        ;;
+      *)
+        if [ -z "$prefix" ]; then
+          prefix="$1"
+        elif [ -z "$files_pattern" ]; then
+          files_pattern="$1"
+        else
+          usage_prefix
+        fi
+        ;;
+    esac
+    shift
+  done
+
+  if [ -z "$prefix" -o -z "$files_pattern" ]; then
+    usage_prefix
+  fi
+
+  local file
+  while read file; do
+    check_file "$prefix" "$file"
+  done < <(find . -name "$files_pattern" -type f)
+}
+
+case "$1" in
+  prefix)
+    shift
+    cmd_prefix "$@"
+    ;;
+  s)
+    shift
+    source "$DOTFILES_DIR/scripts/lib/go.sh"
+    go_run_compiled "$DOTFILES_DIR/scripts/gocmd/search_bin/main.go" "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
