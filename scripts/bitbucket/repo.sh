@@ -4,7 +4,7 @@ Usage: bitbucket repo
 
 Subcommands:
   l, list   - list repositories
-  g, get    - get a repository
+  g, get    - get or clone a repository
   c, create - create a repository
   d, delete - delete a repository
 EOF
@@ -94,6 +94,7 @@ Options:
   -w <workspace slug> workspace to use
   -k <project key> project key to use
   --show-git-url output git url
+  -c clone the repository
 EOF
   exit 1
 }
@@ -105,11 +106,15 @@ git_url_from_full_name() {
 cmd_repo_get() {
   check_workspace
 
-  local name show_git_url
+  local name show_git_url clone
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --show-git-url)
         show_git_url=1
+        ;;
+      -c)
+        show_git_url=1
+        clone=1
         ;;
       -*)
         usage_repo_get
@@ -122,14 +127,19 @@ cmd_repo_get() {
   done
 
   if [ -z "$name" ]; then
-    source "$DOTFILES_DIR/scripts/lib/prompt.sh"
-    ask_for_input name "Name for the repo to get: "
+    name="$(cmd_repo_list | awk '{ print $2 }' | fzf)"
+    [ -z "$name" ] && exit
   fi
   local resp="$(req "repositories/$workspace/$name")"
   local slug="$(echo "$resp" | jq -r '.slug')"
   if [ "$slug" = "$name" ]; then
     if [ "$show_git_url" = "1" ]; then
-      git_url_from_full_name "$(echo "$resp" | jq -r '.full_name')"
+      git_url="$(git_url_from_full_name "$(echo "$resp" | jq -r '.full_name')")"
+      if [ "$clone" = "1" ]; then
+        git clone "$git_url"
+      else
+        echo "$git_url"
+      fi
     else
       echo "$resp"
     fi
