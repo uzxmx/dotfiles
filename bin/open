@@ -30,8 +30,10 @@ is_wsl() {
   [[ "$(uname -r)" =~ [Mm]icrosoft ]]
 }
 
-if ! is_wsl && [ "$#" -gt 0 -a "$1" = "-" ]; then
-  shift
+if ! is_wsl && [ "$#" -gt 0 ] && [ "$1" = "-" -o "$1" = "-a" ]; then
+  if [ "$1" = "-" ]; then
+    shift
+  fi
   exec open "$@"
 fi
 
