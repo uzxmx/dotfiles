@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Install labelme (https://github.com/wkentaro/labelme)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command labelme &> /dev/null && exit
+
+pip install labelme
+check_command asdf &>/dev/null && asdf reshim
