@@ -39,6 +39,9 @@ if [[ "$OSTYPE" =~ ^darwin.* ]]; then
 elif [[ "$(uname -r)" =~ [Mm]icrosoft ]]; then
   copy_cmd="clip.exe"
   paste_cmd="pbpaste.exe"
+elif type -p xclip &>/dev/null; then
+  copy_cmd="xclip -in -selection clipboard"
+  paste_cmd="xclip -out -selection clipboard"
 else
   copy_cmd="osc52"
 fi
