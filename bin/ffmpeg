@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+ffmpeg_dir="$DOTFILES_DIR/scripts/ffmpeg"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for ffmpeg utility.
+
+Subcommands:
+  concat_images - concatenate images to a video
+EOF
+  exit 1
+}
+
+case "$1" in
+  concat_images)
+    case "$1" in
+      *)
+        name="$1"
+    esac
+    source "$ffmpeg_dir/$name.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    ffmpeg "$@"
+    ;;
+  *)
+    ffmpeg "$@"
+    ;;
+esac
