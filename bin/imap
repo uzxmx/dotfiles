@@ -8,6 +8,21 @@ import imaplib
 import email
 import time
 
+def decode_header(raw_header):
+    decoded_parts = email.header.decode_header(raw_header)
+    result = []
+    for part, charset in decoded_parts:
+        if isinstance(part, bytes):
+            if charset:
+                if charset == 'gb2312':
+                    charset = 'gb18030'
+                result.append(part.decode(charset))
+            else:
+                result.append(part.decode('utf-8', errors='replace'))
+        else:
+            result.append(part)
+    return ''.join(result)
+
 class IMAPCommand:
     def __init__(self):
         parser = argparse.ArgumentParser(prog='imap', description='IMAP utility.')
@@ -87,8 +102,9 @@ class IMAPCommand:
 
         print('From: {}'.format(email_message['From']))
         print('To: {}'.format(email_message['To']))
+        print('Delivered-To: {}'.format(email_message['Delivered-To']))
         print('Date: {}'.format(email_message['Date']))
-        print('Subject: {}'.format(email_message['Subject']))
+        print('Subject: {}'.format(decode_header(email_message['Subject'])))
 
         if self.options.save_raw:
             self.save_email(uid, 'Raw', 'raw.txt', lambda: data.encode())
@@ -103,7 +119,11 @@ class IMAPCommand:
         if email_message.is_multipart():
             for part in email_message.walk():
                 if part.get_content_type() == 'text/plain' and part.get('Content-Disposition') is None:
-                    payload = part.get_payload()
+                    charset = part.get_content_charset()
+                    if charset == 'utf-8':
+                        payload = part.get_payload()
+                    elif charset == 'gb18030':
+                        payload = part.get_payload(decode=True).decode('gb18030')
                     if len(payload) > 512:
                         self.save_email(uid, 'Body', 'body.txt', lambda: payload.encode())
                     else:
