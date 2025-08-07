@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Install fail2ban (https://github.com/fail2ban/fail2ban)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_enabled() {
+  if [ "$(sudo systemctl is-enabled fail2ban)" = "disabled" ]; then
+    sudo systemctl enable fail2ban
+  fi
+}
+
+if ! has_yum && ! has_apt; then
+  abort "Unsupported system"
+fi
+
+check_command fail2ban-client &> /dev/null && check_enabled && exit
+
+if has_yum; then
+  sudo yum install -y fail2ban
+elif has_apt; then
+  sudo apt-get install -y fail2ban
+else
+  abort "Unsupported system"
+fi
+
+check_enabled
+sudo systemctl start fail2ban
