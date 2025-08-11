@@ -7,6 +7,25 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
+usage() {
+  cat <<-EOF
+Install fail2ban.
+
+Options:
+  --from-git-repo Install from git repo
+EOF
+  exit 1
+}
+
+parse_args="
+  --from-git-repo)
+    from_git_repo=1
+    ;;
+  *)
+    usage
+    ;;
+"
+
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
 check_enabled() {
@@ -21,12 +40,27 @@ fi
 
 check_command fail2ban-client &> /dev/null && check_enabled && exit
 
-if has_yum; then
-  sudo yum install -y fail2ban
-elif has_apt; then
-  sudo apt-get install -y fail2ban
+do_install() {
+  cd "$1"
+
+  sudo python setup.py install
+  sudo cp build/fail2ban.service /etc/systemd/system
+}
+
+if [ -n "$from_git_repo" ]; then
+  dir="/tmp/fail2ban"
+  git_clone https://github.com/fail2ban/fail2ban "$dir" --depth 1
+
+  do_install "$dir"
+  sudo rm -rf "$dir"
 else
-  abort "Unsupported system"
+  if has_yum; then
+    sudo yum install -y fail2ban
+  elif has_apt; then
+    sudo apt-get install -y fail2ban
+  else
+    abort "Unsupported system"
+  fi
 fi
 
 check_enabled
