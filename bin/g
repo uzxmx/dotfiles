@@ -12,6 +12,7 @@ usage() {
 Wrapper for git utility.
 
 Subcommands:
+  s               - show status
   a               - archive
   cl              - clone with depth 1
   d               - enhanced diff utility by fzf
@@ -19,7 +20,7 @@ Subcommands:
   cm              - enhanced commit utility
   pt              - push a local branch to a remote branch
   l               - enhanced log utility by fzf
-  s, search       - search file contents in the git history
+  search          - search file contents in the git history
   g, grep         - search file contents in the working directory, or a tree (ref)
   show_commit     - show files of a commit by fzf and tmux
   rm_from_history - remove files from git history
@@ -39,8 +40,11 @@ case "$1" in
   "")
     git status .
     ;;
+  s)
+    git status
+    ;;
   a | cl | d | l | show_commit | pt | rm_from_history | \
-  s | search | g | grep | update_commit | ignore_for | cm | \
+  search | g | grep | update_commit | ignore_for | cm | \
   init_hooks | cleanb | w | worktree | root | ignore_status | \
   unshallow | clean)
     case "$1" in
@@ -58,9 +62,6 @@ case "$1" in
         ;;
       pt)
         name="push_to"
-        ;;
-      s)
-        name="search"
         ;;
       g)
         name="grep"
