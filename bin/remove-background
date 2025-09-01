@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# https://github.com/danielgatis/rembg
+# https://github.com/nadermx/backgroundremover
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Usage: remove-background <src-image> <dest-image>
+
+Install below dependency first:
+pip install "rembg[cli]"
+
+Options:
+  -w Change background to white color
+  --bgcolor <4-integers> RGBA, e.g. "255 0 0 255"
+
+Examples:
+  $> remove-background input.jpg out.jpg --bgcolor "255 0 0 255"
+EOF
+  exit 1
+}
+
+opts=(-x '{ "post_process_mask": true }')
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -w)
+      opts+=(--bgcolor 255 255 255 255)
+      ;;
+    --bgcolor)
+      shift
+      opts+=(--bgcolor $1)
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      if [ -z "$src_file" ]; then
+        src_file="$1"
+      elif [ -z "$dest_file" ]; then
+        dest_file="$1"
+      else
+        usage
+      fi
+      ;;
+  esac
+  shift
+done
+
+rembg i "$src_file" "$dest_file" "${opts[@]}"
