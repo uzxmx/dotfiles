@@ -108,3 +108,19 @@ create_link() {
 can_visit_google() {
   curl --noproxy "*" www.google.com --connect-timeout 2 &>/dev/null
 }
+
+# Install a file as a link.
+#
+# @params:
+#   $1: src file
+#   $2: target dir
+#   $3: link name
+install_as_link() {
+  local src_file="$1"
+  local target_dir="$2"
+  local link_name="$3"
+  mv "$src_file" "$target_dir"
+  local link_file="$target_dir/$link_name"
+  [ -e "$link_file" ] && rm "$link_file"
+  ln -s "$target_dir/$(basename "$src_file")" "$link_file"
+}

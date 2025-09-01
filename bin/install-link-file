@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Usage: install-file <src> <dest-dir> <link-name>
+EOF
+  exit 1
+}
+
+remainder=()
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
+
+[ "$#" -ne 3 ] && usage
+
+install_as_link "$@"
