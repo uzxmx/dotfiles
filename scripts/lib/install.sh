@@ -34,6 +34,8 @@ download_and_install() {
       tar Jxf "$path_to_save" -C "$extracted_dir"
     elif [[ "$1" =~ \.zip$ ]]; then
       unzip "$path_to_save" -d "$extracted_dir"
+    else
+      extracted_dir="$path_to_save"
     fi
   fi
   $2 "$extracted_dir"
