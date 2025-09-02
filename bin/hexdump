@@ -13,7 +13,7 @@ Wrapper for hexdump utility.
 
 Subcommands:
   p, parse - parse hexadecimal string to binary, and vice versa
-  bin      - display the input integer in binary
+  bin      - display the input integer in binary/hex
 
 Example:
   # Dump a binary file
@@ -25,37 +25,8 @@ EOF
   exit 1
 }
 
-usage_bin() {
-  cat <<-EOF
-Usage: hexdump bin <integer>
-
-Display the input integer (from argument or pipe) in binary.
-
-Example:
-  $> hexdump bin 255
-EOF
-  exit 1
-}
-
-cmd_bin() {
-  [ "$#" -eq 0 ] && usage_bin
-  for i in "$@"; do
-    perl -e "printf \"%b\n\", $i"
-  done
-}
-
 case "$1" in
-  bin)
-    cmd="$1"
-    shift
-    case "$1" in
-      -h)
-        type "usage_$cmd" &>/dev/null && "usage_$cmd"
-        ;;
-    esac
-    "cmd_$cmd" "$@"
-    ;;
-  p | parse)
+  p | parse | bin)
     case "$1" in
       p)
         name="parse"
