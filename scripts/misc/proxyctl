@@ -192,6 +192,13 @@ export https_proxy=$proxy
 export HTTPS_PROXY=$proxy"
 
   if [ "$dry_run" = "1" ]; then
+    if is_mac; then
+      local ip="$(ifconfig en0 | grep '^\s*inet ' | awk '{print $2}')"
+      if [ -n "$ip" ]; then
+        commands="$(echo "$commands" | sed "s/localhost/$ip/")"
+      fi
+    fi
+
     echo "$commands"
   else
     echo "$commands" >&3
