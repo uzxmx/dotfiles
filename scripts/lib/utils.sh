@@ -124,3 +124,15 @@ install_as_link() {
   [ -e "$link_file" ] && rm "$link_file"
   ln -s "$target_dir/$(basename "$src_file")" "$link_file"
 }
+
+# Get file size in bytes.
+#
+# @params:
+#   $1: file
+get_file_size() {
+  if is_mac; then
+    stat -f "%z" "$1"
+  else
+    stat -c "%s" "$1"
+  fi
+}
