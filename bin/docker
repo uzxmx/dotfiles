@@ -28,6 +28,7 @@ Misc commands:
   r, run     - run a docker image
   s          - manage services
   engine     - manage engine
+  copy       - copy to/from a docker container
 EOF
   exit 1
 }
@@ -79,7 +80,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | e | exec | p | r | run | rm | s | ps | rmi | engine)
+  l | e | exec | p | r | run | rm | s | ps | rmi | engine | copy)
     case "$1" in
       l)
         name="logs"
