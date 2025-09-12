@@ -2,10 +2,16 @@
 #
 # OSC52 copy to clipboard.
 
-if [ ! -t 0 ]; then
-  content="$(base64 -w 0)"
+if [[ "$OSTYPE" =~ ^darwin.* ]]; then
+  base64_opts=()
 else
-  content="$(echo -n "$1" | base64 -w 0)"
+  base64_opts=(-w 0)
+fi
+
+if [ ! -t 0 ]; then
+  content="$(base64 "${base64_opts[@]}")"
+else
+  content="$(echo -n "$1" | base64 "${base64_opts[@]}")"
 fi
 
 if [ -t 1 ]; then
