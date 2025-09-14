@@ -23,7 +23,7 @@ cmd_domain() {
   [ -z "$cmd" ] && usage_domain
 
   case "$cmd" in
-    l | list | i | update_cert | auto_renew)
+    l | list | i | update_cert | auto_renew | check_cert)
       case "$cmd" in
         l)
           cmd="list"
@@ -172,6 +172,12 @@ cmd_domain_auto_renew() {
     shift
   done
 
+  check_keys
+
+  if ! check_command jq &>/dev/null; then
+    abort "Please install 'jq' first"
+  fi
+
   [ -z "$prefix" ] && abort "A prefix is required"
   [ -z "$cert_file" ] && abort "A certificate file is required"
   [ -z "$key_file" ] && abort "A key file is required"
@@ -179,14 +185,21 @@ cmd_domain_auto_renew() {
 
   local cron_dir="$DOTFILES_TARGET_DIR/opt/my_cron_jobs"
   mkdir -p "$cron_dir"
-  local cron_job_file="$cron_dir/qiniu_domain_auto_renew-$prefix.sh"
+  local name="qiniu_domain_auto_renew-$prefix"
+  local cron_job_file="$cron_dir/$name.sh"
 
   cat <<EOF >"$cron_job_file"
 #!/usr/bin/env bash
 #
 # Generated. Do Not Edit.
 
-"$DOTFILES_DIR/bin/qiniu" domain check_cert --prefix "$prefix" --key-file "$key_file" --cert-file "$cert_file" "${domains[@]}"
+sudo cp "$key_file" "/tmp/$name-key.pem"
+sudo cp "$cert_file" "/tmp/$name-cert.pem"
+sudo chown \$(whoami) "/tmp/$name-key.pem" "/tmp/$name-cert.pem"
+
+export QINIU_ACCESS_KEY=$QINIU_ACCESS_KEY
+export QINIU_SECRET_KEY=$QINIU_SECRET_KEY
+"$DOTFILES_DIR/bin/qiniu" domain check_cert --prefix "$prefix" --key-file "/tmp/$name-key.pem" --cert-file "/tmp/$name-cert.pem" "${domains[@]}" &>"/tmp/$name.log"
 EOF
 
   chmod a+x "$cron_job_file"
@@ -239,22 +252,25 @@ cmd_domain_check_cert() {
   [ -z "$key_file" ] && abort "A key file is required"
   [ "${#domains}" -eq 0 ] && abort "At least one domain should be specified"
 
+  local qiniu_cmd="$DOTFILES_DIR/bin/qiniu"
+
   local expire_date cert_name cert_id
   expire_date="$(openssl x509 -enddate -noout -in "$cert_file" | cut -d = -f 2- | date +%Y%m%d -f -)"
   cert_name="$prefix-$expire_date-generated"
   local result
-  result="$(qiniu cert list | awk '{print $2, $4}' | grep " $cert_name$")"
+  result="$("$qiniu_cmd" cert list | awk '{print $2, $4}' | grep " $cert_name$" || true)"
   if [ -z "$result" ]; then
     echo "Uploading certificate"
-    qiniu cert upload -n "$cert_name" --cert-file "$cert_file" --key-file "$key_file"
+    "$qiniu_cmd" cert upload -n "$cert_name" --cert-file "$cert_file" --key-file "$key_file"
+    result="$("$qiniu_cmd" cert list | awk '{print $2, $4}' | grep " $cert_name$" || true)"
   fi
   cert_id="$(echo "$result" | awk '{print $1}')"
   local domain current_cert_id
   for domain in "${domains[@]}"; do
-    current_cert_id="$(qiniu domain info "$domain" | jq -r .https.certId)"
+    current_cert_id="$("$qiniu_cmd" domain info "$domain" | jq -r .https.certId)"
     if [ "$cert_id" != "$current_cert_id" ]; then
       echo "Update certificate for domain $domain"
-      qiniu domain update_cert --cert-id "$cert_id" "$domain"
+      "$qiniu_cmd" domain update_cert --cert-id "$cert_id" "$domain"
     else
       echo "No need to update certificate for domain $domain"
     fi
