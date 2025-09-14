@@ -23,7 +23,7 @@ cmd_domain() {
   [ -z "$cmd" ] && usage_domain
 
   case "$cmd" in
-    l | list | i | update_cert | auto_renew | check_cert)
+    l | list | i | info | update_cert | auto_renew | check_cert)
       case "$cmd" in
         l)
           cmd="list"
@@ -199,7 +199,7 @@ sudo chown \$(whoami) "/tmp/$name-key.pem" "/tmp/$name-cert.pem"
 
 export QINIU_ACCESS_KEY=$QINIU_ACCESS_KEY
 export QINIU_SECRET_KEY=$QINIU_SECRET_KEY
-"$DOTFILES_DIR/bin/qiniu" domain check_cert --prefix "$prefix" --key-file "/tmp/$name-key.pem" --cert-file "/tmp/$name-cert.pem" "${domains[@]}" &>"/tmp/$name.log"
+"$DOTFILES_DIR/bin/qiniu" domain check_cert --prefix "$prefix" --key-file "/tmp/$name-key.pem" --cert-file "/tmp/$name-cert.pem" ${domains[@]} &>"/tmp/$name.log"
 EOF
 
   chmod a+x "$cron_job_file"
