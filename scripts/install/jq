@@ -4,17 +4,35 @@
 
 set -eo pipefail
 
-type -p jq &> /dev/null && exit
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
+check_command jq &> /dev/null && exit
+
+version="1.8.1"
 if is_mac; then
   brew_install jq
-elif has_yum; then
-  sudo yum install -y epel-release
-  sudo yum install -y jq
-elif has_apt; then
-  sudo apt-get install -y jq
+  exit
+elif is_linux; then
+  if is_arm64; then
+    platform="arm64"
+  else
+    platform="amd64"
+  fi
 else
   abort "Unsupported system"
 fi
+
+install_fn() {
+  local file="$1"
+  chmod a+x "$file"
+  if is_linux; then
+    sudo mv "$file" /usr/bin/jq
+  else
+    mv "$file" "$DOTFILES_TARGET_DIR/bin/jq"
+  fi
+}
+
+download_and_install "https://github.com/jqlang/jq/releases/download/jq-$version/jq-linux-$platform" install_fn
