@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-qiniu_dir="$dotfiles_dir/scripts/qiniu"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+qiniu_dir="$DOTFILES_DIR/scripts/qiniu"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -19,12 +19,14 @@ Subcommands:
   u, upload - upload files to qiniu
   l, list   - list files
   f, filter - filter listed files
+  c, cert   - Manage SSL certificates
+  d, domain - Manage domains
 EOF
   exit 1
 }
 
 case "$1" in
-  b | bucket | u | upload | l | list | f | filter)
+  b | bucket | u | upload | l | list | f | filter | c | cert | d | domain)
     case "$1" in
       b)
         name="bucket"
@@ -37,6 +39,12 @@ case "$1" in
         ;;
       f)
         name="filter"
+        ;;
+      c)
+        name="cert"
+        ;;
+      d)
+        name="domain"
         ;;
       *)
         name="$1"

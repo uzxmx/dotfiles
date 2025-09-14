@@ -52,22 +52,37 @@ _req() {
   if [ -n "$query" ]; then
     str="$str?$query"
   fi
-  str="$str\nHost: $host\nContent-Type: $content_type"
-  str="$str\n\n"
+  str="$str
+Host: $host
+Content-Type: $content_type
+
+"
 
   if [ "$content_type" != "application/octet-stream" ]; then
     str="$str$body"
   fi
 
-  local sign="$(echo -en "$str" | openssl sha1 -hmac "$secret_key" -binary | base64 | tr +/ -_)"
+  local sign="$(echo -n "$str" | openssl sha1 -hmac "$secret_key" -binary | base64 | tr +/ -_)"
   local access_token="$access_key:$sign"
   local url="https://$host$path"
   if [ -n "$query" ]; then
     url="$url?$query"
   fi
-  curl -s -H "Authorization: Qiniu $access_token" -H "Content-Type: $content_type" "$url"
+  local opts=(-s -X "$method" -H "Authorization: Qiniu $access_token" -H "Content-Type: $content_type")
+  if [ -n "$body" ]; then
+    opts+=(-d "$body")
+  fi
+  curl "${opts[@]}" "$url"
 }
 
 get_req() {
   _req GET "$@"
+}
+
+post_req() {
+  _req POST "$@"
+}
+
+put_req() {
+  _req PUT "$@"
 }

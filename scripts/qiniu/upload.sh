@@ -53,8 +53,8 @@ cmd_upload() {
   [ "${#files[@]}" -eq 0 ] && abort 'At least a file should be specified'
 
   if [ -n "$fetch_from_remote" ]; then
-    source "$dotfiles_dir/scripts/lib/tmpfile.sh"
-    source "$dotfiles_dir/scripts/lib/url.sh"
+    source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
+    source "$DOTFILES_DIR/scripts/lib/url.sh"
   fi
 
   local file key upload_token tmpfile
