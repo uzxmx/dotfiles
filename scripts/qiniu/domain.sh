@@ -261,12 +261,14 @@ cmd_domain_check_cert() {
   result="$("$qiniu_cmd" cert list | awk '{print $2, $4}' | grep " $cert_name$" || true)"
   if [ -z "$result" ]; then
     echo "Uploading certificate"
-    "$qiniu_cmd" cert upload -n "$cert_name" --cert-file "$cert_file" --key-file "$key_file"
-    result="$("$qiniu_cmd" cert list | awk '{print $2, $4}' | grep " $cert_name$" || true)"
+    cert_id="$("$qiniu_cmd" cert upload -n "$cert_name" --cert-file "$cert_file" --key-file "$key_file" | jq -r .certID)"
+  else
+    cert_id="$(echo "$result" | awk '{print $1}')"
   fi
-  cert_id="$(echo "$result" | awk '{print $1}')"
+  echo "Cert id: $cert_id"
   local domain current_cert_id
   for domain in "${domains[@]}"; do
+    echo "Check domain $domain"
     current_cert_id="$("$qiniu_cmd" domain info "$domain" | jq -r .https.certId)"
     if [ "$cert_id" != "$current_cert_id" ]; then
       echo "Update certificate for domain $domain"
