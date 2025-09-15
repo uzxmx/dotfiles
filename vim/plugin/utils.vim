@@ -31,6 +31,7 @@ command! -nargs=1 OpenInTab call utils#tab#open_in_tab(<q-args>, v:false)
 "
 " Reference http://vimdoc.sourceforge.net/htmldoc/cmdline.html#filename-modifiers
 command! CopyFilePath call setreg('+', expand('%'))
+command! CopyFilePathWithLineNo call setreg('+', expand('%') . ':' . line('.'))
 command! CopyFileName call setreg('+', expand('%:t'))
 command! CopyFilePathAbs call setreg('+', expand('%:p'))
 command! CopyFilePathAbs call setreg('+', expand('%:p'))
