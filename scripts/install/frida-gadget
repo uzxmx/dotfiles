@@ -5,6 +5,7 @@
 set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
@@ -47,7 +48,7 @@ install_gadget() {
   local version="$2"
   local extension="$3"
   local file_name="frida-gadget-$version-$platform.$extension"
-  local file_path="$HOME/frida/$file_name"
+  local file_path="$DOTFILES_TARGET_DIR/opt/frida/$file_name"
   if [ ! -e "$file_path" ]; then
     echo "Install gadget for $platform@$version"
     local path_to_save="/tmp/$file_name.xz"
