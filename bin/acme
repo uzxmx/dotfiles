@@ -25,6 +25,7 @@ Subcommands:
   i, issue - issue a certificate for domains
   install  - install issued certificate for a domain
   renew    - renew certificates
+  remove   - remove a certificate
 EOF
   exit 1
 }
@@ -36,7 +37,7 @@ run_acme() {
 [ "$#" -eq 0 ] && usage
 
 case "$1" in
-  l | list | info | i | issue | install | renew)
+  l | list | info | i | issue | install | renew | remove)
     case "$1" in
       i)
         name="issue"
