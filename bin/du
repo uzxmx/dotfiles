@@ -2,11 +2,16 @@
 
 set -e
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
 Wrapper for du utility that estimates file space usage.
+
+Options:
+  -S use sudo
 
 Examples:
   $ du # Get stats under current working directory
@@ -15,8 +20,28 @@ EOF
   exit 1
 }
 
-source "$dotfiles_dir/scripts/lib/path.sh"
-PATH="$(new_path_exclude "$dotfiles_dir/bin")"
+remainder=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -S)
+      sudo="sudo"
+      ;;
+    -)
+      shift
+      du "$@"
+      exit
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      remainder+=("$1")
+      ;;
+  esac
+  shift
+done
+
+set - "${remainder[@]}"
 
 args=()
 if [ -z "$1" -o -d "$1" ]; then
@@ -28,15 +53,4 @@ if [ -z "$1" -o -d "$1" ]; then
   fi
 fi
 
-case "$1" in
-  -)
-    shift
-    du "$@"
-    ;;
-  -h)
-    usage
-    ;;
-  *)
-    du "${args[@]}" "$@"
-    ;;
-esac
+$sudo du "${args[@]}" "$@"
