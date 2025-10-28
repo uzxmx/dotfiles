@@ -20,12 +20,13 @@ usage() {
 Wrapper for acme.sh utility.
 
 Subcommands:
-  l, list  - list all issued certificates
-  info     - show info for an issued certificate
-  i, issue - issue a certificate for domains
-  install  - install issued certificate for a domain
-  renew    - renew certificates
-  remove   - remove a certificate
+  l, list     - list all issued certificates
+  info        - show info for an issued certificate
+  i, issue    - issue a certificate for domains
+  install     - install issued certificate for a domain
+  renew       - renew certificates
+  remove      - remove a certificate
+  upload_cert - upload certificate to host
 EOF
   exit 1
 }
