@@ -16,9 +16,7 @@ Options:
   -r <reload_command> Command to execute after issue/renew to reload the server
 
 Examples:
-  sudo mkdir -p /etc/certs && sudo chown "\$(whoami):\$(id -Gn | awk '{print \$1}')" /etc/certs
-  mkdir /etc/certs/example.com
-  acme install example.com -t /etc/certs/example.com -r "docker restart nginx_nginx_1"
+  acme install example.com -r "docker restart nginx_nginx_1"
 EOF
   exit 1
 }
@@ -27,12 +25,12 @@ cmd_install() {
   local cert
   local -a opts
   local arg_name
+  local target_dir
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -t)
         shift
-        [ -e "$1" ] || mkdir "$1"
-        opts+=(--key-file "$1/key.pem" --fullchain-file "$1/cert.pem")
+        target_dir="$1"
         ;;
       --cert-file | --key-file | --ca-file | --fullchain-file)
         arg_name="$1"
@@ -58,6 +56,16 @@ cmd_install() {
   if [ -z "$cert" ]; then
     cert="$(select_certificate)"
   fi
+
+  if [ -z "$target_dir" ]; then
+    target_dir="/etc/certs/$cert"
+    echo "Using default target dir: $target_dir"
+    if [ ! -e /etc/certs ]; then
+      sudo mkdir -p /etc/certs && sudo chown "$(whoami):$(id -Gn | awk '{print $1}')" /etc/certs
+    fi
+  fi
+  [ -e "$target_dir" ] || mkdir "$target_dir"
+  opts+=(--key-file "$target_dir/key.pem" --fullchain-file "$target_dir/cert.pem")
 
   run_acme --install-cert -d "$cert" "${opts[@]}"
 }
