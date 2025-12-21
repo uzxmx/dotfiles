@@ -43,6 +43,17 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$LC_REMOTE_USER" -o -z "$LC_REMOTE_IP" ]; then
+  if is_mac; then
+    LC_REMOTE_USER="$(whoami)"
+    LC_REMOTE_IP="$(echo "$SSH_CONNECTION" | awk '{print $3}')"
+    if [ -z "$LC_REMOTE_IP" ]; then
+      echo "Please run this command in remote PC."
+      exit 1
+    fi
+  fi
+fi
+
+if [ -z "$LC_REMOTE_USER" -o -z "$LC_REMOTE_IP" ]; then
   if [ -z "$dry_run" ]; then
     cat <<EOF
 LC_REMOTE_USER and LC_REMOTE_IP must be set. On remote machine, execute below command:
