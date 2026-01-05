@@ -1,4 +1,4 @@
-" When using UltiSnips with coc.nvim and coc-ultisnips, we should bind the following.
+" When using UltiSnips with other completion engine like `nvim-cmp` or `coc.nvim`, we should bind the following.
 let g:UltiSnipsExpandTrigger="<Nop>"
 
 " Jump to next/previous placeholder.

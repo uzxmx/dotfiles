@@ -10,7 +10,20 @@ endif
 
 call plug#begin(g:vim_home . '/plugged')
 
-Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+" Completion and snippets
+" Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'"
+Plug 'hrsh7th/nvim-cmp'
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+Plug 'quangnguyen30192/cmp-nvim-ultisnips'
+
+" Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+" Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
+
 Plug 'posva/vim-vue', { 'for': 'vue' }
 Plug 'elzr/vim-json', { 'for': 'json' }
 Plug 'keith/swift.vim', { 'for': 'swift' }
@@ -36,8 +49,6 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'dyng/ctrlsf.vim', { 'commit': 'a7a446a' }
 Plug 'mileszs/ack.vim'
 Plug 'henrik/vim-indexed-search' " google/vim-searchindex doesn't work better than henrik/vim-indexed-search.
-Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
 Plug 'majutsushi/tagbar', { 'on': ['Tagbar', 'TagbarToggle'] }
 Plug 'szw/vim-tags', { 'on': [] }
 Plug 'vim-airline/vim-airline'
@@ -80,8 +91,6 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npx --yes yarn install' 
 Plug 'mzlogin/vim-markdown-toc'
 
 Plug 'airblade/vim-rooter'
-
-Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
 
 Plug 'uzxmx/vim-widgets'
 
