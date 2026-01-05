@@ -106,7 +106,7 @@ cmd_d() {
         --preview="$preview_cmd" \
         --preview-window="$preview_window:50%:wrap" \
         --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' Diff -- {2} ' -w 90% -h 90% -E \"$preview_cmd\")" \
-        --bind "ctrl-o:execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' Edit {2} ' -w 90% -h 90% -E \"$edit_cmd\")" \
+        --bind "ctrl-o:execute(tmux split-window \"$edit_cmd\")" \
         --expect "ctrl-s" \
         <<<"$output"
 

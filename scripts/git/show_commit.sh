@@ -31,6 +31,7 @@ cmd_show_commit() {
   [ -z "$commit" ] && echo 'A commit is required.' && exit 1
 
   local cmd preview_cmd
+  local edit_cmd="git show $commit --first-parent --pretty='' -- {2} | vi"
   if [ -z "$another_commit" ]; then
     cmd=(git show "$commit" --first-parent --pretty="" --name-status)
     preview_cmd="git show $commit --first-parent --pretty='' --color=always -- {2} | less -r"
@@ -50,6 +51,8 @@ cmd_show_commit() {
 
   "${cmd[@]}" | fzf --no-mouse --cycle \
     --layout=reverse \
+    --prompt="C-O:edit> " \
     --preview="$preview_cmd" \
-    --preview-window="$preview_window:50%:wrap"
+    --preview-window="$preview_window:50%:wrap" \
+    --bind "ctrl-o:execute(tmux split-window \"$edit_cmd\")"
 }
