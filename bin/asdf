@@ -15,7 +15,6 @@ fi
 if ! check_command asdf &>/dev/null; then
   if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
     "$DOTFILES_DIR/scripts/install/asdf"
-    source "$ASDF_DATA_DIR/asdf.sh"
   else
     abort "Please install 'asdf' first."
   fi

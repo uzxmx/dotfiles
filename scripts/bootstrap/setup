@@ -241,8 +241,6 @@ for pod in "${pods[@]}"; do
   esac
 done
 
-[ -f ~/.asdf/asdf.sh ] && source ~/.asdf/asdf.sh
-
 export GOPATH="$HOME/go"
 export GO111MODULE=on
 export GOPROXY="https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct"

@@ -46,10 +46,8 @@ done
 [ -f "$DOTFILES_TARGET_DIR/.config/fzf/fzf.zsh" ] && source "$DOTFILES_TARGET_DIR/.config/fzf/fzf.zsh"
 [ -f "$DOTFILES_TARGET_DIR/.zsh/history.zsh" ] && source "$DOTFILES_TARGET_DIR/.zsh/history.zsh"
 
-if [ -f "$DOTFILES_TARGET_DIR/.asdf/asdf.sh" ]; then
-  export ASDF_DATA_DIR="$DOTFILES_TARGET_DIR/.asdf"
-  source "$DOTFILES_TARGET_DIR/.asdf/asdf.sh"
-fi
+export ASDF_DATA_DIR="$DOTFILES_TARGET_DIR/.asdf"
+PATH="$ASDF_DATA_DIR/shims:$PATH"
 
 [ -f "$DOTFILES_TARGET_DIR/.zshrc.platform" ] && source "$DOTFILES_TARGET_DIR/.zshrc.platform"
 [ -f "$DOTFILES_TARGET_DIR/.zshrc.local" ] && source "$DOTFILES_TARGET_DIR/.zshrc.local"
@@ -68,7 +66,7 @@ if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
 fi
 
 # To make wrapper utilities in `$DOTFILES_DIR/bin` work, we must add it before
-# other paths, such as `$DOTFILES_TARGET_DIR/.asdf/shims`.
+# other paths, such as `$ASDF_DATA_DIR/shims`.
 #
 # Add `$DOTFILES_DIR/bin` before `$DOTFILES_DIR/bin_nim`, so we can override
 # utilities from the latter for both intrusive and non-intrusive mode.

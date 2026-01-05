@@ -1,9 +1,36 @@
 #!/usr/bin/env bash
+#
+# Install asdf (https://github.com/asdf-vm/asdf)
 
 set -eo pipefail
 
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-if [ ! -d "$DOTFILES_TARGET_DIR/.asdf" ]; then
-  git clone --depth 1 https://github.com/asdf-vm/asdf.git "$DOTFILES_TARGET_DIR/.asdf"
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command asdf &> /dev/null && exit
+
+version="v0.18.0"
+if is_mac; then
+  if is_arm64; then
+    platform="darwin-arm64"
+  else
+    platform="darwin-amd64"
+  fi
+elif is_linux; then
+  if is_arm64; then
+    platform="linux-arm64"
+  else
+    platform="linux-amd64"
+  fi
+else
+  abort "Unsupported system"
 fi
+
+install_fn() {
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  mv "$1/asdf" "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install "https://github.com/asdf-vm/asdf/releases/download/$version/asdf-$version-$platform.tar.gz" install_fn
