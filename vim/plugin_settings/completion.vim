@@ -100,7 +100,7 @@ lua <<EOF
     sources = cmp.config.sources({
       { name = 'path' }
     }, {
-      -- { name = 'cmdline' }
+      { name = 'cmdline' }
     }),
     matching = { disallow_symbol_nonprefix_matching = false }
   })
