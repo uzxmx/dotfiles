@@ -129,7 +129,7 @@ export GOPATH="$DOTFILES_TARGET_DIR/go"
 export GO111MODULE=on
 export GOPROXY=https://goproxy.cn,https://gocenter.io,https://goproxy.io,direct
 
-export FZF_DEFAULT_OPTS="--no-mouse --cycle --bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort'"
+export FZF_DEFAULT_OPTS="--no-mouse --cycle --bind 'ctrl-y:execute-silent(echo -n {} | trim | cb)+abort' --bind 'ctrl-h:execute-silent(tmux select-pane -L),ctrl-j:execute-silent(tmux select-pane -D),ctrl-k:execute-silent(tmux select-pane -U),ctrl-l:execute-silent(tmux select-pane -R)'"
 
 export THEOS="$DOTFILES_TARGET_DIR/theos"
 
