@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# Install zbar (https://github.com/mchehab/zbar).
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if is_mac; then
+  brew_install zbar
+  mkdir ~/lib
+  ln -s "$(brew --prefix zbar)/lib/libzbar.dylib" ~/lib/libzbar.dylib
+elif has_apt; then
+  sudo apt-get install -y libzbar0
+elif has_yum; then
+  sudo yum install -y zbar-devel
+else
+  abort "Unsupported system"
+fi
