@@ -52,7 +52,7 @@ Plug 'henrik/vim-indexed-search' " google/vim-searchindex doesn't work better th
 Plug 'majutsushi/tagbar', { 'on': ['Tagbar', 'TagbarToggle'] }
 Plug 'szw/vim-tags', { 'on': [] }
 Plug 'vim-airline/vim-airline'
-Plug 'altercation/vim-colors-solarized', { 'on': [] }
+Plug 'uzxmx/NeoSolarized', { 'on': [] }
 Plug 'uzxmx/vim-snazzy', { 'on': [] }
 Plug 'mkitt/tabline.vim'
 Plug 'tpope/vim-repeat'
@@ -97,8 +97,6 @@ Plug 'uzxmx/vim-widgets'
 Plug 'puremourning/vimspector'
 
 Plug 'kkvh/vim-docker-tools'
-
-Plug 'decrement/logos.vim'
 
 " A collection of language packs (syntax, indentation, etc.) for Vim.
 " In my case, the performance is a bit worse than only importing specific

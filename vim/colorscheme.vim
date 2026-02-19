@@ -2,10 +2,10 @@
 " colorscheme doesn't exist, vim will throw an error and ask us to press
 " <enter> to continue. In order to solve this, we can use `silent!`.
 if g:current_colorscheme =~ 'solarized \(dark\|light\)$'
-  call plug#load('vim-colors-solarized')
+  call plug#load('NeoSolarized')
   let s:background = split(g:current_colorscheme)[1]
   exec 'set background=' . s:background
-  silent! colorscheme solarized
+  silent! colorscheme NeoSolarized
 
   " For IncSearch highlight group, vim-colors-solarized implements as below:
   " exe "hi! IncSearch"      .s:fmt_stnd   .s:fg_orange .s:bg_none
@@ -19,3 +19,5 @@ elseif g:current_colorscheme == 'snazzy'
   set background=dark
   silent! colorscheme snazzy
 endif
+
+let g:airline_theme='my_dark'
