@@ -1,6 +1,8 @@
 " This script file should be loaded after henrik/vim-indexed-search.
 
-highlight CurrentSearch ctermbg=red ctermfg=0 guibg=#ff0000 guifg=#000000
+highlight CurSearch ctermbg=red ctermfg=0 guibg=#cb4b16 guifg=#303030
+
+"highlight CurrentSearch ctermbg=red ctermfg=0 guibg=#cb4b16 guifg=#303030
 
 function s:clear_current_search()
   if exists("w:current_search_match_id")
@@ -10,20 +12,20 @@ function s:clear_current_search()
 endfunction
 
 function s:highlight_current_search()
-  call s:clear_current_search()
-
-  let pos = getpos('.')
-  " Must be executed separately. The problem is when cursor is at the last
-  " character of a file, `norm! wb` won't go to the beginning of word.
-  norm! w
-  norm! b
-  let pattern = '\m\%'.line('.').'l\%'.col('.').'c'
-       \ . '\%('.(!&magic?'\M':'').@/.'\m\)'
-  call setpos('.', pos)
-  if &ignorecase
-    let pattern .= '\c'
-  endif
-  let w:current_search_match_id = matchadd("CurrentSearch", pattern, 2)
+  "call s:clear_current_search()
+  "
+  "let pos = getpos('.')
+  "" Must be executed separately. The problem is when cursor is at the last
+  "" character of a file, `norm! wb` won't go to the beginning of word.
+  "norm! w
+  "norm! b
+  "let pattern = '\m\%'.line('.').'l\%'.col('.').'c'
+  "     \ . '\%('.(!&magic?'\M':'').@/.'\m\)'
+  "call setpos('.', pos)
+  "if &ignorecase
+  "  let pattern .= '\c'
+  "endif
+  "let w:current_search_match_id = matchadd("CurrentSearch", pattern, 2)
 endfunction
 
 nnoremap <silent> # :<C-u>set hlsearch<cr>:let @/ = '\<'.expand('<cword>').'\>'<cr>:call <SID>highlight_current_search()<cr>:ShowSearchIndex<cr>
