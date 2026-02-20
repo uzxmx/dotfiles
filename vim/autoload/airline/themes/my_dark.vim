@@ -62,7 +62,7 @@ let g:airline#themes#my_dark#palette = {}
 
 let s:red = '#d30000'
 let s:purple = '#5f105f'
-let s:green = '#00ff00'
+let s:green = '#5dfbaf'
 let s:black = '#1f1f1f'
 
 " The my_dark.vim theme:
@@ -115,19 +115,19 @@ let g:airline#themes#my_dark#palette.normal.airline_term = s:airline_c_normal
 let g:airline#themes#my_dark#palette.terminal.airline_term = s:airline_c_normal
 let g:airline#themes#my_dark#palette.visual.airline_term = s:airline_c_normal
 
-let s:airline_a_inactive = [ '#4e4e4e' , '#1c1c1c' , 239 , 234 , '' ]
-let s:airline_b_inactive = [ '#4e4e4e' , '#262626' , 239 , 235 , '' ]
-let s:airline_c_inactive = [ '#4e4e4e' , '#303030' , 239 , 236 , '' ]
+let s:airline_a_inactive = [ '#1e1e1e' , '#505050' , 239 , 234 , '' ]
+let s:airline_b_inactive = [ '#282828' , '#505050' , 239 , 235 , '' ]
+let s:airline_c_inactive = [ '#2e2e2e' , '#505050' , 239 , 236 , '' ]
 let g:airline#themes#my_dark#palette.inactive = airline#themes#generate_color_map(s:airline_a_inactive, s:airline_b_inactive, s:airline_c_inactive)
 let g:airline#themes#my_dark#palette.inactive_modified = {
-      \ 'airline_c': [ '#875faf' , '' , 97 , '' , '' ] ,
+      \ 'airline_c': [ '' , '#875faf' , 97 , '' , '' ] ,
       \ }
 
 " For commandline mode, we use the colors from normal mode, except the mode
 " indicator should be colored differently, e.g. light green
 let s:airline_a_commandline = [ '#00d604' , '#202020' , 17  , 40 ]
 let s:airline_b_commandline = [ '#444444' , '#ffffff' , 255 , 238 ]
-let s:airline_c_commandline = [ '#1f1f1f' , '#00ff00' , 85  , 234 ]
+let s:airline_c_commandline = [ '#1f1f1f' , s:green , 85  , 234 ]
 let g:airline#themes#my_dark#palette.commandline = airline#themes#generate_color_map(s:airline_a_commandline, s:airline_b_commandline, s:airline_c_commandline)
 
 " Accents are used to give parts within a section a slightly different look or
