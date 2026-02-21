@@ -8,7 +8,7 @@
 #   $3: function to generate shell script content
 create_cron_job_file() {
   local name="$1"
-  lcoal schedule_pattern="$2"
+  local schedule_pattern="$2"
 
   local cron_dir="$DOTFILES_TARGET_DIR/opt/my_cron_jobs"
   mkdir -p "$cron_dir"
