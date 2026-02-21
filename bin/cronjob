@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+cronjob_dir="$DOTFILES_DIR/scripts/cronjob"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to manage common cron jobs.
+
+Subcommands:
+  sync_cert - sync ssl cert by ssh
+EOF
+  exit 1
+}
+
+case "$1" in
+  sync_cert)
+    case "$1" in
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$cronjob_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
