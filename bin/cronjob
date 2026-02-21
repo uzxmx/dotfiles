@@ -12,12 +12,16 @@ usage() {
 Utility to manage common cron jobs.
 
 Subcommands:
+  l, list   - list current user cron jobs
   sync_cert - sync ssl cert by ssh
 EOF
   exit 1
 }
 
 case "$1" in
+  l | list)
+    crontab -l
+    ;;
   sync_cert)
     case "$1" in
       *)
