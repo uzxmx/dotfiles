@@ -120,10 +120,10 @@ class IMAPCommand:
             for part in email_message.walk():
                 if part.get_content_type() == 'text/plain' and part.get('Content-Disposition') is None:
                     charset = part.get_content_charset()
-                    if charset == 'utf-8':
+                    if charset == 'utf-8' or charset is None:
                         payload = part.get_payload()
-                    elif charset == 'gb18030':
-                        payload = part.get_payload(decode=True).decode('gb18030')
+                    else:
+                        payload = part.get_payload(decode=True).decode(charset)
                     if len(payload) > 512:
                         self.save_email(uid, 'Body', 'body.txt', lambda: payload.encode())
                     else:

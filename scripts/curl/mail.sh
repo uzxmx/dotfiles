@@ -22,6 +22,7 @@ Options:
 
   -s <subject> subject
   -f <file>    file to be attached, can be specified multiple times
+  -I, --insecure skip ssl verification
 
 Example:
   $> curl mail --to to@example.com -s subject message
@@ -37,6 +38,7 @@ cmd_mail() {
   local from_name="$MAIL_FROM_NAME"
   local to_address to_name to_self url message
   local -a attach_opts
+  local -a opts
   while [ $# -gt 0 ]; do
     case "$1" in
       --from)
@@ -74,6 +76,9 @@ cmd_mail() {
         shift
         attach_opts+=(-F "file=@$1;type=$(file --mime-type "$1" | sed 's/.*: //');encoder=base64")
         ;;
+      -I | --insecure)
+        opts+=(--insecure)
+        ;;
       -*)
         usage_mail
         ;;
@@ -99,7 +104,11 @@ cmd_mail() {
         url="smtp.163.com:465"
         ;;
       *)
-        abort "Cannot infer the SMTP server address from $from_address"
+        url="$(dig "${from_address#*@}" MX +short | awk '{print $2}' | sed 's/\.$//')"
+        if [ -z "$url" ]; then
+          abort "Cannot infer the SMTP server address from $from_address"
+        fi
+        echo "Try to use SMTP server address $url"
         ;;
     esac
   fi
@@ -114,7 +123,9 @@ cmd_mail() {
     -F "=$message;type=text/plain" \
     "${attach_opts[@]}" \
     -F '=)' \
+    -H "Date: $(date -R)" \
     -H "Subject: $subject" \
     -H "From: ${from_name:-$from_address} <$from_address>" \
-    -H "To: ${to_name:-$to_address} <$to_address>"
+    -H "To: ${to_name:-$to_address} <$to_address>" \
+    "${opts[@]}"
 }
