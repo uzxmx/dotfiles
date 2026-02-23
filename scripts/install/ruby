@@ -63,6 +63,9 @@ if [ -z "$local_install" ]; then
       sudo apt-get install -y libssl-dev
     fi
     sudo apt-get install -y libreadline-dev
+  elif is_mac; then
+    # For ruby 3
+    brew install libyaml
   fi
 
   source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"

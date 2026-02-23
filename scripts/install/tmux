@@ -61,7 +61,7 @@ check_plugins() {
   done < <(cat "$DOTFILES_DIR/config/tmux/tmux.conf" | grep '^set-option -g @plugin' | cut -d ' ' -f 4 | sed "s/'//g")
 }
 
-version="3.3a"
+version="3.6a"
 
 [ -z "$force_install" -a -n "$install_plugins" ] && check_plugins && exit
 

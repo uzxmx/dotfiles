@@ -21,4 +21,4 @@ fi
 "$DOTFILES_DIR/bin/get" "https://github.com/MetaCubeX/mihomo/releases/download/v1.18.9/mihomo-$platform-$version.gz" "$path_to_save"
 
 gunzip "$path_to_save"
-(cd /tmp && chmod a+x "mihomo-$platform-$version" && sudo mv "mihomo-$platform-$version" /usr/bin/mihomo)
+(cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/bin/mihomo)
