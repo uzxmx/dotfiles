@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for mihomo utility.
+
+Subcommands:
+  run                - run mihomo in foreground
+  start/stop/restart - start/stop/restart mihomo service
+  s, status          - show status of mihomo service
+  l, log             - show logs of mihomo service
+  c, config          - edit config of mihomo service
+EOF
+  exit 1
+}
+
+get_pid() {
+  if is_mac; then
+    launchctl list | grep mihomo | awk '{print $1}'
+  else
+    cat /var/run/mihomo.pid 2>/dev/null || true
+  fi
+}
+
+mihomo_is_running() {
+  local pid=$(get_pid)
+  if [ -n "$pid" ]; then
+    ps "$pid" &>/dev/null
+  else
+    false
+  fi
+}
+
+cmd_run() {
+  /usr/bin/mihomo -d /usr/local/etc/mihomo
+}
+
+cmd_start() {
+  if ! mihomo_is_running; then
+    if is_mac; then
+      if ! launchctl list | grep com.mihomo.core &>/dev/null; then
+        launchctl load "$DOTFILES_DIR/mihomo/com.mihomo.core.plist"
+      fi
+      launchctl start com.mihomo.core
+    else
+      sudo systemctl start mihomo
+    fi
+  fi
+}
+
+cmd_stop() {
+  if mihomo_is_running; then
+    if is_mac; then
+      launchctl stop com.mihomo.core
+    else
+      sudo systemctl stop mihomo
+    fi
+  fi
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  if mihomo_is_running; then
+    echo 'mihomo is running'
+  else
+    echo 'mihomo is NOT running'
+    exit 1
+  fi
+}
+alias_cmd s status
+
+cmd_log() {
+  if ! mihomo_is_running; then
+    echo 'mihomo is NOT running'
+    exit
+  fi
+
+  if is_mac; then
+    tail -F /tmp/mihomo.log
+  else
+    tail -F /var/log/mihomo.log
+  fi
+}
+alias_cmd l log
+
+cmd_config() {
+  sudo vi /usr/local/etc/mihomo/config.yaml
+}
+alias_cmd c config
+
+case "$1" in
+  run | start | stop | restart | s | status | l | log | c | config)
+    if ! is_linux; then
+      abort "Unsupported system"
+    fi
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    mihomo "$@"
+    ;;
+  *)
+    mihomo "$@"
+    ;;
+esac

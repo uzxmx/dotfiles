@@ -1,0 +1,15 @@
+[Unit]
+Description=mihomo service
+After=network.target nss-lookup.target
+
+[Service]
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/bin/bash -c '/usr/bin/mihomo -d /usr/local/etc/mihomo &>/var/log/mihomo.log'
+ExecStartPost=/bin/bash -c 'umask 022; pgrep mihomo >/var/run/mihomo.pid'
+Restart=on-failure
+RestartPreventExitStatus=23
+
+[Install]
+WantedBy=multi-user.target

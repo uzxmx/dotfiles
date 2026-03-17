@@ -1,0 +1,32 @@
+port: 7890
+socks-port: 10800
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: 127.0.0.1:9090
+experimental:
+  ignore-resolve-fail: true
+proxies:
+  - name: proxy1
+    type: http
+    server: au1.gmdns.net
+    port: 1000
+    password:
+    username:
+    tls: true
+    skip-cert-verify: false
+proxy-groups:
+  - name: Proxy
+    type: select
+    proxies:
+      - proxy1
+rules:
+  - DST-PORT,25,DIRECT
+  - PROCESS-NAME,WhatsApp,Proxy
+  - IP-CIDR,50.7.31.230/32,Proxy
+  - DOMAIN,officecdn-microsoft-com.akamaized.net,DIRECT
+  - DOMAIN-KEYWORD,gle,Proxy
+  - DOMAIN-SUFFIX,google,Proxy
+  - DOMAIN-SUFFIX,aliyun.com,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,DIRECT

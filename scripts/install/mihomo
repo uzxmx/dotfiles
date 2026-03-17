@@ -22,3 +22,13 @@ fi
 
 gunzip "$path_to_save"
 (cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/bin/mihomo)
+
+if is_linux; then
+  sudo mkdir -p /usr/local/etc/mihomo
+  sudo cp "$DOTFILES_DIR/mihomo/mihomo.service" /etc/systemd/system
+
+  cat <<EOF
+To run mihomo, you need to copy $DOTFILES_DIR/mihomo/config.yaml to /usr/local/etc/mihomo.
+To use geoip rule, you need to copy $DOTFILES_DIR/.local/geoip.metadb to /usr/local/etc/mihomo.
+EOF
+fi
