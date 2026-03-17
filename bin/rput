@@ -12,12 +12,18 @@ usage() {
 Usage: rput <file>
 
 Copy local file to remote.
+
+Options:
+  [-S] Use sudo on remote server
 EOF
   exit 1
 }
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    -S)
+      use_sudo=1
+      ;;
     -*)
       usage
       ;;
@@ -51,13 +57,17 @@ fi
 
 file="$(realpath "$file")"
 
-if [ -d "$file" ]; then
-  cmd="scp -r"
-  content="$content/$(basename "$file")"
+if [ "$use_sudo" = 1 ]; then
+  cmd=(rsync --rsync-path="sudo rsync")
 else
-  cmd="scp"
+  if [ -d "$file" ]; then
+    cmd=(scp -r)
+    content="$content/$(basename "$file")"
+  else
+    cmd=(scp)
+  fi
 fi
 
-echo $cmd "$file" "$content"
+echo "${cmd[@]}" "$file" "$content"
 
-$cmd "$file" "$content"
+"${cmd[@]}" "$file" "$content"
