@@ -161,10 +161,12 @@ if [ "$dry_run" = "1" ]; then
 else
   if [ "$#" -eq 0 ]; then
     target_http=1
-    target_git=1
-    target_curl=1
-    target_yum=1
-    target_scoop=1
+    if [ "$subcommand" != "enable" ]; then
+      target_git=1
+      target_curl=1
+      target_yum=1
+      target_scoop=1
+    fi
     if [ "$subcommand" = "info" ]; then
       target_docker=1
     fi
@@ -240,8 +242,8 @@ enable_git_proxy() {
 }
 
 disable_git_proxy() {
-  git config --unset --file ~/.gitconfig.local http.proxy
-  git config --unset --file ~/.gitconfig.local https.proxy
+  git config --unset --file ~/.gitconfig.local http.proxy || true
+  git config --unset --file ~/.gitconfig.local https.proxy || true
   dump_git_proxy
 }
 
