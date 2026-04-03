@@ -17,5 +17,5 @@ tracepoint:net:netif_receive_skb /pid == $pid/ { @rx += args->len; }
 interval:s:1 {
   printf(\"TX: %lu B/s  RX: %lu B/s\n\", @tx, @rx);
   clear(@tx); clear(@rx);
-}" | stdbuf -o0 tr '\n' '\r'
+}" | stdbuf -o0 awk '{printf "\r%s\033[K", $0; fflush()}'
 }
