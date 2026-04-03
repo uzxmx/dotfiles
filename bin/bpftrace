@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+bpftrace_dir="$DOTFILES_DIR/scripts/bpftrace"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for bpftrace utility.
+
+Subcommands:
+  net - monitor network traffic for a process by PID
+EOF
+  exit 1
+}
+
+case "$1" in
+  net)
+    source "$bpftrace_dir/$1.sh"
+    run "$@"
+    ;;
+  -h)
+    usage
+    ;;
+  -)
+    shift
+    bpftrace "$@"
+    ;;
+  *)
+    bpftrace "$@"
+    ;;
+esac
