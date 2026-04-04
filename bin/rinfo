@@ -14,7 +14,8 @@ Copy remote file path to clipboard.
 
 Options:
   [-g] Gzip text file
-  [-f] Do not limit size
+  [-F] Do not limit size
+  [-f] Use fzf to select file
   [--dry-run]
 EOF
   exit 1
@@ -25,8 +26,11 @@ while [ $# -gt 0 ]; do
     -g)
       gzip="1"
       ;;
-    -f)
+    -F)
       no_limit_size="1"
+      ;;
+    -f)
+      use_fzf="1"
       ;;
     --dry-run)
       dry_run="1"
@@ -41,6 +45,12 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
+
+if [ -n "$use_fzf" ]; then
+  [ -n "$file" ] && abort "Cannot use -F with a file argument"
+  command -v fzf &>/dev/null || abort "fzf is not installed"
+  file="$(fzf)" || abort "No file selected"
+fi
 
 if [ -z "$LC_REMOTE_USER" -o -z "$LC_REMOTE_IP" ]; then
   if is_mac; then
