@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+usage() {
+  cat <<-EOF
+Wrapper for RealVNC Viewer.
+
+Usage: real-vnc [host[::port]]
+
+Arguments:
+  host   Remote host and optional port (default: localhost::5900)
+
+Examples:
+  real-vnc
+  real-vnc 192.168.1.100
+  real-vnc 192.168.1.100::5901
+EOF
+  exit 1
+}
+
+case "$1" in
+  -h | --help)
+    usage
+    ;;
+esac
+
+exec "/Applications/VNC Viewer.app/Contents/MacOS/vncviewer" "${1:-localhost::5900}"
