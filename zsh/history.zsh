@@ -1,7 +1,11 @@
 # Borrowed from https://github.com/robbyrussell/oh-my-zsh/blob/master/lib/history.zsh
 [ -z "$HISTFILE" ] && HISTFILE="$DOTFILES_TARGET_DIR/.zsh_history"
 HISTSIZE=50000
-SAVEHIST=10000
+SAVEHIST=50000
+
+# Eternal history: append-only log, never truncated by zsh.
+# Used by ctrl-r global search so commands are never lost across sessions.
+HISTFILE_ETERNAL="${HISTFILE}_eternal"
 
 # Save each command’s beginning timestamp (in seconds since the epoch) and the
 # duration (in seconds) to the history file. The format of this prefixed data
@@ -23,10 +27,13 @@ setopt hist_verify            # show command with history expansion to user befo
 setopt share_history          # share command history data
 
 zshaddhistory() {
+  local cmd="${1%%$'\n'}"
   # Do not add command to history whose length is too short (the newline char is at the end of the command).
   if [ "${#1}" -lt 5 ]; then
     return 1;
   fi
+  # Append to eternal log in extended_history format so it can be loaded by fc.
+  print -r -- ": $(date +%s):0;${cmd}" >> "$HISTFILE_ETERNAL"
   return 0;
 }
 
@@ -71,17 +78,20 @@ bindkey "^[[B" down-line-or-local-history
 #
 # TODO Check when `ctrl-r` is issued, whether the history file will be rewritten.
 _search_global_history() {
-  local selected num
+  local selected
   setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2> /dev/null
-  fc -p -a "$HISTFILE"
-  selected=( $(fc -rl 1 | perl -ne 'print if !$seen{(/^\s*[0-9]+\**\s+(.*)/, $1)}++' |
-    FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore  --with-nth=2.. $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" fzf) )
+  # Read the eternal history file directly (no fc load into memory) so search
+  # stays fast regardless of file size. tac gives newest-first order; sed strips
+  # the ': timestamp:duration;' prefix from extended_history format.
+  selected=$(
+    tac "$HISTFILE_ETERNAL" 2>/dev/null \
+    | sed 's/^: [0-9]*:[0-9]*;//' \
+    | perl -ne 'print if !$seen{$_}++' \
+    | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" fzf
+  )
   local ret=$?
-  if [ -n "$selected" ]; then
-    num=$selected[1]
-    if [ -n "$num" ]; then
-      zle vi-fetch-history -n $num
-    fi
+  if [[ -n "$selected" ]]; then
+    LBUFFER="$selected"
   fi
   zle reset-prompt
   return $ret
@@ -89,3 +99,30 @@ _search_global_history() {
 
 zle -N _search_global_history
 bindkey "^R" _search_global_history
+
+# tac is not available by default on macOS (it's a GNU coreutils tool).
+if ! command -v tac &>/dev/null; then
+  tac() { tail -r "$@"; }
+fi
+
+# Compact the eternal history file: keep only the most recent occurrence of each
+# command. Run automatically on shell startup when the file exceeds 10MB.
+_compact_eternal_history() {
+  [[ -f "$HISTFILE_ETERNAL" ]] || return
+  local tmpfile
+  tmpfile=$(mktemp) || return
+  # tac = newest first; awk extracts command (everything after first ';'),
+  # skips duplicates, tac again to restore chronological order.
+  tac "$HISTFILE_ETERNAL" | awk '
+    /^: [0-9]+:[0-9]+;/ {
+      cmd = substr($0, index($0, ";") + 1)
+      if (!seen[cmd]++) print
+    }
+  ' | tac > "$tmpfile" && mv "$tmpfile" "$HISTFILE_ETERNAL"
+}
+
+if [[ -f "$HISTFILE_ETERNAL" ]]; then
+  local _eternal_size
+  _eternal_size=$(stat -f%z "$HISTFILE_ETERNAL" 2>/dev/null || stat -c%s "$HISTFILE_ETERNAL" 2>/dev/null || echo 0)
+  (( _eternal_size > 10485760 )) && _compact_eternal_history  # compact if > 10MB
+fi
