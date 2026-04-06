@@ -84,8 +84,14 @@ _search_global_history() {
   # stays fast regardless of file size. tac gives newest-first order; sed strips
   # the ': timestamp:duration;' prefix from extended_history format.
   selected=$(
-    tac "$HISTFILE_ETERNAL" 2>/dev/null \
-    | sed 's/^: [0-9]*:[0-9]*;//' \
+    perl -ne '
+      chomp;
+      if (/^: \d+:\d+;/) { print "$prev\n" if defined $prev; $prev = $_ }
+      else { s/^\s*//; $prev .= " " . $_ if defined $prev }
+      END { print "$prev\n" if defined $prev }
+    ' "$HISTFILE_ETERNAL" 2>/dev/null \
+    | tac \
+    | LC_ALL=C sed 's/^: [0-9]*:[0-9]*;//; s/[[:space:]]*$//' \
     | perl -ne 'print if !$seen{$_}++' \
     | FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore $FZF_CTRL_R_OPTS --query=${(qqq)LBUFFER} +m" fzf
   )
@@ -111,12 +117,16 @@ _compact_eternal_history() {
   [[ -f "$HISTFILE_ETERNAL" ]] || return
   local tmpfile
   tmpfile=$(mktemp) || return
-  # tac = newest first; awk extracts command (everything after first ';'),
-  # skips duplicates, tac again to restore chronological order.
-  tac "$HISTFILE_ETERNAL" | awk '
-    /^: [0-9]+:[0-9]+;/ {
-      cmd = substr($0, index($0, ";") + 1)
-      if (!seen[cmd]++) print
+  # Join multi-line commands, then deduplicate newest-first, restore order.
+  perl -ne '
+    chomp;
+    if (/^: \d+:\d+;/) { print "$prev\n" if defined $prev; $prev = $_ }
+    else { s/^\s*//; $prev .= " " . $_ if defined $prev }
+    END { print "$prev\n" if defined $prev }
+  ' "$HISTFILE_ETERNAL" | tac | perl -ne '
+    if (/^: \d+:\d+;(.*)/) {
+      (my $cmd = $1) =~ s/\s+$//;
+      print unless $seen{$cmd}++;
     }
   ' | tac > "$tmpfile" && mv "$tmpfile" "$HISTFILE_ETERNAL"
 }
