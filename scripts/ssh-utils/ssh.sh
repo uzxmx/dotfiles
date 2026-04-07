@@ -8,7 +8,7 @@ build the ssh command and connect to the remote.
 All arguments after '-' should be valid ssh arguments, and will be passed into
 ssh intactly.
 
-By default an HTTP proxy will be listening at 8125 port on the remote. You can
+By default an HTTP proxy will be listening at 8124 port on the remote. You can
 disable this behavior by specifying '--disable-http-proxy'.
 
 Options:
@@ -16,6 +16,10 @@ Options:
   --http-proxy <proxy> Default is 'localhost:8125'
   -N, --disable-http-proxy
   -C Remote forward port 2224 and 2225 to access OSX system clipboard
+  -S Open port 10800 for socks requests
+
+Examples:
+  $> ssh-utils ssh host --http-proxy localhost:8123
 EOF
   exit 1
 }
@@ -41,6 +45,9 @@ cmd_ssh() {
       -C)
         osx_clipboard_shared="1"
         ;;
+      -S)
+        opts+=(-D 10800)
+        ;;
       -)
         shift
         break
@@ -60,7 +67,7 @@ cmd_ssh() {
   done
 
   if [ -z "$disable_http_proxy" ]; then
-    opts+=(-R 8125:$proxy)
+    opts+=(-R 8124:$proxy)
   fi
 
   if [ -n "$osx_clipboard_shared" ]; then
