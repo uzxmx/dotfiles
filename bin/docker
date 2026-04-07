@@ -24,6 +24,7 @@ Remove commands:
 
 Misc commands:
   p          - pull image from a mirror
+  acr_push   - push a Docker Hub image to Aliyun ACR via GitHub Actions
   e, exec    - execute a comand in a container selected by fzf
   r, run     - run a docker image
   s          - manage services
@@ -80,7 +81,7 @@ case "$1" in
   list_tags | pids | prune)
     run "$@"
     ;;
-  l | e | exec | p | r | run | rm | s | ps | rmi | engine | copy)
+  l | e | exec | p | r | run | rm | s | ps | rmi | engine | copy | acr_push)
     case "$1" in
       l)
         name="logs"
