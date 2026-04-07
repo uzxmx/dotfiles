@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Install gh (https://github.com/cli/cli)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command gh &>/dev/null && exit
+
+if is_termux; then
+  pkg install gh
+  exit
+fi
+
+if is_mac; then
+  brew_install gh
+elif has_apt; then
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
+  sudo apt-get update
+  sudo apt-get install -y gh
+elif has_yum; then
+  sudo dnf install -y 'dnf-command(config-manager)' 2>/dev/null || sudo yum install -y 'yum-utils'
+  sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo 2>/dev/null || \
+    sudo yum-config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+  sudo dnf install -y gh 2>/dev/null || sudo yum install -y gh
+else
+  abort "Unsupported system"
+fi

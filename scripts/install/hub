@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
 # Install hub (https://github.com/github/hub).
+#
+# Deprecated. Use `gh` instead.
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
