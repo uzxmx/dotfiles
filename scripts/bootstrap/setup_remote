@@ -4,6 +4,8 @@ set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
+source "$DOTFILES_DIR/scripts/lib/utils/shell.sh"
+
 usage() {
   cat <<-EOF
 Usage: $0 <-f | --vagrant | -o user@host>
@@ -88,11 +90,13 @@ else
 fi
 
 if [ "$use_vagrant" = "1" ]; then
-    vagrant ssh -- $ssh_opts -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
+    parse_shell_opts ssh_opts_arr "$ssh_opts"
+    vagrant ssh -- "${ssh_opts_arr[@]}" -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
 else
   if [ -z "$ssh_opts" ]; then
     "$DOTFILES_DIR/bin/ssh-utils" ssh --http-proxy "$proxy" - "bash -s -- ${opts[@]}" < "$file"
   else
-    ssh $ssh_opts -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
+    parse_shell_opts ssh_opts_arr "$ssh_opts"
+    ssh "${ssh_opts_arr[@]}" -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
   fi
 fi
