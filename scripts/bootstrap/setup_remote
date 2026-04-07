@@ -21,6 +21,7 @@ Options:
   --intrusive Intrusive setup
   --proxy <proxy> Default is 'localhost:8125'
   --no-proxy Do not use proxy
+  -D, --dry-run Print the SSH command and script without executing
 
 Examples:
   $> $0 -o "user@host -i /path/to/identify/file" --no-proxy
@@ -51,6 +52,9 @@ while [ "$#" -gt 0 ]; do
       ;;
     --no-proxy)
       no_proxy=1
+      ;;
+    -D | --dry-run)
+      dry_run=1
       ;;
     *)
       usage
@@ -87,6 +91,11 @@ else
   fi
   ssh_pub_key="$(cat ~/.ssh/id_rsa.pub)"
   opts+=(--ssh-pub-key "'$ssh_pub_key'")
+fi
+
+if [ -n "$dry_run" ]; then
+  cat "$file"
+  exit
 fi
 
 if [ "$use_vagrant" = "1" ]; then
