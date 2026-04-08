@@ -38,7 +38,11 @@ mihomo_is_running() {
 }
 
 cmd_run() {
-  /usr/bin/mihomo -d /usr/local/etc/mihomo
+  if [ $# -eq 0 ]; then
+    /usr/bin/mihomo -d /usr/local/etc/mihomo
+  else
+    /usr/bin/mihomo "$@"
+  fi
 }
 
 cmd_start() {
