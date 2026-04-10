@@ -16,6 +16,7 @@ Shortcuts:
   F1: Update preview window layout (up/right, default is right).
 
 Options:
+  [-g glob] Only search files matching the glob pattern, e.g. '*.sh' (repeatable)
   [-t type] The file type to search, e.g. cpp
   [--binary] Resort to grep searching binary files
   [--filename] Also search filename
@@ -28,6 +29,8 @@ Options:
 Examples:
   # Only search files matching some type.
   $ s -t cpp
+  # Only search shell scripts.
+  $ s -g '*.sh'
 EOF
   exit 1
 }
@@ -38,6 +41,10 @@ no_ignore=
 files=()
 while [ $# -gt 0 ]; do
   case "$1" in
+    -g | --glob)
+      shift
+      rg_options+=("-g" "$1")
+      ;;
     -t)
       shift
       rg_options+=("-t" "$1")
