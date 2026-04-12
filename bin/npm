@@ -55,6 +55,9 @@ case "$1" in
     source "$npm_dir/$name.sh"
     run "$@"
     ;;
+  --complete)
+    echo "mirror install"
+    ;;
   -h)
     usage
     ;;

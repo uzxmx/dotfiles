@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+# Scan bin/ commands for --complete support and auto-register zsh completions
+# in zsh/completions.zsh.
+#
+# A command is considered to support --complete if its source explicitly
+# contains a "--complete)" case branch.
+#
+# Usage:
+#   scripts/misc/gen_completions          # dry-run, print what would be added
+#   scripts/misc/gen_completions --write  # apply changes
+
+set -eo pipefail
+
+DOTFILES_DIR="$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)"
+BIN_DIR="$DOTFILES_DIR/bin"
+COMPLETIONS_FILE="$DOTFILES_DIR/zsh/completions.zsh"
+WRITE=false
+
+[[ "${1:-}" == "--write" ]] && WRITE=true
+
+already_registered() {
+  local cmd="$1"
+  grep -q "compdef .*${cmd}$" "$COMPLETIONS_FILE" 2>/dev/null
+}
+
+added=()
+
+for bin_file in "$BIN_DIR"/*; do
+  [[ -f "$bin_file" ]] || continue
+  cmd="$(basename "$bin_file")"
+
+  # Only handle commands that explicitly implement --complete) in their source.
+  grep -q -- '--complete)' "$bin_file" 2>/dev/null || continue
+
+  already_registered "$cmd" && continue
+
+  block="
+_${cmd}() { _complete_subcmd ${cmd} }
+compdef _${cmd} ${cmd}"
+
+  if $WRITE; then
+    printf '%s\n' "$block" >> "$COMPLETIONS_FILE"
+    echo "Added completion for: $cmd"
+  else
+    echo "Would add completion for: $cmd"
+    printf '%s\n' "$block"
+    echo "---"
+  fi
+  added+=("$cmd")
+done
+
+if [[ ${#added[@]} -eq 0 ]]; then
+  echo "No new completions to add."
+elif $WRITE; then
+  echo ""
+  echo "Done. Reload completions: source $COMPLETIONS_FILE"
+else
+  echo ""
+  echo "Run with --write to apply."
+fi

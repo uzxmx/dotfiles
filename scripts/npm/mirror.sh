@@ -14,23 +14,26 @@ EOF
 
 mirrors=(
   registry=https://registry.npmmirror.com
-  disturl=https://registry.npmmirror.com/dist
+  # disturl=https://registry.npmmirror.com/dist
 
   # Optional
-  sass_binary_site=https://registry.npmmirror.com/node-sass
-  electron_mirror=https://registry.npmmirror.com/electron/
-  puppeteer_download_host=https://registry.npmmirror.com
-  chromedriver_cdnurl=https://registry.npmmirror.com/chromedriver
-  operadriver_cdnurl=https://registry.npmmirror.com/operadriver
-  phantomjs_cdnurl=https://registry.npmmirror.com/phantomjs
-  selenium_cdnurl=https://registry.npmmirror.com/selenium
-  node_inspector_cdnurl=https://registry.npmmirror.com/node-inspector
+  # sass_binary_site=https://registry.npmmirror.com/node-sass
+  # electron_mirror=https://registry.npmmirror.com/electron/
+  # puppeteer_download_host=https://registry.npmmirror.com
+  # chromedriver_cdnurl=https://registry.npmmirror.com/chromedriver
+  # operadriver_cdnurl=https://registry.npmmirror.com/operadriver
+  # phantomjs_cdnurl=https://registry.npmmirror.com/phantomjs
+  # selenium_cdnurl=https://registry.npmmirror.com/selenium
+  # node_inspector_cdnurl=https://registry.npmmirror.com/node-inspector
 )
 
 cmd_mirror() {
   local action="show"
   while [ "$#" -gt 0 ]; do
     case "$1" in
+      --complete)
+        return 0
+        ;;
       -e)
         action="enable"
         ;;
