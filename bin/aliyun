@@ -41,13 +41,14 @@ Subcommands:
   v, vpc             - manage virtual private cloud
   n, nat             - manage NAT gateways
   o, oss             - manage OSS (Object Storage Service)
+  con, console       - auto-login console in browser
 EOF
   exit 1
 }
 
 case "$1" in
   p | profile | d | dns | sg | security_group | e | ecs | v | vpc | c | cdn | n | nat | \
-  o | oss)
+  o | oss | con | console)
     case "$1" in
       p)
         name="profile"
@@ -73,6 +74,9 @@ case "$1" in
       o)
         name="oss"
         ;;
+      con)
+        name="console"
+        ;;
       *)
         name="$1"
         ;;
@@ -80,6 +84,9 @@ case "$1" in
     source "$aliyun_dir/$name.sh"
     source "$aliyun_dir/common_options.sh"
     run "$@"
+    ;;
+  --complete)
+    echo "profile dns security_group ecs vpc cdn nat oss console"
     ;;
   -h)
     usage
