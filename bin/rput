@@ -7,6 +7,8 @@ export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null &&
 source "$DOTFILES_DIR/scripts/lib/cli.sh"
 source "$DOTFILES_DIR/scripts/lib/prompt.sh"
 
+default_excludes=(.git .local logs tmp node_modules __pycache__ .DS_Store)
+
 usage() {
   cat <<-EOF
 Usage: rput <file>
@@ -15,6 +17,7 @@ Copy local file to remote.
 
 Options:
   [-S] Use sudo on remote server
+  [--no-exclude] Do not exclude common directories (${default_excludes[*]})
 EOF
   exit 1
 }
@@ -23,6 +26,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -S)
       use_sudo=1
+      ;;
+    --no-exclude)
+      no_exclude=1
       ;;
     -*)
       usage
@@ -51,6 +57,7 @@ if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
   exit 1
 fi
 
+# rinfo marks directories with a leading "-r "; strip it since we detect dirs locally
 if [[ "$content" =~ ^\-r[[:space:]] ]]; then
   content="$(echo "$content" | sed "s/\-r //")"
 fi
@@ -58,13 +65,26 @@ fi
 file="$(realpath "$file")"
 
 if [ "$use_sudo" = 1 ]; then
-  cmd=(rsync --rsync-path="sudo rsync")
+  cmd=(rsync -az --rsync-path="sudo rsync")
+elif [ -d "$file" ]; then
+  cmd=(rsync -az)
 else
-  if [ -d "$file" ]; then
-    cmd=(scp -r)
-    content="$content/$(basename "$file")"
-  else
-    cmd=(scp)
+  cmd=(scp)
+fi
+
+if [ -d "$file" ]; then
+  local_name="$(basename "$file")"
+  remote_name="$(basename "${content#*:}")"
+  # If local and remote names match, the clipboard path already points to the
+  # exact destination (e.g. rinfo ~/foo -> rput ~/foo), so merge contents in.
+  # Otherwise the clipboard is a parent dir; let rsync create the subdir inside it.
+  if [ "$local_name" = "$remote_name" ]; then
+    file="${file%/}/"
+  fi
+  if [ -z "$no_exclude" ]; then
+    for pattern in "${default_excludes[@]}"; do
+      cmd+=(--exclude="$pattern")
+    done
   fi
 fi
 
