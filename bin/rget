@@ -4,21 +4,28 @@ set -e
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+
+default_excludes=(.git .local logs tmp node_modules __pycache__ .DS_Store)
 
 usage() {
   cat <<-EOF
 Usage: rget [out-file]
 
-Copy remote file to local.
+Copy remote file or directory to local.
+
+Options:
+  [--no-exclude] Do not exclude common directories (${default_excludes[*]})
 EOF
   exit 1
 }
 
-out_file=""
-
 while [ $# -gt 0 ]; do
   case "$1" in
+    --no-exclude)
+      no_exclude=1
+      ;;
     -*)
       usage
       ;;
@@ -32,11 +39,19 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-content="$(pbpaste)"
+source "$DOTFILES_DIR/scripts/lib/clipboard.sh"
+get_clipboard content
 
-if [[ ! "$content" =~ ^.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
+if [[ ! "$content" =~ ^(-r\ )?.+@[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:.+$ ]]; then
   echo "Clipboard content doesn't match the format: user@ip:/path/to/file"
   exit 1
+fi
+
+# rinfo marks directories with a leading "-r "; strip it since we detect dirs via rsync
+is_dir=0
+if [[ "$content" =~ ^\-r[[:space:]] ]]; then
+  content="${content#-r }"
+  is_dir=1
 fi
 
 remote_file="${content#*:}"
@@ -45,12 +60,27 @@ if [ -z "$out_file" ]; then
   out_file="$(basename "$remote_file")"
 fi
 
-if [ -f "$out_file" ]; then
-  if [ "$(yesno "File $out_file already exists. Do you want to overwrite it? (y/N)" "no")" != "yes" ]; then
+if [ -e "$out_file" ]; then
+  if [ "$(yesno "$out_file already exists. Do you want to overwrite it? (y/N)" "no")" != "yes" ]; then
     exit 1
   fi
 fi
 
-echo scp "$content" "$out_file"
-
-scp $content "$out_file"
+if [ "$is_dir" = 1 ]; then
+  cmd=(rsync -az)
+  if [ -z "$no_exclude" ]; then
+    for pattern in "${default_excludes[@]}"; do
+      cmd+=(--exclude="$pattern")
+    done
+  fi
+  # If local and remote names match, merge contents in place; otherwise create subdir.
+  remote_name="$(basename "$remote_file")"
+  if [ "$out_file" = "$remote_name" ]; then
+    remote_file="${remote_file%/}/"
+  fi
+  echo "${cmd[@]}" "$content" "$out_file"
+  "${cmd[@]}" "${content%:*}:$remote_file" "$out_file"
+else
+  echo scp "$content" "$out_file"
+  scp "$content" "$out_file"
+fi
