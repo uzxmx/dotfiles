@@ -99,7 +99,7 @@ EOF
           cat <<EOF
 
 If the file is a text file, you can specify '-g' option to gzip the file to
-make the size smaller. Or specify '-f' to disable the limit.
+make the size smaller. Or specify '-F' to disable the limit.
 EOF
         fi
         exit 1

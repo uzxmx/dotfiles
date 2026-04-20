@@ -12,16 +12,29 @@ rcup -T "${DOTFILES_TARGET_DIR:-$HOME}" -d "$DOTFILES_DIR" "$@"
 
 if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
   link_global_config() {
-    src="$HOME/.$1"
-    if [ -n "$2" ]; then
-      target="$2"
+    local src="$HOME/.$1"
+    local target="${2:-$DOTFILES_DIR/$1}"
+
+    if [ -d "$target" ]; then
+      # For dotdirs, create the real dir and symlink each file individually.
+      # This keeps runtime-generated files (e.g. mitmproxy CA certs) out of the repo.
+      mkdir -p "$src"
+      for file in "$target"/*; do
+        local fname
+        fname="$(basename "$file")"
+        local fsrc="$src/$fname"
+        if [ ! -e "$fsrc" ]; then
+          ln -s "$file" "$fsrc"
+        elif ! is_link "$fsrc" "$file"; then
+          echo "$fsrc: link failed because it already exists"
+        fi
+      done
     else
-      target="$DOTFILES_DIR/$1"
-    fi
-    if [ ! -e "$src" ]; then
-      ln -s "$target" "$src"
-    elif ! is_link "$src" "$target"; then
-      echo "$src: link failed because it already exists"
+      if [ ! -e "$src" ]; then
+        ln -s "$target" "$src"
+      elif ! is_link "$src" "$target"; then
+        echo "$src: link failed because it already exists"
+      fi
     fi
   }
 
@@ -29,6 +42,7 @@ if [ -n "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
     irbrc
     tool-versions
     gitconfig
+    mitmproxy
   )
 
   for file in "${files[@]}"; do
