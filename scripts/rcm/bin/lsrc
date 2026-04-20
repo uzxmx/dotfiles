@@ -166,6 +166,7 @@ dotfiles_dir_excludes() {
   $DEBUG "dotfiles_dir_excludes $dotfiles_dir"
   $DEBUG "  with excludes: $excludes"
 
+  set -f
   for exclude in $excludes; do
     if echo "$exclude" | grep ':' >/dev/null; then
       dotfiles_dir_pat="$(echo "$exclude" | sed 's/:.*//')"
@@ -182,6 +183,7 @@ dotfiles_dir_excludes() {
       echo "$exclude"
     fi
   done
+  set +f
 }
 
 is_excluded() {
