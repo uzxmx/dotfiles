@@ -302,7 +302,13 @@ handle_command_line "$@"
 
 run_hooks pre up
 
+[ -t 2 ] && printf 'Scanning dotfiles...' >&2
 dests_and_srcs="$(lsrc -T $TARGET $LS_ARGS)"
+[ -t 2 ] && printf '\r\033[K' >&2
+
+_progress_total=0
+[ -n "$dests_and_srcs" ] && _progress_total=$(printf '%s\n' "$dests_and_srcs" | wc -l | tr -d ' \t')
+_progress_current=0
 
 saved_ifs="$IFS"
 IFS='
@@ -315,12 +321,18 @@ for dest_and_src in $dests_and_srcs; do
   src="$2"
   sigil="$3"
 
+  _progress_current=$((_progress_current + 1))
+  [ "$GENERATE" != "1" ] && [ -t 2 ] && printf '\r\033[K[%d/%d] %s' "$_progress_current" "$_progress_total" "$dest" >&2
+  # If dest is a real file (not a symlink), handle_file may prompt for overwrite — move to a new line first.
+  [ "$GENERATE" != "1" ] && [ -t 2 ] && [ -e "$dest" ] && [ ! -h "$dest" ] && printf '\n' >&2
+
   if is_nested "$dest"; then
     handle_dir "$dest"
   fi
 
   handle_file "$GENERATE" "$src" "$dest" "$sigil"
 done
+[ "$GENERATE" != "1" ] && [ -t 2 ] && printf '\n' >&2
 
 IFS="$saved_ifs"
 run_hooks post up
