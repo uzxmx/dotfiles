@@ -31,3 +31,15 @@ create_cron_job_file() {
   # *  *  *  *  * user-name command to be executed
   ( crontab -l | grep -v -F " $croncmd" ; echo "$schedule_pattern $croncmd" ) | crontab -
 }
+
+# Delete a cron job file and remove its crontab entry.
+#
+# @params:
+#   $1: full path to the cron job script file
+delete_cron_job_file() {
+  local cron_job_file="$1"
+  local croncmd="\"$cron_job_file\""
+
+  ( crontab -l | grep -v -F " $croncmd" ) | crontab -
+  rm -f "$cron_job_file"
+}

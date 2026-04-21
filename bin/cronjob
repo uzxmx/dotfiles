@@ -12,8 +12,9 @@ usage() {
 Utility to manage common cron jobs.
 
 Subcommands:
-  l, list   - list current user cron jobs
-  sync_cert - sync ssl cert by ssh
+  l, list     - list current user cron jobs
+  d, delete   - delete a cron job (fzf picker if no name given)
+  sync_cert   - sync ssl cert by ssh
 EOF
   exit 1
 }
@@ -22,8 +23,11 @@ case "$1" in
   l | list)
     crontab -l
     ;;
-  sync_cert)
+  sync_cert | d | delete)
     case "$1" in
+      d | del | delete)
+        name="delete"
+        ;;
       *)
         name="$1"
         ;;

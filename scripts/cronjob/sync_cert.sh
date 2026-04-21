@@ -5,7 +5,7 @@ Usage: cronjob sync_cert -n <name> -h <server_host> <user@ip>...
 Sync ssl cert by ssh.
 
 Options:
-  -n <name>
+  -n <name> the cert directory name located at /etc/certs
   -h <server_host> server host to check if certificate should be uploaded
 EOF
   exit 1
