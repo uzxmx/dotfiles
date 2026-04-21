@@ -94,7 +94,7 @@ while true; do
     fd_opts+=(--type f)
   fi
 
-  call_fzf result --query="$query" --print-query --multi --exit-0 \
+  call_fzf result --query="$query" --print-query --multi \
     --prompt '(CTRL-V:copy CTRL-Y:yank CTRL-T:edit CTRL-I:toggle-ignore CTRL-D:cd CTRL-X:exec)> ' \
     --expect="ctrl-v,ctrl-t,ctrl-i,ctrl-d,ctrl-x" \
     < <(fd "${fd_opts[@]}" "${pattern:-.}" "${directories[@]}")
