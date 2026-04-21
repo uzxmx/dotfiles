@@ -6,7 +6,7 @@ Sync ssl cert by ssh.
 
 Options:
   -n <name> the cert directory name located at /etc/certs
-  -h <server_host> server host to check if certificate should be uploaded
+  --host <server_host> server host to check if certificate should be uploaded
 EOF
   exit 1
 }
@@ -20,7 +20,7 @@ cmd_sync_cert() {
         shift
         name="$1"
         ;;
-      -h)
+      --host)
         shift
         server_host="$1"
         ;;
@@ -38,16 +38,13 @@ cmd_sync_cert() {
   [ -z "$server_host" ] && usage_sync_cert
   [ "${#hosts}" -eq 0 ] && abort "At least one ssh host should be specified"
 
-  generate_script_fn() {
-    cat <<EOF >"$1"
+  source "$DOTFILES_DIR/scripts/lib/cron.sh"
+  create_cron_job_file "sync_cert-$server_host.sh" "31 2 * * *" "$(cat <<EOF
 #!/usr/bin/env bash
 #
 # Generated. Do Not Edit.
 
-"$DOTFILES_DIR/bin/acme" upload_cert -n "$name" -h "$server_host" "${hosts[@]}" &>"/tmp/sync_cert-$server_host.log"
+"$DOTFILES_DIR/bin/acme" upload_cert -n "$name" --host "$server_host" "${hosts[@]}" &>"/tmp/sync_cert-$server_host.log"
 EOF
-  }
-
-  source "$DOTFILES_DIR/scripts/lib/cron.sh"
-  create_cron_job_file "sync_cert-$server_host.sh" "31 2 * * *" generate_script_fn
+)"
 }

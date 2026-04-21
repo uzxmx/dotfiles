@@ -6,7 +6,7 @@ Check and upload certificate to host.
 
 Options:
   -n <name> the cert directory name located at /etc/certs
-  -h <server_host> server host to check if certificate should be uploaded
+  --host <server_host> server host to check if certificate should be uploaded
 EOF
   exit 1
 }
@@ -20,7 +20,7 @@ cmd_upload_cert() {
         shift
         name="$1"
         ;;
-      -h)
+      --host)
         shift
         server_host="$1"
         ;;

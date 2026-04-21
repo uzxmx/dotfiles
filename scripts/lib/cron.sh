@@ -5,17 +5,17 @@
 # @params:
 #   $1: file name
 #   $2: schedule pattern
-#   $3: function to generate shell script content
+#   $3: shell script content
 create_cron_job_file() {
   local name="$1"
   local schedule_pattern="$2"
+  local script_content="$3"
 
   local cron_dir="$DOTFILES_TARGET_DIR/opt/my_cron_jobs"
   mkdir -p "$cron_dir"
   local cron_job_file="$cron_dir/$name.sh"
 
-  # Generate shell script content
-  $3 "$cron_job_file"
+  printf '%s' "$script_content" > "$cron_job_file"
 
   chmod a+x "$cron_job_file"
 
