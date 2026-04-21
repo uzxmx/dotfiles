@@ -1,6 +1,6 @@
 usage_sync_cert() {
   cat <<-EOF
-Usage: cronjob sync_cert -n <name> -h <server_host> <user@ip>...
+Usage: cron-utils sync_cert -n <name> -h <server_host> <user@ip>...
 
 Sync ssl cert by ssh.
 

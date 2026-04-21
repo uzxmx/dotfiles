@@ -1,6 +1,6 @@
 usage_delete() {
   cat <<-EOF
-Usage: cronjob delete [<name>]
+Usage: cron-utils delete [<name>]
 
 Delete a cron job. If <name> is omitted, select interactively with fzf.
 
