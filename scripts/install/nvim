@@ -18,6 +18,7 @@ Options:
                 there is a version in user home directory and installs one if there is no one
   --do-all-steps whether to do all the steps, by default it only installs the binary
   --from-source install from source
+  --force-install force install even if nvim is already in PATH
 
 Examples:
   # Install a specific version only if nvim hasn't been installed.
@@ -51,6 +52,9 @@ parse_args="
   --from-source)
     from_source=1
     ;;
+  --force-install)
+    force_install=1
+    ;;
   *)
     usage
     ;;
@@ -62,12 +66,14 @@ check_link() {
   local always_make="$1"
   [ ! -d "$DOTFILES_TARGET_DIR/bin" ] && mkdir "$DOTFILES_TARGET_DIR/bin"
 
+  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/vi" ] && rm "$DOTFILES_TARGET_DIR/bin/vi"
+  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/nvim" ] && rm "$DOTFILES_TARGET_DIR/bin/nvim"
+
   if [ -z "$nvim_path" ]; then
     nvim_path="$(check_command nvim)"
   fi
-  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/vi" ] && rm "$DOTFILES_TARGET_DIR/bin/vi"
+
   [ -e "$DOTFILES_TARGET_DIR/bin/vi" ] || create_link "$DOTFILES_TARGET_DIR/bin/vi" "$nvim_path"
-  [ "$always_make" = "1" -a -e "$DOTFILES_TARGET_DIR/bin/nvim" ] && rm "$DOTFILES_TARGET_DIR/bin/nvim"
   [ -e "$DOTFILES_TARGET_DIR/bin/nvim" ] || create_link "$DOTFILES_TARGET_DIR/bin/nvim" "$nvim_path"
 }
 
@@ -81,7 +87,7 @@ install_from_prebuilt() {
   local path_to_save="/tmp/nvim-$version.tar.gz"
   local platform dest_dir sudo_opt
   if is_linux; then
-    platform="linux64"
+    platform="linux-x86_64"
     if [ "$non_primary" = "1" ]; then
       dest_dir="$DOTFILES_TARGET_DIR/nvim-$version"
       nvim_path="$dest_dir/bin/nvim"
@@ -119,7 +125,7 @@ install_from_source() {
   (cd "$dir"; make CMAKE_INSTALL_PREFIX="$dest_dir" CMAKE_BUILD_TYPE=Release; make install; rm -rf "$dir")
 }
 
-if [ "$non_primary" = "1" ] || ! check_command nvim &>/dev/null; then
+if [ "$force_install" = "1" ] || [ "$non_primary" = "1" ] || ! check_command nvim &>/dev/null; then
   if [ "$from_source" = "1" ]; then
     is_mac && abort "Mac OSX doesn't support installation from source"
     install_from_source
