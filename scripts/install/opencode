@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Install opencode (https://opencode.ai)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command opencode &>/dev/null && exit
+
+npm install -g opencode-ai
