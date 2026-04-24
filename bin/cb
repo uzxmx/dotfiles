@@ -12,26 +12,64 @@ different systems.
 Options:
   --log-level log level, values include none/short/verbose, default is verbose
 
+Usage:
+  cb [file]           copy file object to clipboard (equivalent to Finder Cmd+C)
+  <cmd> | cb          copy text from stdin to clipboard
+
 Examples:
   $> echo -n foo | cb
   $> echo " foo bar " | trim | cb
+  $> cb somefile.txt
 EOF
   exit 1
 }
 
 log_level="verbose"
+file_path=""
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --log-level)
       shift
       log_level="$1"
       ;;
-    *)
+    -*)
       usage
+      ;;
+    *)
+      file_path="$1"
       ;;
   esac
   shift
 done
+
+if [ -n "$file_path" ]; then
+  if [ ! -e "$file_path" ]; then
+    echo "cb: $file_path: No such file or directory" >&2
+    exit 1
+  fi
+  abs_path="$(cd "$(dirname "$file_path")" && pwd)/$(basename "$file_path")"
+  osascript <<OSAS > /dev/null
+tell application "Finder"
+  set winCountBefore to count of windows
+  select (POSIX file "$abs_path" as alias)
+  activate
+end tell
+delay 0.2
+tell application "System Events"
+  tell process "Finder"
+    keystroke "c" using command down
+  end tell
+end tell
+delay 0.05
+tell application "Finder"
+  if (count of windows) > winCountBefore then
+    close front window
+  end if
+end tell
+set _ to display alert "已复制到剪贴板" message "$(basename "$abs_path")" giving up after 3
+OSAS
+  exit 0
+fi
 
 if [[ "$OSTYPE" =~ ^darwin.* ]]; then
   copy_cmd="pbcopy"

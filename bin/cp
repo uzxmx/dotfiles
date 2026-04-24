@@ -16,6 +16,9 @@ Subcommands:
   sync         - sync src dir to target dir
   git_modified - copy modified files in git repository to a dir with the intermediate paths kept.
   java         - copy java package to another location with package/import statements substituted.
+
+Single argument:
+  cp <file>    - copy file to clipboard (equivalent to Finder Cmd+C)
 EOF
   exit 1
 }
@@ -38,6 +41,10 @@ case "$1" in
     cp "$@"
     ;;
   *)
-    cp "$@"
+    if [[ $# -eq 1 && -e "$1" ]]; then
+      "$DOTFILES_DIR/bin/cb" "$1"
+    else
+      cp "$@"
+    fi
     ;;
 esac
