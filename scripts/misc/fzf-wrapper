@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+"""
+fzf PTY wrapper — prevents pasted newlines from triggering fzf's accept action.
+
+Problem
+-------
+When you paste text containing a newline (e.g. copied from terminal output) into
+fzf's search prompt, fzf treats the newline as Enter and immediately accepts the
+current selection, opening a file you didn't intend to open. This happens because
+fzf maps both CR (0x0D, keyboard Enter) and LF (0x0A, pasted newline) to the same
+internal "accept" action, with no way to distinguish them via key bindings alone.
+
+Solution
+--------
+This wrapper inserts a PTY (pseudo-terminal) between the real terminal and fzf:
+
+  [iTerm2 / real TTY]  ←→  [this wrapper]  ←→  [PTY slave / fzf's /dev/tty]
+
+The wrapper:
+  1. Forks fzf into a new session whose controlling terminal is a PTY slave.
+  2. Proxies all I/O between the real TTY and the PTY master.
+  3. Filters the input stream before forwarding to fzf:
+       • Single-byte CR  (0x0D) — keyboard Enter — passes through unchanged.
+       • Multi-byte chunks — paste — have both LF (0x0A) and CR (0x0D) stripped,
+         preventing any pasted newline from reaching fzf's key handler.
+
+Usage
+-----
+Point ~/bin/fzf (or any earlier PATH entry) at this script so every fzf call
+goes through it transparently.  Set log_enabled = True to write a debug trace
+to /tmp/fzf-wrapper.log.
+"""
+
+import fcntl
+import os
+import shutil
+import select
+import signal
+import sys
+import termios
+
+REAL_FZF = shutil.which('fzf')
+
+log_enabled = False
+
+if log_enabled:
+    LOG = open('/tmp/fzf-wrapper.log', 'w', buffering=1)
+else:
+    LOG = None
+
+def log(msg):
+    if LOG is not None:
+        LOG.write(msg + '\n')
+
+def main():
+    try:
+        tty_fd = os.open('/dev/tty', os.O_RDWR)
+    except OSError:
+        log('no /dev/tty, exec fzf directly')
+        os.execv(REAL_FZF, [REAL_FZF] + sys.argv[1:])
+        return
+
+    log(f'parent tty_fd={tty_fd}  tty_name={os.ttyname(tty_fd)}')
+    log(f'parent pid={os.getpid()} pgrp={os.getpgrp()} sid={os.getsid(0)}')
+
+    master_fd, slave_fd = os.openpty()
+    slave_name = os.ttyname(slave_fd)
+    log(f'PTY slave={slave_name}  master_fd={master_fd}  slave_fd={slave_fd}')
+
+    def sync_winsize():
+        try:
+            ws = fcntl.ioctl(tty_fd, termios.TIOCGWINSZ, b'\x00' * 8)
+            fcntl.ioctl(master_fd, termios.TIOCSWINSZ, ws)
+        except OSError:
+            pass
+
+    sync_winsize()
+
+    pid = os.fork()
+    if pid == 0:
+        # ---- child ----
+        os.close(master_fd)
+        os.setsid()
+
+        TIOCSCTTY = getattr(termios, 'TIOCSCTTY', 0x20007461)
+        tiocsctty_ok = False
+        try:
+            fcntl.ioctl(slave_fd, TIOCSCTTY, 0)
+            tiocsctty_ok = True
+        except OSError as e:
+            pass
+
+        if not tiocsctty_ok:
+            # fallback: open-by-name sets controlling terminal on POSIX
+            try:
+                ctty = os.open(slave_name, os.O_RDWR)
+                os.close(ctty)
+                tiocsctty_ok = True
+            except OSError:
+                pass
+
+        # Check what /dev/tty resolves to in the child now
+        dev_tty_name = '(failed to open)'
+        try:
+            dt = os.open('/dev/tty', os.O_RDWR | os.O_NOCTTY)
+            dev_tty_name = os.ttyname(dt)
+            os.close(dt)
+        except OSError as e:
+            dev_tty_name = f'OSError: {e}'
+
+        os.close(slave_fd)
+        os.close(tty_fd)
+        os.execv(REAL_FZF, [REAL_FZF] + sys.argv[1:])
+        sys.exit(127)
+
+    # ---- parent ----
+    os.close(slave_fd)
+    log(f'parent: forked child pid={pid}')
+
+    # Ignore SIGTTIN/SIGTTOU so we are never stopped when reading/writing
+    # the real terminal even if we somehow end up in the background.
+    signal.signal(signal.SIGTTIN, signal.SIG_IGN)
+    signal.signal(signal.SIGTTOU, signal.SIG_IGN)
+    log(f'parent: SIGTTIN/SIGTTOU ignored. pgrp={os.getpgrp()}  foreground={os.tcgetpgrp(tty_fd)}')
+
+    signal.signal(signal.SIGWINCH,
+                  lambda *_: (sync_winsize(), os.kill(pid, signal.SIGWINCH)))
+
+    saved = termios.tcgetattr(tty_fd)
+    raw = list(saved)
+    raw[0] = saved[0] & ~(termios.ICRNL | termios.IXON)
+    raw[3] = saved[3] & ~(termios.ECHO | termios.ICANON | termios.ISIG | termios.IEXTEN)
+    raw[6] = list(saved[6])
+    raw[6][termios.VMIN] = 1
+    raw[6][termios.VTIME] = 0
+    termios.tcsetattr(tty_fd, termios.TCSANOW, raw)
+
+    master_triggered = False
+
+    try:
+        while True:
+            try:
+                rfds, _, _ = select.select([tty_fd, master_fd], [], [], 0.1)
+            except InterruptedError:
+                continue
+
+            if tty_fd in rfds:
+                try:
+                    data = os.read(tty_fd, 4096)
+                except OSError as e:
+                    log(f'tty read OSError: {e}')
+                    break
+                if not data:
+                    break
+                log(f'tty→  raw={data.hex()}  len={len(data)}')
+
+                if len(data) == 1:
+                    if data[0] == 0x0A:
+                        data = b''
+                else:
+                    data = bytes(b for b in data if b not in (0x0A, 0x0D))
+
+                log(f'tty→  filtered={data.hex()}  len={len(data)}')
+                if data:
+                    try:
+                        os.write(master_fd, data)
+                    except OSError:
+                        break
+
+            if master_fd in rfds:
+                if not master_triggered:
+                    master_triggered = True
+                    log(f'master_fd first triggered  foreground_pgrp={os.tcgetpgrp(tty_fd)}')
+                try:
+                    data = os.read(master_fd, 4096)
+                except OSError:
+                    break
+                if not data:
+                    break
+                try:
+                    os.write(tty_fd, data)
+                except OSError:
+                    break
+
+            wpid, status = os.waitpid(pid, os.WNOHANG)
+            if wpid:
+                log(f'fzf exited status={status}')
+                sys.exit(os.waitstatus_to_exitcode(status))
+
+    finally:
+        termios.tcsetattr(tty_fd, termios.TCSADRAIN, saved)
+        os.close(master_fd)
+        os.close(tty_fd)
+        if LOG is not None:
+            LOG.close()
+
+    _, status = os.waitpid(pid, 0)
+    sys.exit(os.waitstatus_to_exitcode(status))
+
+
+main()

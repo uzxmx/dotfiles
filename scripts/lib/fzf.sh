@@ -24,7 +24,7 @@
 #
 # Note the bash example also works on zsh, except that the array index starts at 1.
 call_fzf() {
-  _call_program_with_array_output fzf "$@"
+  _call_program_with_array_output "$DOTFILES_DIR/scripts/misc/fzf-wrapper" "$@"
 }
 
 call_fzf_tmux() {
