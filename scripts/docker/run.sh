@@ -5,6 +5,9 @@ usage_run() {
 Usage: docker run
 
 Run a docker image.
+
+Examples:
+  $ d r -it --rm --entrypoint /bin/sh mysql:8.0
 EOF
   exit 1
 }

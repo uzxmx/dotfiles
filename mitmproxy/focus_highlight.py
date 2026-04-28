@@ -49,6 +49,8 @@ def _patch():
 class FocusHighlight:
     async def running(self):
         global _focus_map
+        if not hasattr(ctx.master, "ui"):
+            return
         _focus_map = _build_focus_map()
         _patch()
 
