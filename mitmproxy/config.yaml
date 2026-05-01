@@ -1,3 +1,4 @@
 connection_strategy: lazy
 scripts:
   - ~/.mitmproxy/focus_highlight.py
+  - ~/.mitmproxy/my_cmds.py
