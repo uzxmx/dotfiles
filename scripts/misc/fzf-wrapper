@@ -114,7 +114,9 @@ def main():
         sys.exit(127)
 
     # ---- parent ----
-    os.close(slave_fd)
+    # Keep slave_fd open until the proxy loop exits: closing it here would leave
+    # the slave PTY with no holders between the child's os.close(slave_fd) and
+    # fzf opening /dev/tty, causing master_fd to return EIO and killing fzf.
     log(f'parent: forked child pid={pid}')
 
     # Ignore SIGTTIN/SIGTTOU so we are never stopped when reading/writing
@@ -189,6 +191,7 @@ def main():
 
     finally:
         termios.tcsetattr(tty_fd, termios.TCSADRAIN, saved)
+        os.close(slave_fd)
         os.close(master_fd)
         os.close(tty_fd)
         if LOG is not None:
