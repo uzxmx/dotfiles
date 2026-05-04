@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Change color scheme for iTerm2 and vim permanently.
+# Change color scheme for iTerm2 (all sessions) and vim permanently.
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
@@ -16,40 +16,55 @@ select_color_scheme() {
 }
 
 set_iterm2_color() {
-  source "$DOTFILES_DIR/scripts/lib/iterm2.sh"
-
   local preset="$1"
-  emit_code SetColors preset "$preset"
 
-  zshrc_local_path="$DOTFILES_TARGET_DIR/.zshrc.local"
-  if grep -E '^export ITERM2_COLOR_PRESET=.*$' "$zshrc_local_path" &>/dev/null; then
+  if ! python3 -c "import iterm2" 2>/dev/null; then
+    echo "Installing iterm2 Python module..."
+    pip3 install iterm2 || { echo "Failed to install iterm2. Please run: pip3 install iterm2"; return 1; }
+  fi
+
+  python3 - "$preset" << 'EOF'
+import sys
+import iterm2
+
+async def main(connection):
+    preset_name = sys.argv[1]
+    app = await iterm2.async_get_app(connection)
+    preset = await iterm2.ColorPreset.async_get(connection, preset_name)
+    for window in app.windows:
+        for tab in window.tabs:
+            for session in tab.sessions:
+                profile = await session.async_get_profile()
+                await profile.async_set_color_preset(preset)
+
+iterm2.run_until_complete(main)
+EOF
+
+  local zshrc_local="$DOTFILES_TARGET_DIR/.zshrc.local"
+  if grep -qE '^export ITERM2_COLOR_PRESET=.*$' "$zshrc_local" 2>/dev/null; then
     source "$DOTFILES_DIR/scripts/lib/gsed.sh"
-    $SED -i -E "s/^export ITERM2_COLOR_PRESET=.*$/export ITERM2_COLOR_PRESET=\"$preset\"/" "$zshrc_local_path"
+    $SED -i -E "s/^export ITERM2_COLOR_PRESET=.*$/export ITERM2_COLOR_PRESET=\"$preset\"/" "$zshrc_local"
   else
-    echo "export ITERM2_COLOR_PRESET=\"$preset\"" >>"$zshrc_local_path"
+    echo "export ITERM2_COLOR_PRESET=\"$preset\"" >> "$zshrc_local"
   fi
 }
 
 set_vim_color() {
- local scheme="$(echo "$1" | tr 'A-Z' 'a-z')"
+  local scheme
+  scheme="$(echo "$1" | tr 'A-Z' 'a-z')"
   local vimfile="$DOTFILES_TARGET_DIR/.vim/vimrc.before.local"
-  if [ -f "$vimfile" ]; then
-    local regexp="^(let g:current_colorscheme = ').*(')$"
-    if grep -E "$regexp" "$vimfile" &>/dev/null; then
-      source "$DOTFILES_DIR/scripts/lib/gsed.sh"
-      $SED -Ee "s/${regexp}/\1${scheme}\2/" -i "$vimfile"
-      exit
-    fi
-  fi
-
+  local regexp="^(let g:current_colorscheme = ').*(')$"
   local code="let g:current_colorscheme = '$scheme'"
-  if [ -f "$vimfile" ]; then
-    echo "$code" >>"$vimfile"
+
+  if [ -f "$vimfile" ] && grep -qE "$regexp" "$vimfile"; then
+    source "$DOTFILES_DIR/scripts/lib/gsed.sh"
+    $SED -Ee "s/${regexp}/\1${scheme}\2/" -i "$vimfile"
   else
-    echo "$code" >"$vimfile"
+    echo "$code" >> "$vimfile"
   fi
 }
 
 scheme="$(select_color_scheme)"
+[ -z "$scheme" ] && exit 0
 set_iterm2_color "$scheme"
 set_vim_color "$scheme"
