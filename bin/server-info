@@ -774,14 +774,16 @@ def section_processes() -> list[str]:
     lines.append(
         f'  {C.DIM}{"PID":>7}  {"CPU%":>5}  {"MEM%":>5}  {T("Command")}{C.RST}'
     )
+    cmd_w = max(20, COLS - 25)
     for p in procs:
         cpu_c = C.RED if p['cpu'] > 80 else C.YLW if p['cpu'] > 40 else C.RST
         mem_c = C.RED if p['mem'] > 20 else C.YLW if p['mem'] > 10 else C.RST
+        cmd = p['cmd'][:cmd_w]
         lines.append(
             f'  {C.DIM}{p["pid"]:>7}{C.RST}'
             f'  {cpu_c}{p["cpu"]:>5.1f}{C.RST}'
             f'  {mem_c}{p["mem"]:>5.1f}{C.RST}'
-            f'  {p["cmd"]}'
+            f'  {cmd}'
         )
     return lines
 
@@ -798,7 +800,7 @@ def _top_procs(n: int = 8) -> list[dict]:
                 'pid': parts[1],
                 'cpu': float(parts[2]),
                 'mem': float(parts[3]),
-                'cmd': parts[10][:60],
+                'cmd': parts[10],
             })
         return result
     except Exception:
