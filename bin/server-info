@@ -1,0 +1,1149 @@
+#!/usr/bin/env python3
+"""
+server-info — at-a-glance server dashboard
+
+Usage:
+  server-info                     TUI dashboard, auto-refreshes (default on TTY)
+  server-info storage network     show only those sections
+  server-info --once              one-shot print (no TUI)
+  server-info -i 10               TUI refresh interval in seconds (default: 5)
+"""
+from __future__ import annotations
+
+import os, re, sys, shutil, socket, subprocess, datetime, threading, signal, select, argparse
+from pathlib import Path
+
+try:
+    import termios, tty
+    _HAS_TERMIOS = True
+except ImportError:
+    _HAS_TERMIOS = False
+
+IS_LINUX = sys.platform == 'linux'
+IS_MACOS = sys.platform == 'darwin'
+
+# ── terminal & color ──────────────────────────────────────────────────────────
+
+COLS = shutil.get_terminal_size((100, 24)).columns
+NO_COLOR = not sys.stdout.isatty() or bool(os.environ.get('NO_COLOR'))
+
+class C:
+    RST  = '' if NO_COLOR else '\033[0m'
+    BOLD = '' if NO_COLOR else '\033[1m'
+    DIM  = '' if NO_COLOR else '\033[2m'
+    RED  = '' if NO_COLOR else '\033[91m'
+    GRN  = '' if NO_COLOR else '\033[92m'
+    YLW  = '' if NO_COLOR else '\033[93m'
+    BLU  = '' if NO_COLOR else '\033[94m'
+    MAG  = '' if NO_COLOR else '\033[95m'
+    CYN  = '' if NO_COLOR else '\033[96m'
+    WHT  = '' if NO_COLOR else '\033[97m'
+    REV  = '' if NO_COLOR else '\033[7m'
+
+# ── i18n ─────────────────────────────────────────────────────────────────────
+
+_ANSI_RE = re.compile(r'\033\[[0-9;]*[A-Za-z]')
+
+_LANG = os.environ.get('SERVER_INFO_LANG', 'zh')
+
+_STRINGS: dict[str, dict[str, str]] = {
+    'zh': {
+        # tab names
+        'overview':  '概览',
+        'network':   '网络',
+        'logins':    '登录',
+        'security':  '安全',
+        # section headers
+        'SYSTEM':                    '系统',
+        'RESOURCES':                 '资源',
+        'STORAGE':                   '存储',
+        'NETWORK':                   '网络',
+        'SSH LOGINS (last 30 days)': 'SSH 登录（近30天）',
+        'SECURITY':                  '安全',
+        'TOP PROCESSES':             '进程',
+        # kv keys
+        'Hostname':      '主机名',
+        'OS':            '操作系统',
+        'Kernel':        '内核',
+        'Uptime':        '运行时长',
+        'Users':         '在线用户',
+        'Time':          '时间',
+        'CPU':           'CPU',
+        'Usage':         '使用率',
+        'Memory':        '内存',
+        'Swap':          '交换',
+        'Public IP':     '公网IP',
+        'Listening':     '监听端口',
+        'Failed logins': '失败登录',
+        'fail2ban':      'fail2ban',
+        'Last sudo':     '最近sudo',
+        'Root logins':   'root登录',
+        # messages
+        'logged in':                                   '已登录',
+        'no swap':                                     '无交换区',
+        'no ipv4':                                     '无IPv4',
+        'no entries found':                            '无记录',
+        'no mountpoints found':                        '无挂载点',
+        'ps not available':                            'ps不可用',
+        '... {n} more unique IPs not shown':           '... 还有{n}个IP未显示',
+        'Total: {a} logins from {b} unique IPs':       '共 {a} 次登录，来自 {b} 个IP',
+        '{n} IPs banned':                              '{n}个IP已封禁',
+        '0 IPs banned':                                '无IP被封禁',
+        '(last 24h)':                                  '（近24h）',
+        '(last 30d)':                                  '（近30天）',
+        'fetching geo locations...':                   '正在获取地理位置...',
+        # table column headers
+        'Last seen': '最后登录',
+        'User':      '用户',
+        'IP':        'IP',
+        'Location':  '地区',
+        'Command':   '命令',
+        # status bar
+        '[q]quit':        '[q]退出',
+        '[r]refresh':     '[r]刷新',
+        '[hl/Tab] tab':   '[hl/Tab]切换',
+        '[jk] scroll':    '[jk]滚动',
+        '[PgUp/Dn] page': '[PgUp/Dn]翻页',
+        '[gG] top/end':   '[gG]首/尾',
+        '[1-{n}] jump':   '[1-{n}]跳转',
+    },
+}
+
+def T(s: str, **kw) -> str:
+    t = _STRINGS.get(_LANG, {}).get(s, s)
+    return t.format(**kw) if kw else t
+
+def _vw(s: str) -> int:
+    """Visual width: strips ANSI, counts CJK chars as 2."""
+    w = 0
+    for ch in _ANSI_RE.sub('', s):
+        cp = ord(ch)
+        w += 2 if (0x2E80 <= cp <= 0xD7AF or 0xF900 <= cp <= 0xFFE6) else 1
+    return w
+
+def _ljust(s: str, w: int) -> str:
+    return s + ' ' * max(0, w - _vw(s))
+
+def _cjust(s: str, w: int) -> str:
+    pad = max(0, w - _vw(s))
+    return ' ' * (pad // 2) + s + ' ' * (pad - pad // 2)
+
+def bar(pct: float, width: int = 20) -> str:
+    filled = int(width * pct / 100)
+    b = '█' * filled + '░' * (width - filled)
+    color = C.RED if pct >= 90 else C.YLW if pct >= 70 else C.GRN
+    return f'{color}{b}{C.RST}'
+
+def header(title: str) -> str:
+    line = f'─── {C.BOLD}{C.CYN}{title}{C.RST} '
+    plain_len = _vw(f'─── {title} ')
+    return line + '─' * max(0, COLS - plain_len)
+
+def kv(key: str, val: str, key_w: int = 14) -> str:
+    return f'  {C.DIM}{_ljust(key, key_w)}{C.RST} {val}'
+
+def run(*cmd, default: str = '') -> str:
+    try:
+        return subprocess.check_output(
+            cmd, stderr=subprocess.DEVNULL, text=True
+        ).strip()
+    except Exception:
+        return default
+
+def cmd_exists(name: str) -> bool:
+    return shutil.which(name) is not None
+
+def human(n: float, base: int = 1024) -> str:
+    for unit in ('B', 'K', 'M', 'G', 'T', 'P'):
+        if n < base:
+            return f'{n:.1f}{unit}' if unit != 'B' else f'{int(n)}B'
+        n /= base
+    return f'{n:.1f}E'
+
+# ── sections ──────────────────────────────────────────────────────────────────
+
+def section_system() -> list[str]:
+    lines = [header(T('SYSTEM'))]
+    hostname = socket.gethostname()
+    os_name  = _os_name()
+    kernel   = run('uname', '-r')
+    arch     = run('uname', '-m')
+    uptime   = _uptime()
+    who_out  = run('who', default='').strip()
+    n_users  = len(who_out.splitlines()) if who_out else 0
+    users    = list({l.split()[0] for l in who_out.splitlines() if l}) if who_out else []
+
+    lines.append(kv(T('Hostname'), f'{C.BOLD}{C.WHT}{hostname}{C.RST}'))
+    lines.append(kv(T('OS'),       os_name))
+    lines.append(kv(T('Kernel'),   f'{kernel}  {C.DIM}({arch}){C.RST}'))
+    lines.append(kv(T('Uptime'),   uptime))
+    lines.append(kv(T('Users'),
+        f'{n_users} {T("logged in")}'
+        + (f'  {C.DIM}({", ".join(users)}){C.RST}' if users else '')))
+    lines.append(kv(T('Time'),
+        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    return lines
+
+def _os_name() -> str:
+    for f in ('/etc/os-release', '/etc/redhat-release'):
+        p = Path(f)
+        if p.exists():
+            text = p.read_text()
+            m = re.search(r'PRETTY_NAME="([^"]+)"', text)
+            if m:
+                return m.group(1)
+            m = re.search(r'^(.+)', text)
+            if m:
+                return m.group(1)
+    if IS_MACOS:
+        name = run('sw_vers', '-productName', default='macOS')
+        ver  = run('sw_vers', '-productVersion', default='')
+        return f'{name} {ver}'.strip()
+    return run('uname', '-s', default='Unknown')
+
+def _uptime() -> str:
+    try:
+        secs = float(Path('/proc/uptime').read_text().split()[0])
+        d, r = divmod(int(secs), 86400)
+        h, r = divmod(r, 3600)
+        m    = r // 60
+        parts = []
+        if d: parts.append(f'{d}d')
+        if h: parts.append(f'{h}h')
+        parts.append(f'{m}m')
+        return ' '.join(parts)
+    except Exception:
+        pass
+    if IS_MACOS:
+        try:
+            out = run('sysctl', '-n', 'kern.boottime')
+            m = re.search(r'sec\s*=\s*(\d+)', out)
+            if m:
+                boot = int(m.group(1))
+                secs = int(datetime.datetime.now().timestamp()) - boot
+                d, r = divmod(secs, 86400)
+                h, r = divmod(r, 3600)
+                mn   = r // 60
+                parts = []
+                if d: parts.append(f'{d}d')
+                if h: parts.append(f'{h}h')
+                parts.append(f'{mn}m')
+                return ' '.join(parts)
+        except Exception:
+            pass
+    return run('uptime', default='unknown')
+
+
+def section_resources() -> list[str]:
+    lines = [header(T('RESOURCES'))]
+
+    cpu_model = _cpu_model()
+    cpu_cores = _cpu_cores()
+    load1, load5, load15 = _load_avg()
+    cpu_pct   = _cpu_pct()
+
+    color = C.RED if cpu_pct >= 90 else C.YLW if cpu_pct >= 70 else C.GRN
+    lines.append(kv(T('CPU'), f'{cpu_model}  {C.DIM}({cpu_cores} cores){C.RST}'))
+    lines.append(kv(T('Usage'),
+        f'{color}{cpu_pct:.1f}%{C.RST}  {bar(cpu_pct)}'
+        f'  {C.DIM}load {load1} / {load5} / {load15}{C.RST}'))
+
+    mem = _meminfo_kb()
+    if mem:
+        used  = mem['total'] - mem['available']
+        total = mem['total']
+        pct   = 100 * used / total if total else 0
+        lines.append(kv(T('Memory'),
+            f'{human(used*1024)} / {human(total*1024)}  ({pct:.0f}%)  {bar(pct)}'))
+
+        if mem.get('swap_total', 0):
+            su   = mem['swap_total'] - mem['swap_free']
+            spct = 100 * su / mem['swap_total']
+            lines.append(kv(T('Swap'),
+                f'{human(su*1024)} / {human(mem["swap_total"]*1024)}'
+                f'  ({spct:.0f}%)  {bar(spct)}'))
+        else:
+            lines.append(kv(T('Swap'), f'{C.DIM}{T("no swap")}{C.RST}'))
+
+    return lines
+
+def _cpu_model() -> str:
+    try:
+        for line in Path('/proc/cpuinfo').read_text().splitlines():
+            if line.startswith('model name'):
+                return re.sub(r'\s+', ' ', line.split(':', 1)[1].strip())
+    except Exception:
+        pass
+    if IS_MACOS:
+        m = run('sysctl', '-n', 'machdep.cpu.brand_string')
+        if m:
+            return m
+    return run('uname', '-p', default='unknown')
+
+def _cpu_cores() -> int:
+    n = run('nproc', default='') or run('sysctl', '-n', 'hw.logicalcpu', default='')
+    try:
+        return int(n)
+    except Exception:
+        return os.cpu_count() or 0
+
+def _load_avg() -> tuple[str, str, str]:
+    try:
+        vals = Path('/proc/loadavg').read_text().split()[:3]
+        return vals[0], vals[1], vals[2]
+    except Exception:
+        pass
+    if IS_MACOS:
+        try:
+            out = run('sysctl', '-n', 'vm.loadavg')
+            nums = re.findall(r'[\d.]+', out)
+            if len(nums) >= 3:
+                return nums[0], nums[1], nums[2]
+        except Exception:
+            pass
+    out = run('uptime', default='')
+    m = re.search(r'load averages?:\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)', out)
+    if m:
+        return m.group(1), m.group(2), m.group(3)
+    return '?', '?', '?'
+
+def _cpu_pct() -> float:
+    if IS_LINUX:
+        def read_stat():
+            line = Path('/proc/stat').read_text().splitlines()[0].split()
+            vals = list(map(int, line[1:]))
+            return vals[3], sum(vals)
+        try:
+            import time
+            i1, t1 = read_stat()
+            time.sleep(0.25)
+            i2, t2 = read_stat()
+            dt = t2 - t1
+            return 100 * (1 - (i2 - i1) / dt) if dt else 0.0
+        except Exception:
+            pass
+    if IS_MACOS:
+        try:
+            out = run('top', '-l', '1', '-n', '0')
+            m = re.search(r'CPU usage:\s*([\d.]+)%\s*user,\s*([\d.]+)%\s*sys', out)
+            if m:
+                return float(m.group(1)) + float(m.group(2))
+        except Exception:
+            pass
+    return 0.0
+
+def _meminfo_kb() -> dict:
+    if IS_LINUX:
+        try:
+            d = {}
+            for line in Path('/proc/meminfo').read_text().splitlines():
+                m = re.match(r'(\w+):\s+(\d+)', line)
+                if m:
+                    d[m.group(1)] = int(m.group(2))
+            return {
+                'total':      d.get('MemTotal', 0),
+                'available':  d.get('MemAvailable', d.get('MemFree', 0)),
+                'swap_total': d.get('SwapTotal', 0),
+                'swap_free':  d.get('SwapFree', 0),
+            }
+        except Exception:
+            pass
+    if IS_MACOS:
+        try:
+            total_bytes = int(run('sysctl', '-n', 'hw.memsize', default='0'))
+            page_size   = int(run('sysctl', '-n', 'hw.pagesize', default='4096'))
+            vm = run('vm_stat', default='')
+            def pages(key):
+                m = re.search(rf'{key}:\s+(\d+)', vm)
+                return int(m.group(1)) if m else 0
+            free_pages = pages('Pages free') + pages('Pages speculative')
+            avail_kb   = (free_pages * page_size) // 1024
+            total_kb   = total_bytes // 1024
+            swap_out = run('sysctl', '-n', 'vm.swapusage', default='')
+            st = re.search(r'total\s*=\s*([\d.]+)M', swap_out)
+            sf = re.search(r'free\s*=\s*([\d.]+)M', swap_out)
+            swap_total = int(float(st.group(1)) * 1024) if st else 0
+            swap_free  = int(float(sf.group(1)) * 1024) if sf else 0
+            return {
+                'total':      total_kb,
+                'available':  avail_kb,
+                'swap_total': swap_total,
+                'swap_free':  swap_free,
+            }
+        except Exception:
+            pass
+    return {}
+
+
+def section_storage() -> list[str]:
+    lines = [header(T('STORAGE'))]
+    skip_fs = {
+        'tmpfs', 'devtmpfs', 'udev', 'overlay', 'squashfs', 'fuse.lxcfs',
+        'cgmfs', 'cgroup', 'cgroup2', 'nsfs', 'proc', 'sysfs', 'devpts',
+        'hugetlbfs', 'mqueue', 'pstore', 'securityfs', 'configfs', 'debugfs',
+        'autofs', 'devfs', 'fdescfs', 'none',
+    }
+    skip_mnt_prefix = ('/sys', '/proc', '/dev/pts', '/run', '/snap')
+
+    try:
+        out = run('df', '-k', '-T') if IS_LINUX else run('df', '-k')
+        rows = out.splitlines()[1:]
+        found = False
+        for row in rows:
+            parts = row.split()
+            try:
+                if IS_LINUX and len(parts) >= 7:
+                    source, fstype = parts[0], parts[1]
+                    size_kb  = int(parts[2])
+                    used_kb  = int(parts[3])
+                    avail_kb = int(parts[4])
+                    pct_s    = parts[5]
+                    mount    = parts[-1]
+                elif IS_MACOS and len(parts) >= 6:
+                    source   = parts[0]
+                    fstype   = ''
+                    size_kb  = int(parts[1])
+                    used_kb  = int(parts[2])
+                    avail_kb = int(parts[3])
+                    pct_s    = parts[4]
+                    mount    = parts[-1]
+                else:
+                    continue
+            except (ValueError, IndexError):
+                continue
+
+            if not mount.startswith('/'):
+                continue
+            if fstype in skip_fs:
+                continue
+            if any(mount.startswith(p) for p in skip_mnt_prefix):
+                continue
+            if source.startswith(('map ', 'com.apple.')):
+                continue
+
+            pct = int(pct_s.rstrip('%'))
+            color = C.RED if pct >= 90 else C.YLW if pct >= 70 else C.GRN
+            lines.append(
+                f'  {C.BOLD}{mount:<22}{C.RST}'
+                f'  {human(used_kb*1024):>7} / {human(size_kb*1024):<7}'
+                f'  {color}{pct:>3}%{C.RST}  {bar(pct)}'
+                f'  {C.DIM}({human(avail_kb*1024)} free){C.RST}'
+            )
+            found = True
+
+        if not found:
+            lines.append(f'  {C.DIM}{T("no mountpoints found")}{C.RST}')
+    except Exception as e:
+        lines.append(f'  {C.RED}error: {e}{C.RST}')
+    return lines
+
+
+def section_network() -> list[str]:
+    lines = [header(T('NETWORK'))]
+
+    ifaces = _net_ifaces()
+    for iface, info in ifaces.items():
+        ip = info.get('ip', C.DIM + T('no ipv4') + C.RST)
+        rx = human(info.get('rx_bytes', 0))
+        tx = human(info.get('tx_bytes', 0))
+        lines.append(
+            f'  {C.BOLD}{iface:<14}{C.RST}'
+            f'  {C.WHT}{ip:<18}{C.RST}'
+            f'  {C.DIM}↑{tx}  ↓{rx}{C.RST}'
+        )
+
+    pub = _public_ip()
+    if pub:
+        lines.append(kv(T('Public IP'), f'{C.YLW}{pub}{C.RST}'))
+
+    ports = _listening_ports()
+    if ports:
+        lines.append(kv(T('Listening'), ', '.join(sorted(ports, key=int))))
+
+    return lines
+
+def _net_ifaces() -> dict:
+    result = {}
+
+    if IS_LINUX:
+        out = run('ip', '-o', 'addr', 'show', default='')
+        for line in out.splitlines():
+            m = re.match(r'\d+:\s+(\S+)\s+inet\s+(\d+\.\d+\.\d+\.\d+)', line)
+            if m and m.group(1) != 'lo':
+                result.setdefault(m.group(1), {})['ip'] = m.group(2)
+        try:
+            for line in Path('/proc/net/dev').read_text().splitlines()[2:]:
+                if ':' not in line:
+                    continue
+                iface, data = line.split(':', 1)
+                iface = iface.strip()
+                if iface == 'lo' or iface not in result:
+                    continue
+                nums = data.split()
+                result[iface]['rx_bytes'] = int(nums[0])
+                result[iface]['tx_bytes'] = int(nums[8])
+        except Exception:
+            pass
+
+    elif IS_MACOS:
+        out = run('ifconfig', default='')
+        cur = None
+        for line in out.splitlines():
+            m = re.match(r'^(\S+):', line)
+            if m:
+                cur = m.group(1)
+                if cur == 'lo0':
+                    cur = None
+            if cur:
+                m2 = re.search(r'inet\s+(\d+\.\d+\.\d+\.\d+)', line)
+                if m2:
+                    result.setdefault(cur, {})['ip'] = m2.group(1)
+        out = run('netstat', '-ibn', default='')
+        for line in out.splitlines():
+            parts = line.split()
+            if len(parts) < 10 or parts[0] == 'Name':
+                continue
+            iface = parts[0].rstrip('*')
+            if iface not in result:
+                continue
+            try:
+                result[iface].setdefault('rx_bytes', int(parts[6]))
+                result[iface].setdefault('tx_bytes', int(parts[9]))
+            except (ValueError, IndexError):
+                pass
+
+    return result
+
+def _public_ip() -> str:
+    for cmd in (
+        ['curl', '-s', '--max-time', '3', 'https://api.ipify.org'],
+        ['wget', '-qO-', '--timeout=3', 'https://api.ipify.org'],
+    ):
+        if cmd_exists(cmd[0]):
+            ip = run(*cmd)
+            if re.match(r'^\d+\.\d+\.\d+\.\d+$', ip):
+                return ip
+    return ''
+
+def _listening_ports() -> list[str]:
+    ports = set()
+    for out in (
+        run('ss', '-tlnH', default=''),
+        run('netstat', '-tlnp', default='') if IS_LINUX else run('netstat', '-anp', 'tcp', default=''),
+    ):
+        for line in out.splitlines():
+            if 'LISTEN' in line or (IS_MACOS and '*.* ' not in line):
+                m = re.search(r'[:\*](\d{2,5})\s', line)
+                if m and m.group(1) != '0':
+                    ports.add(m.group(1))
+    return list(ports)
+
+
+GEO_LOADING_MARKER = '\x00GEO\x00'
+
+def section_logins():
+    hdr    = header(T('SSH LOGINS (last 30 days)'))
+    cutoff = datetime.datetime.now() - datetime.timedelta(days=30)
+
+    entries = _parse_last(cutoff)
+    if not entries:
+        yield [hdr, f'  {C.DIM}{T("no entries found")}{C.RST}']
+        return
+
+    unique_ips = [ip for ip in {e['ip'] for e in entries}
+                  if ip not in ('', '::1', '127.0.0.1')]
+
+    ip_counts: dict[str, int] = {}
+    by_ip: dict = {}
+    for e in entries:
+        ip = e['ip']
+        ip_counts[ip] = ip_counts.get(ip, 0) + 1
+        if ip not in by_ip or e['time'] > by_ip[ip]['time']:
+            by_ip[ip] = e
+
+    sorted_entries = sorted(by_ip.values(), key=lambda e: e['time'], reverse=True)
+
+    def _build_rows(geo: dict) -> list[str]:
+        rows = [
+            f'  {C.DIM}{_ljust(T("Last seen"), 20)}{_ljust(T("User"), 12)}{_ljust(T("IP"), 18)}{"#":>4}  {T("Location")}{C.RST}',
+            f'  {"─"*76}',
+        ]
+        for e in sorted_entries[:25]:
+            ip       = e['ip']
+            cnt      = ip_counts.get(ip, 1)
+            location = geo.get(ip, '')
+            ts       = e['time'].strftime('%Y-%m-%d %H:%M')
+            rows.append(
+                f'  {C.DIM}{ts:<20}{C.RST}'
+                f'{e["user"]:<12}'
+                f'{C.YLW}{ip:<18}{C.RST}'
+                f'{C.DIM}{cnt:>4}  {location}{C.RST}'
+            )
+        if len(by_ip) > 25:
+            rows.append(f'  {C.DIM}{T("... {n} more unique IPs not shown", n=len(by_ip)-25)}{C.RST}')
+        rows.append(
+            f'  {C.DIM}{T("Total: {a} logins from {b} unique IPs", a=len(entries), b=len(by_ip))}{C.RST}'
+        )
+        return rows
+
+    if not unique_ips:
+        yield [hdr] + _build_rows({})
+        return
+
+    # phase 1: entries immediately, geo pending (spinner shown by _render)
+    yield [hdr, GEO_LOADING_MARKER] + _build_rows({})
+
+    # phase 2: geo fetched, replace marker-free header
+    geo = _geolocate_batch(unique_ips)
+    yield [hdr] + _build_rows(geo)
+
+def _parse_last(since: datetime.datetime) -> list[dict]:
+    entries = []
+    now = datetime.datetime.now()
+    out = (run('last', '-i', '-F', '-w', default='')
+           or run('last', '-i', default='')
+           or run('last', default=''))
+    for line in out.splitlines():
+        if not line or line.startswith(('wtmp', 'btmp', 'reboot', 'shutdown')):
+            continue
+        parts = line.split()
+        if len(parts) < 5:
+            continue
+        user = parts[0]
+        ip   = parts[2]
+        if not re.match(r'^\d+\.\d+\.\d+\.\d+$', ip):
+            continue
+        t = _parse_last_time(parts, now)
+        if t and t >= since:
+            entries.append({'user': user, 'ip': ip, 'time': t})
+    return entries
+
+def _parse_last_time(parts: list, now: datetime.datetime):
+    # last output: user tty ip weekday month day [time] [year] ...
+    # timestamp fields start at index 3 (weekday)
+    for fmt, start, count in [
+        ('%a %b %d %H:%M:%S %Y', 3, 5),
+        ('%a %b %d %H:%M:%S',    3, 4),
+        ('%a %b  %d %H:%M',      3, 4),
+        ('%a %b %d %H:%M',       3, 4),
+    ]:
+        try:
+            ts_str = ' '.join(parts[start:start+count])
+            t = datetime.datetime.strptime(ts_str, fmt)
+            if t.year == 1900:
+                t = t.replace(year=now.year)
+            return t
+        except Exception:
+            continue
+    return None
+
+def _geolocate_batch(ips: list[str]) -> dict[str, str]:
+    geo = {}
+    if not ips:
+        return geo
+
+    if cmd_exists('geoiplookup'):
+        for ip in ips:
+            out = run('geoiplookup', ip)
+            m = re.search(r'GeoIP Country Edition: (\w\w), (.+)', out)
+            if m:
+                geo[ip] = f'{m.group(2).strip()} ({m.group(1)})'
+        if geo:
+            return geo
+
+    db_candidates = [
+        '/usr/share/GeoIP/GeoLite2-City.mmdb',
+        '/var/lib/GeoIP/GeoLite2-City.mmdb',
+        os.path.expanduser('~/.local/share/GeoIP/GeoLite2-City.mmdb'),
+        os.path.expanduser('~/GeoIP/GeoLite2-City.mmdb'),
+    ]
+    mmdb = next((p for p in db_candidates if Path(p).exists()), None)
+    if mmdb and cmd_exists('mmdbinspect'):
+        for ip in ips:
+            out = run('mmdbinspect', '--db', mmdb, ip)
+            city    = re.search(r'"en":\s*"([^"]+)"', out)
+            country = re.search(r'"iso_code":\s*"([^"]+)"', out)
+            if city and country:
+                geo[ip] = f'{city.group(1)}, {country.group(1)}'
+        if geo:
+            return geo
+
+    if cmd_exists('curl'):
+        for ip in ips[:10]:
+            out = run('curl', '-s', '--max-time', '3', f'https://ipinfo.io/{ip}/json')
+            city    = re.search(r'"city":\s*"([^"]+)"', out)
+            country = re.search(r'"country":\s*"([^"]+)"', out)
+            if city and country:
+                geo[ip] = f'{city.group(1)}, {country.group(1)}'
+
+    return geo
+
+
+def section_security() -> list[str]:
+    lines = [header(T('SECURITY'))]
+
+    failed = _failed_logins_24h()
+    color  = C.RED if failed > 100 else C.YLW if failed > 10 else C.GRN
+    lines.append(kv(T('Failed logins'), f'{color}{failed}{C.RST}  {C.DIM}{T("(last 24h)")}{C.RST}'))
+
+    if cmd_exists('fail2ban-client'):
+        banned = _fail2ban_banned()
+        lines.append(kv(T('fail2ban'),
+            f'{C.RED}{T("{n} IPs banned", n=banned)}{C.RST}' if banned
+            else f'{C.GRN}{T("0 IPs banned")}{C.RST}'))
+
+    last_sudo = _last_sudo()
+    if last_sudo:
+        lines.append(kv(T('Last sudo'), last_sudo))
+
+    root_n = _root_logins_30d()
+    if root_n:
+        lines.append(kv(T('Root logins'), f'{C.RED}{root_n} {T("(last 30d)")}{C.RST}'))
+
+    return lines
+
+def _failed_logins_24h() -> int:
+    for log in ('/var/log/auth.log', '/var/log/secure'):
+        if Path(log).exists():
+            try:
+                out = run('grep', '-c', 'Failed password', log)
+                return int(out) if out.isdigit() else 0
+            except Exception:
+                pass
+    if cmd_exists('journalctl'):
+        out = run('journalctl', '-u', 'sshd', '-u', 'ssh',
+                  '--since', '24 hours ago', '--no-pager', '-q')
+        return sum(1 for l in out.splitlines() if 'Failed password' in l)
+    return 0
+
+def _fail2ban_banned() -> int:
+    try:
+        out = run('fail2ban-client', 'status', 'sshd')
+        m = re.search(r'Currently banned:\s+(\d+)', out)
+        return int(m.group(1)) if m else 0
+    except Exception:
+        return 0
+
+def _last_sudo() -> str:
+    for log in ('/var/log/auth.log', '/var/log/secure'):
+        if Path(log).exists():
+            try:
+                lines = [l for l in run('grep', 'sudo.*COMMAND', log).splitlines()
+                         if 'COMMAND' in l]
+                if not lines:
+                    continue
+                last = lines[-1]
+                ts   = re.match(r'(\w+\s+\d+\s+\d+:\d+:\d+)', last)
+                user = re.search(r'sudo:\s+(\w+)', last)
+                cmd  = re.search(r'COMMAND=(.+)', last)
+                parts = []
+                if ts:   parts.append(ts.group(1))
+                if user: parts.append(user.group(1))
+                if cmd:  parts.append(f'{C.DIM}{cmd.group(1)[:50]}{C.RST}')
+                return '  '.join(parts)
+            except Exception:
+                pass
+    return ''
+
+def _root_logins_30d() -> int:
+    cutoff = datetime.datetime.now() - datetime.timedelta(days=30)
+    now    = datetime.datetime.now()
+    out    = run('last', '-i', 'root', default='')
+    count  = 0
+    for line in out.splitlines():
+        if not line or line.startswith('wtmp'):
+            continue
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+        t = _parse_last_time(parts, now)
+        if t and t >= cutoff:
+            count += 1
+    return count
+
+
+def section_processes() -> list[str]:
+    lines = [header(T('TOP PROCESSES'))]
+    procs = _top_procs(n=8)
+    if not procs:
+        lines.append(f'  {C.DIM}{T("ps not available")}{C.RST}')
+        return lines
+
+    lines.append(
+        f'  {C.DIM}{"PID":>7}  {"CPU%":>5}  {"MEM%":>5}  {T("Command")}{C.RST}'
+    )
+    for p in procs:
+        cpu_c = C.RED if p['cpu'] > 80 else C.YLW if p['cpu'] > 40 else C.RST
+        mem_c = C.RED if p['mem'] > 20 else C.YLW if p['mem'] > 10 else C.RST
+        lines.append(
+            f'  {C.DIM}{p["pid"]:>7}{C.RST}'
+            f'  {cpu_c}{p["cpu"]:>5.1f}{C.RST}'
+            f'  {mem_c}{p["mem"]:>5.1f}{C.RST}'
+            f'  {p["cmd"]}'
+        )
+    return lines
+
+def _top_procs(n: int = 8) -> list[dict]:
+    sort_flag = ['--sort=-%cpu'] if IS_LINUX else ['-r']
+    try:
+        out = run('ps', 'aux', *sort_flag)
+        result = []
+        for row in out.splitlines()[1:n+1]:
+            parts = row.split(None, 10)
+            if len(parts) < 11:
+                continue
+            result.append({
+                'pid': parts[1],
+                'cpu': float(parts[2]),
+                'mem': float(parts[3]),
+                'cmd': parts[10][:60],
+            })
+        return result
+    except Exception:
+        return []
+
+
+# ── section registry ──────────────────────────────────────────────────────────
+
+def _vis_len(s: str) -> int:
+    return _vw(s)
+
+def _two_col(left: list[str], right: list[str], col_width: int) -> list[str]:
+    """Render two ANSI line-lists side by side; left column padded to col_width."""
+    out = []
+    div = f'  {C.DIM}│{C.RST}  '
+    for i in range(max(len(left), len(right))):
+        l = left[i]  if i < len(left)  else ''
+        r = right[i] if i < len(right) else ''
+        vl = _vis_len(l)
+        if vl > col_width:
+            l = _ansi_truncate(l, col_width)  # resolved at call-time
+            vl = _vw(l)
+        out.append(f'{l}{C.RST}{" " * (col_width - vl)}{div}{r}')
+    return out
+
+def section_overview() -> list[str]:
+    sys_lines = section_system()
+    res_lines = section_resources()
+    col_width = (COLS - 5) // 2  # each half; 5 = len('  │  ')
+    return (
+        _two_col(sys_lines, res_lines, col_width)
+        + [''] + section_storage()
+        + [''] + section_processes()
+    )
+
+SECTIONS: dict[str, object] = {
+    'overview': section_overview,
+    'network':  section_network,
+    'logins':   section_logins,
+    'security': section_security,
+}
+
+# ── TUI ───────────────────────────────────────────────────────────────────────
+
+def _ansi_truncate(s: str, width: int) -> str:
+    """Truncate to `width` visible columns, CJK chars count as 2."""
+    visible = 0
+    buf = []
+    i = 0
+    while i < len(s):
+        if s[i] == '\033' and i + 1 < len(s) and s[i + 1] == '[':
+            j = i + 2
+            while j < len(s) and (s[j].isdigit() or s[j] == ';'):
+                j += 1
+            if j < len(s):
+                buf.append(s[i:j + 1])
+                i = j + 1
+                continue
+        cp = ord(s[i])
+        cw = 2 if (0x2E80 <= cp <= 0xD7AF or 0xF900 <= cp <= 0xFFE6) else 1
+        if visible + cw > width:
+            break
+        buf.append(s[i])
+        visible += cw
+        i += 1
+    if C.RST:
+        buf.append(C.RST)
+    return ''.join(buf)
+
+
+def _read_key(fd: int, timeout: float = 0.15) -> str | None:
+    r, _, _ = select.select([fd], [], [], timeout)
+    if not r:
+        return None
+    ch = os.read(fd, 1)
+    if ch == b'\x1b':
+        r2, _, _ = select.select([fd], [], [], 0.05)
+        if not r2:
+            return 'ESC'
+        nxt = os.read(fd, 1)
+        if nxt == b'[':
+            r3, _, _ = select.select([fd], [], [], 0.05)
+            if r3:
+                ch3 = os.read(fd, 1)
+                if ch3 == b'A': return 'UP'
+                if ch3 == b'B': return 'DOWN'
+                if ch3 == b'C': return 'RIGHT'
+                if ch3 == b'D': return 'LEFT'
+                if ch3 == b'H': return 'HOME'
+                if ch3 == b'F': return 'END'
+                if ch3 == b'Z': return 'BTAB'
+                if ch3 in (b'5', b'6'):
+                    select.select([fd], [], [], 0.02)
+                    try: os.read(fd, 1)
+                    except OSError: pass
+                    return 'PGUP' if ch3 == b'5' else 'PGDN'
+        return 'ESC'
+    if ch in (b'\x03', b'\x04'): return 'CTRL_C'
+    if ch == b'\t': return 'TAB'
+    try:
+        return ch.decode()
+    except Exception:
+        return None
+
+
+class _TUI:
+    _SPINNER = '|/-\\'
+    _HEADER  = 2   # tab bar + separator
+    _FOOTER  = 1   # status bar
+
+    def __init__(self, sections: list[str], interval: float) -> None:
+        self.sections = sections
+        self.interval = interval
+        self.data:    dict[str, list[str]] = {}
+        self.active:  int = 0
+        self.scrolls: list[int] = [0] * len(sections)
+        self.loading  = True
+        self.last_ref: datetime.datetime | None = None
+        self._spin    = 0
+        self._lock        = threading.Lock()
+        self._wake        = threading.Event()
+        self._stop        = threading.Event()
+        self._full_redraw = True   # full clear on first render and resize
+
+    # ── data collection ──────────────────────────────────
+
+    def _collect(self) -> None:
+        global COLS
+        COLS = shutil.get_terminal_size((100, 24)).columns
+        for name in self.sections:
+            # logins is slow (last + geo) — skip if already fully loaded
+            with self._lock:
+                skip = (name == 'logins'
+                        and bool(self.data.get(name))
+                        and GEO_LOADING_MARKER not in self.data.get(name, []))
+            if skip:
+                continue
+            result = SECTIONS[name]()  # type: ignore[operator]
+            if hasattr(result, '__next__'):
+                for partial in result:
+                    with self._lock:
+                        self.data[name] = partial
+            else:
+                with self._lock:
+                    self.data[name] = result
+        with self._lock:
+            self.last_ref = datetime.datetime.now()
+            self.loading  = False
+
+    def _collector_loop(self) -> None:
+        while not self._stop.is_set():
+            self._collect()
+            self._wake.wait(self.interval)
+            self._wake.clear()
+            if not self._stop.is_set():
+                with self._lock:
+                    self.loading = True
+
+    # ── rendering ────────────────────────────────────────
+
+    def _render(self) -> None:
+        cols, rows = shutil.get_terminal_size()
+        vh = rows - self._HEADER - self._FOOTER
+
+        with self._lock:
+            data     = {k: v[:] for k, v in self.data.items()}
+            last_ref = self.last_ref
+            loading  = self.loading
+
+        name    = self.sections[self.active]
+        lines   = data.get(name, [])
+        has_geo = GEO_LOADING_MARKER in lines
+        scroll  = self.scrolls[self.active]
+        max_scroll = max(0, len(lines) - vh)
+        self.scrolls[self.active] = scroll = max(0, min(scroll, max_scroll))
+
+        if self._full_redraw:
+            out = ['\033[2J\033[H']
+            self._full_redraw = False
+        else:
+            out = ['\033[H']
+
+        # ── spinner state ──
+        hostname = socket.gethostname()
+        ts   = last_ref.strftime('%H:%M:%S') if last_ref else '...'
+        spin = self._SPINNER[self._spin % len(self._SPINNER)]
+        if loading or has_geo:
+            self._spin += 1
+
+        # ── tab bar ──
+        tab_labels = [T(s) for s in self.sections]
+        tab_w = max(_vw(l) for l in tab_labels)
+        tab_parts = []
+        for i, (sec, label) in enumerate(zip(self.sections, tab_labels)):
+            cell = '  ' + _cjust(label.upper(), tab_w) + '  '
+            if i == self.active:
+                tab_parts.append(f'{C.REV}{C.BOLD}{cell}{C.RST}')
+            else:
+                tab_parts.append(f'{C.WHT}{cell}{C.RST}')
+        out.append(_ansi_truncate(''.join(tab_parts), cols) + '\033[K\n')
+
+        # ── separator ──
+        out.append(f'{C.DIM}{"─"*cols}{C.RST}\033[K\n')
+
+        # ── content ──
+        visible = lines[scroll:scroll + vh]
+        for line in visible:
+            if line == GEO_LOADING_MARKER:
+                line = f'  {C.DIM}{spin}  {T("fetching geo locations...")}{C.RST}'
+            out.append(_ansi_truncate(line, cols) + '\033[K\n')
+        for _blank in range(vh - len(visible)):
+            out.append('\033[K\n')
+
+        # ── status bar ──
+        n_sec    = len(self.sections)
+        pos_str  = f'{scroll + 1}/{max(1, len(lines))}'
+        ref_str  = f'{spin} ' if (loading or has_geo) else ts
+        bar_txt = (
+            f' {T("[q]quit")}  {T("[r]refresh")}  {T("[hl/Tab] tab")}  {T("[jk] scroll")}'
+            f'  {T("[PgUp/Dn] page")}  {T("[gG] top/end")}  {T("[1-{n}] jump", n=n_sec)}'
+            f'  {self.interval:.0f}s  {pos_str}  {hostname}  {ref_str} '
+        )
+        bar_vis = 0; bar_ch = []
+        for _bc in bar_txt:
+            cw = 2 if (0x2E80 <= ord(_bc) <= 0xD7AF or 0xF900 <= ord(_bc) <= 0xFFE6) else 1
+            if bar_vis + cw > cols:
+                break
+            bar_ch.append(_bc); bar_vis += cw
+        out.append(f'\033[7m{"".join(bar_ch)}{" " * (cols - bar_vis)}\033[27m\033[K')
+
+        sys.stdout.write(''.join(out))
+        sys.stdout.flush()
+
+    # ── main loop ────────────────────────────────────────
+
+    def run(self) -> None:
+        old_term = termios.tcgetattr(sys.stdin.fileno())
+        signal.signal(signal.SIGWINCH, lambda *_: setattr(self, '_full_redraw', True))
+
+        ct = threading.Thread(target=self._collector_loop, daemon=True)
+        ct.start()
+
+        sys.stdout.write('\033[?1049h\033[?25l')  # alt screen + hide cursor
+        sys.stdout.flush()
+        tty.setraw(sys.stdin.fileno())
+        # setraw disables OPOST which means \n no longer implies \r — restore it
+        # so output works normally while input stays raw (char-by-char, no echo)
+        _a = termios.tcgetattr(sys.stdin.fileno())
+        _a[1] |= termios.OPOST
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSANOW, _a)
+
+        try:
+            fd = sys.stdin.fileno()
+            while True:
+                self._render()
+                key = _read_key(fd)
+
+                n = len(self.sections)
+                if key in ('q', 'Q', 'ESC', 'CTRL_C'):
+                    break
+                elif key in ('r', 'R'):
+                    with self._lock:
+                        self.loading = True
+                    self._wake.set()
+                elif key in ('l', 'RIGHT', 'TAB'):
+                    self.active = (self.active + 1) % n
+                elif key in ('h', 'LEFT', 'BTAB'):
+                    self.active = (self.active - 1) % n
+                elif key in ('j', 'DOWN'):
+                    self.scrolls[self.active] += 1
+                elif key in ('k', 'UP'):
+                    self.scrolls[self.active] = max(0, self.scrolls[self.active] - 1)
+                elif key == 'PGDN':
+                    _, rows = shutil.get_terminal_size()
+                    self.scrolls[self.active] += rows - self._HEADER - self._FOOTER
+                elif key == 'PGUP':
+                    _, rows = shutil.get_terminal_size()
+                    self.scrolls[self.active] = max(0, self.scrolls[self.active] - (rows - self._HEADER - self._FOOTER))
+                elif key in ('g', 'HOME'):
+                    self.scrolls[self.active] = 0
+                elif key in ('G', 'END'):
+                    with self._lock:
+                        ln = len(self.data.get(self.sections[self.active], []))
+                    self.scrolls[self.active] = ln
+                elif key and key.isdigit() and key != '0':
+                    idx = int(key) - 1
+                    if idx < n:
+                        self.active = idx
+        finally:
+            self._stop.set()
+            self._wake.set()
+            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_term)
+            sys.stdout.write('\033[?25h\033[?1049l')  # restore screen + cursor
+            sys.stdout.flush()
+
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        description='Server dashboard — TUI by default on a TTY',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='Sections: ' + ', '.join(SECTIONS),
+    )
+    ap.add_argument('sections', nargs='*',
+                    help='sections to display (default: all)')
+    ap.add_argument('--once', '-1', action='store_true',
+                    help='one-shot output, no TUI')
+    ap.add_argument('--interval', '-i', type=float, default=5.0, metavar='N',
+                    help='TUI refresh interval in seconds (default: 5)')
+    ap.add_argument('--lang', default=None, metavar='LANG',
+                    help='display language: zh (default) or en')
+    args = ap.parse_args()
+
+    global _LANG
+    if args.lang:
+        _LANG = args.lang
+
+    wanted  = args.sections or list(SECTIONS)
+    unknown = [s for s in wanted if s not in SECTIONS]
+    if unknown:
+        ap.error(f'unknown section(s): {", ".join(unknown)}')
+
+    if sys.stdout.isatty() and _HAS_TERMIOS and not args.once:
+        _TUI(wanted, args.interval).run()
+        return
+
+    # one-shot (pipe / --once)
+    hostname = socket.gethostname()
+    now      = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    title    = f'  SERVER DASHBOARD  {hostname}  {now}  '
+    pad      = max(0, (COLS - len(title)) // 2)
+    print()
+    print(f'{C.BOLD}{C.BLU}{"═"*pad}{title}{"═"*(COLS - pad - len(title))}{C.RST}')
+    print()
+    for name in wanted:
+        result = SECTIONS[name]()  # type: ignore[operator]
+        if hasattr(result, '__next__'):
+            lines: list[str] = []
+            for lines in result:
+                pass
+        else:
+            lines = result
+        for line in lines:
+            print(line)
+        print()
+
+
+if __name__ == '__main__':
+    main()
