@@ -1,63 +1,74 @@
-#!/usr/bin/env perl
-#
+#!/usr/bin/env python3
 # TODO:
 #   * auto-complete when prompting for a file path
 #   * improve editing capabilities (readline)
+import os
+import shlex
+import sys
 
-use strict;
-use warnings;
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python'))
 
-use File::Basename;
-use Cwd;
+import ssh as ssh_module
+import wrapper
 
-my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+ssh_module.check_ssh_hosts_file()
+wrapper.run_original_if_required()
 
-require $dotfiles_dir . '/scripts/perl/ssh.pl';
 
-check_ssh_hosts_file();
-run_original_if_required();
+def prompt_string(title, default=None):
+    hint = f" [{default}]" if default else ""
+    value = input(f"{title}{hint}: ").strip()
+    return value or default or ''
 
-require $dotfiles_dir . '/scripts/perl/prompt.pl';
 
-my $upload = prompt_yes_no('Upload?', 1);
-my $local_path = glob(prompt_string('Local path', '.'));
-my $basename = basename(getcwd());
-my $remote_path = prompt_string('Remote path', '~/' . $basename);
+def prompt_yes_no(title, default=None):
+    if default == 1:
+        hint = " (Y/n)"
+    elif default == 0:
+        hint = " (y/N)"
+    else:
+        hint = " (y/n)"
+    value = input(f"{title}{hint}: ").strip().upper()
+    if value == 'Y':
+        return True
+    if value == 'N':
+        return False
+    return bool(default)
 
-my $s = select_host();
 
-my @command = ('rsync', '-avuz');
+upload = prompt_yes_no('Upload?', default=1)
+local_path = os.path.expanduser(prompt_string('Local path', '.'))
+remote_path = prompt_string('Remote path', f"~/{os.path.basename(os.getcwd())}")
 
-my $exclude = glob('~/.rsync.excludes');
-if (-e $exclude) {
-  push @command, '--exclude-from', $exclude;
-}
+s = ssh_module.select_host()
 
-my @ssh_args = ('ssh');
+command = ['rsync', '-avuz']
 
-if (my $identity = $s->get_identity()) {
-  push @ssh_args, '-i', $identity;
-}
+exclude = os.path.expanduser('~/.rsync.excludes')
+if os.path.exists(exclude):
+    command += ['--exclude-from', exclude]
 
-if (my $port = $s->get_port()) {
-  push @ssh_args, '-p', $port;
-}
+ssh_args = ['ssh']
 
-if (my $ssh_options = $s->get_ssh_options()) {
-  push @ssh_args, '-o', $_ for @$ssh_options;
-}
+identity = s.get_identity()
+if identity:
+    ssh_args += ['-i', identity]
 
-if (scalar(@ssh_args)) {
-  push @command, '-e', String::ShellQuote::shell_quote(@ssh_args);
-}
+port = s.get_port()
+if port:
+    ssh_args += ['-p', port]
 
-my $user_host = $s->get_user_host();
-if ($upload) {
-  push @command, $local_path;
-  push @command, "$user_host:$remote_path";
-} else {
-  push @command, "$user_host:$remote_path";
-  push @command, $local_path;
-}
+ssh_options = s.get_ssh_options()
+if ssh_options:
+    for opt in ssh_options:
+        ssh_args += ['-o', opt]
 
-$s->run(@command);
+command += ['-e', ' '.join(shlex.quote(a) for a in ssh_args)]
+
+user_host = s.get_user_host()
+if upload:
+    command += [local_path, f"{user_host}:{remote_path}"]
+else:
+    command += [f"{user_host}:{remote_path}", local_path]
+
+s.run(*command)

@@ -1,40 +1,37 @@
-#!/usr/bin/env perl
+#!/usr/bin/env python3
+import os
+import shlex
+import sys
 
-use strict;
-use warnings;
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python'))
 
-use File::Basename;
-use Cwd;
+import ssh as ssh_module
 
-my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+if not sys.argv[1:]:
+    print("A host label is required.", file=sys.stderr)
+    sys.exit(1)
 
-require $dotfiles_dir . '/scripts/perl/ssh.pl';
+s = ssh_module.select_host(sys.argv[1], caller_name='build-ssh-cmd')
+if s is None:
+    sys.exit(0)
 
-if (!scalar(@ARGV) || !$ARGV[0]) {
-  print "A host label is required.\n";
-  exit 1;
-}
-my $s = select_host($ARGV[0]);
-if (!$s) {
-  exit;
-}
+command = ['ssh']
 
-my @command = ('ssh');
+identity = s.get_identity()
+if identity:
+    command += ['-i', identity]
 
-if (my $identity = $s->get_identity()) {
-  push @command, '-i', $identity;
-}
+port = s.get_port()
+if port:
+    command += ['-p', port]
 
-if (my $port = $s->get_port()) {
-  push @command, '-p', $port;
-}
+user_host = s.get_user_host()
+if user_host:
+    command.append(user_host)
 
-if (my $user_host = $s->get_user_host()) {
-  push @command, $user_host;
-}
+ssh_options = s.get_ssh_options()
+if ssh_options:
+    for opt in ssh_options:
+        command += ['-o', opt]
 
-if (my $ssh_options = $s->get_ssh_options()) {
-  push @command, '-o', $_ for @$ssh_options;
-}
-
-print String::ShellQuote::shell_quote($s->build_command(@command));
+print(' '.join(shlex.quote(a) for a in s.build_command(*command)))

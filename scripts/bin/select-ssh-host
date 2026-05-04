@@ -1,14 +1,12 @@
-#!/usr/bin/env perl
+#!/usr/bin/env python3
+import os
+import sys
 
-use strict;
-use warnings;
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python'))
 
-use File::Basename;
-use Cwd;
+import ssh as ssh_module
 
-my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
-
-require $dotfiles_dir . '/scripts/perl/ssh.pl';
-
-my $s = select_host();
-print $s->get_label(), "\n";
+s = ssh_module.select_host()
+if s is None:
+    sys.exit(1)
+print(s.get_label())

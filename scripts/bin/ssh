@@ -9,9 +9,4 @@ fi
 host_label=$("$DOTFILES_DIR/scripts/bin/select-ssh-host")
 [ -z "$host_label" ] && exit
 
-exec perl <<EOF
-  use strict;
-  use warnings;
-  require '$DOTFILES_DIR/scripts/perl/wrapper.pl';
-  print_and_exit(['ssh-utils', 'ssh', '$host_label'], 100);
-EOF
+exec python3 "$DOTFILES_DIR/scripts/python/wrapper.py" ssh-utils ssh "$host_label"

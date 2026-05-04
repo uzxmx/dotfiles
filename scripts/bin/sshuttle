@@ -1,46 +1,41 @@
-#!/usr/bin/env perl
+#!/usr/bin/env python3
+import os
+import shlex
+import sys
 
-use strict;
-use warnings;
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python'))
 
-use File::Basename;
-use Cwd;
+import ssh as ssh_module
+import wrapper
 
-my $dotfiles_dir = Cwd::realpath(dirname(__FILE__) . '/../..');
+ssh_module.check_ssh_hosts_file()
+wrapper.run_original_if_required()
 
-require $dotfiles_dir . '/scripts/perl/ssh.pl';
+s = ssh_module.select_host()
 
-check_ssh_hosts_file();
-run_original_if_required();
+command = ['sshuttle']
 
-my $s = select_host();
+ssh_args = ['ssh']
 
-my @command = ('sshuttle');
+identity = s.get_identity()
+if identity:
+    ssh_args += ['-i', identity]
 
-my @ssh_args = ('ssh');
+port = s.get_port()
+if port:
+    ssh_args += ['-p', port]
 
-if (my $identity = $s->get_identity()) {
-  push @ssh_args, '-i', $identity;
-}
+ssh_options = s.get_ssh_options()
+if ssh_options:
+    for opt in ssh_options:
+        ssh_args += ['-o', opt]
 
-if (my $port = $s->get_port()) {
-  push @ssh_args, '-p', $port;
-}
+command += ['-e', ' '.join(shlex.quote(a) for a in ssh_args)]
+command += ['-r', s.get_user_host()]
 
-if (my $ssh_options = $s->get_ssh_options()) {
-  push @ssh_args, '-o', $_ for @$ssh_options;
-}
+if sys.argv[1:]:
+    command.extend(sys.argv[1:])
+else:
+    command.append('0.0.0.0/0')
 
-if (scalar(@ssh_args)) {
-  push @command, '-e', String::ShellQuote::shell_quote(@ssh_args);
-}
-
-push @command, '-r', $s->get_user_host();
-
-if (scalar(@ARGV)) {
-  push @command, $_ for @ARGV;
-} else {
-  push @command, '0.0.0.0/0';
-}
-
-$s->run(@command);
+s.run(*command)
