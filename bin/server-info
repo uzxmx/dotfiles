@@ -387,9 +387,8 @@ def section_storage() -> list[str]:
 
     try:
         out = run('df', '-k', '-T') if IS_LINUX else run('df', '-k')
-        rows = out.splitlines()[1:]
-        found = False
-        for row in rows:
+        collected = []
+        for row in out.splitlines()[1:]:
             parts = row.split()
             try:
                 if IS_LINUX and len(parts) >= 7:
@@ -421,18 +420,21 @@ def section_storage() -> list[str]:
             if source.startswith(('map ', 'com.apple.')):
                 continue
 
-            pct = int(pct_s.rstrip('%'))
-            color = C.RED if pct >= 90 else C.YLW if pct >= 70 else C.GRN
-            lines.append(
-                f'  {C.BOLD}{mount:<22}{C.RST}'
-                f'  {human(used_kb*1024):>7} / {human(size_kb*1024):<7}'
-                f'  {color}{pct:>3}%{C.RST}  {bar(pct)}'
-                f'  {C.DIM}({human(avail_kb*1024)} free){C.RST}'
-            )
-            found = True
+            collected.append((mount, int(pct_s.rstrip('%')), used_kb, size_kb, avail_kb))
 
-        if not found:
+        if not collected:
             lines.append(f'  {C.DIM}{T("no mountpoints found")}{C.RST}')
+        else:
+            mnt_w = min(max(len(m) for m, *_ in collected), 48)
+            for mount, pct, used_kb, size_kb, avail_kb in collected:
+                color = C.RED if pct >= 90 else C.YLW if pct >= 70 else C.GRN
+                mnt_display = (mount[:mnt_w - 1] + '…') if len(mount) > mnt_w else mount
+                lines.append(
+                    f'  {C.BOLD}{mnt_display:<{mnt_w}}{C.RST}'
+                    f'  {human(used_kb*1024):>7} / {human(size_kb*1024):<7}'
+                    f'  {color}{pct:>3}%{C.RST}  {bar(pct)}'
+                    f'  {C.DIM}({human(avail_kb*1024)} free){C.RST}'
+                )
     except Exception as e:
         lines.append(f'  {C.RED}error: {e}{C.RST}')
     return lines
