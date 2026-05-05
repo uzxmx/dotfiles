@@ -94,18 +94,72 @@ lua <<EOF
     }
   })
 
+  -- Custom source: substring-match all Ex commands.
+  -- Built-in 'cmdline' source only returns prefix matches from getcompletion();
+  -- this source caches all commands and filters by substring on each keystroke.
+  local _cmd_cache = nil
+  local all_cmds = {}
+  all_cmds.new = function() return setmetatable({}, { __index = all_cmds }) end
+  all_cmds.complete = function(_, _, callback)
+    local cmdline = vim.fn.getcmdline()
+    -- Only active when typing the command name (no space = no arguments yet).
+    if cmdline == '' or cmdline:find('%s') then
+      callback({ items = {}, isIncomplete = true })
+      return
+    end
+    if not _cmd_cache then
+      _cmd_cache = vim.fn.getcompletion('', 'command')
+    end
+    local input = cmdline:lower()
+    local items = {}
+    for _, word in ipairs(_cmd_cache) do
+      if word:lower():find(input, 1, true) then
+        -- filterText = cmdline makes nvim-cmp see an exact match for every
+        -- pre-filtered item, bypassing its prefix-only matching in cmdline mode.
+        table.insert(items, { label = word, filterText = cmdline, kind = 14 })
+      end
+    end
+    callback({ items = items, isIncomplete = true })
+  end
+  cmp.register_source('all_cmds', all_cmds)
+
   -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
   cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
+    mapping = cmp.mapping.preset.cmdline({
+      ['<Tab>'] = cmp.mapping(function(fallback)
+        if vim.fn.getcmdline() == '' then
+          return
+        elseif cmp.visible() then
+          cmp.select_next_item()
+        else
+          cmp.complete()
+        end
+      end, { 'c' }),
+      ['<C-u>'] = cmp.mapping(function(fallback)
+        cmp.close()
+        fallback()
+      end, { 'c' }),
+      ['<C-w>'] = cmp.mapping(function(fallback)
+        cmp.close()
+        fallback()
+      end, { 'c' }),
+    }),
     completion = {
       autocomplete = false,
     },
     sources = cmp.config.sources({
       { name = 'path' }
     }, {
+      { name = 'all_cmds' }
+    }, {
       { name = 'cmdline' }
     }),
-    matching = { disallow_symbol_nonprefix_matching = false }
+    matching = {
+      disallow_fuzzy_matching = false,
+      disallow_partial_matching = false,
+      disallow_prefix_matching = false,
+      disallow_symbol_nonprefix_matching = false,
+    }
   })
 
   -- -- Set up lspconfig.
