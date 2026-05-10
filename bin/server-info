@@ -886,11 +886,11 @@ def _cleanup_scan(modal) -> None:
     home = Path.home()
 
     # systemd journal
-    out = _sh('journalctl', '--disk-usage')
+    out = _sh('sudo', 'journalctl', '--disk-usage')
     m = _re2.search(r'([\d.]+\s*[KMGTP])', out, _re2.I)
     modal.add_row('systemd 日志 (/var/log/journal)',
                   m.group(1).strip() if m else '',
-                  'journalctl --vacuum-time=7d')
+                  'sudo journalctl --vacuum-time=7d')
 
     # /var/log/btmp  (failed login records)
     btmps = list(Path('/var/log').glob('btmp*'))
