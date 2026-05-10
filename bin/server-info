@@ -35,7 +35,7 @@ IS_MACOS = sys.platform == 'darwin'
 COLS = shutil.get_terminal_size((100, 24)).columns
 NO_COLOR = not sys.stdout.isatty() or bool(os.environ.get('NO_COLOR'))
 
-_STORAGE_BTN_PLAIN = '[ 清理空间 ]'
+_STORAGE_BTN_PLAIN = '[ c 清理空间 ]'
 
 class C:
     RST  = '' if NO_COLOR else '\033[0m'
@@ -1070,21 +1070,6 @@ def _read_key(fd: int, timeout: float = 0.15) -> str | None:
                     try: os.read(fd, 1)
                     except OSError: pass
                     return 'PGUP' if ch3 == b'5' else 'PGDN'
-                if ch3 == b'<':
-                    seq = b''
-                    while True:
-                        r4, _, _ = select.select([fd], [], [], 0.1)
-                        if not r4: break
-                        b4 = os.read(fd, 1)
-                        seq += b4
-                        if b4 in (b'M', b'm'): break
-                    try:
-                        parts = seq[:-1].split(b';')
-                        if seq[-1:] == b'M' and int(parts[0]) == 0:
-                            return ('CLICK', int(parts[2]), int(parts[1]))
-                    except Exception:
-                        pass
-                    return None
         return 'ESC'
     if ch in (b'\x03', b'\x04'): return 'CTRL_C'
     if ch == b'\t': return 'TAB'
@@ -1112,7 +1097,6 @@ class _TUI:
         self._wake        = threading.Event()
         self._stop        = threading.Event()
         self._full_redraw = True   # full clear on first render and resize
-        self._cleanup_btn: tuple | None = None  # (row, col_start, col_end) 1-indexed
 
     # ── cleanup modal ────────────────────────────────────
 
@@ -1241,21 +1225,10 @@ class _TUI:
         out.append(f'{C.DIM}{"─"*cols}{C.RST}\033[K\n')
 
         # ── content ──
-        self._cleanup_btn = None
         visible = lines[scroll:scroll + vh]
-        for idx, line in enumerate(visible):
+        for line in visible:
             if line == GEO_LOADING_MARKER:
                 line = f'  {C.DIM}{spin}  {T("fetching geo locations...")}{C.RST}'
-            if _HAS_MODAL and self._cleanup_btn is None:
-                plain = _ANSI_RE.sub('', line)
-                bpos  = plain.find(_STORAGE_BTN_PLAIN)
-                if bpos >= 0:
-                    btn_col = _vw(plain[:bpos]) + 1
-                    self._cleanup_btn = (
-                        self._HEADER + 1 + idx,
-                        btn_col,
-                        btn_col + _vw(_STORAGE_BTN_PLAIN) - 1,
-                    )
             out.append(_ansi_truncate(line, cols) + '\033[K\n')
         for _blank in range(vh - len(visible)):
             out.append('\033[K\n')
@@ -1289,7 +1262,7 @@ class _TUI:
         ct = threading.Thread(target=self._collector_loop, daemon=True)
         ct.start()
 
-        sys.stdout.write('\033[?1049h\033[?25l\033[?1000h\033[?1006h')  # alt screen + hide cursor + SGR mouse
+        sys.stdout.write('\033[?1049h\033[?25l')  # alt screen + hide cursor
         sys.stdout.flush()
         tty.setraw(sys.stdin.fileno())
         # setraw disables OPOST which means \n no longer implies \r — restore it
@@ -1335,17 +1308,13 @@ class _TUI:
                     idx = int(key) - 1
                     if idx < n:
                         self.active = idx
-                elif isinstance(key, tuple) and key[0] == 'CLICK':
-                    _, click_row, click_col = key
-                    if (self._cleanup_btn
-                            and self._cleanup_btn[0] == click_row
-                            and self._cleanup_btn[1] <= click_col <= self._cleanup_btn[2]):
-                        self._open_cleanup_modal()
+                elif key in ('c', 'C'):
+                    self._open_cleanup_modal()
         finally:
             self._stop.set()
             self._wake.set()
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_term)
-            sys.stdout.write('\033[?1000l\033[?1006l\033[?25h\033[?1049l')  # disable mouse + restore screen + cursor
+            sys.stdout.write('\033[?25h\033[?1049l')  # restore cursor + screen
             sys.stdout.flush()
 
 
