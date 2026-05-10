@@ -766,7 +766,7 @@ def _root_logins_30d() -> int:
 
 def section_processes() -> list[str]:
     lines = [header(T('TOP PROCESSES'))]
-    procs = _top_procs(n=8)
+    procs = _top_procs(n=15)
     if not procs:
         lines.append(f'  {C.DIM}{T("ps not available")}{C.RST}')
         return lines
