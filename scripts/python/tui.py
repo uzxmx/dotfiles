@@ -508,3 +508,299 @@ class TUI:
                 p.editor.clear()
         elif isinstance(key, str) and len(key) == 1 and ord(key) >= 32:
             p.editor.insert(key)
+
+
+# ── Modal ─────────────────────────────────────────────────────────────────────
+
+import threading as _threading
+import time as _time
+
+
+class Modal:
+    """
+    Streaming read-only modal overlay.
+
+    Producer thread calls add_row(label, value, note) as results arrive,
+    then calls mark_done(). Main thread calls run() which blocks until ESC/q.
+
+    Args:
+        title           显示在边框标题中的文字
+        box_w           固定宽度（None = 自动 70%）
+        col_headers     三列的列头标签，默认空字符串
+        on_action       用户按 Enter 时的回调：(label, value, note) -> (new_value|None, msg)
+                        在后台线程中执行；new_value 非 None 时更新该行的 value 列
+        value_style_fn  value 列的着色回调：(value) -> ANSI 颜色前缀字符串（空串=不着色）
+        status_fn       自定义状态栏文案：(rows, done) -> str
+        loading_text    数据加载中时显示的占位文案
+
+    Usage::
+
+        modal = Modal('结果列表', col_headers=('名称', '大小', '说明'))
+        threading.Thread(target=my_scanner, args=(modal,), daemon=True).start()
+        modal.run()   # blocks until ESC / q
+    """
+
+    _SPIN = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+
+    def __init__(self, title: str, box_w: int | None = None,
+                 col_headers: tuple[str, str, str] = ('', '', ''),
+                 on_action=None,
+                 value_style_fn=None,
+                 status_fn=None,
+                 loading_text: str = '加载中...'):
+        self.title          = title
+        self.box_w          = box_w
+        self.col_headers    = col_headers
+        self.on_action      = on_action
+        self.value_style_fn = value_style_fn
+        self.status_fn      = status_fn
+        self.loading_text   = loading_text
+        self._rows: list[tuple[str, str, str]] = []
+        self._lock   = _threading.Lock()
+        self._done   = False
+        self._scroll = 0
+        self._cursor = 0        # selected row (index into _rows)
+        self._state  = 'browse' # 'browse' | 'confirm' | 'msg'
+        self._msg    = ''       # shown in status bar when state == 'msg'
+
+    # ── producer API ─────────────────────────────────────────────────────────
+
+    def add_row(self, label: str, size: str = '', hint: str = ''):
+        with self._lock:
+            self._rows.append((label, size, hint))
+
+    def mark_done(self):
+        with self._lock:
+            self._done = True
+
+    # ── consumer (main thread) ────────────────────────────────────────────────
+
+    def run(self) -> None:
+        """Block until user closes the modal (ESC / q)."""
+        fd  = _get_tty().fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            _w(_cur_hide())
+            while True:
+                rows, cols = term_size()
+                self._render(rows, cols)
+                with self._lock:
+                    done = self._done
+                key = self._read_key(0.2 if not done else 0.5)
+                if self._handle_key(key):
+                    break
+        finally:
+            _w(_cur_show())
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+    def _handle_key(self, key) -> bool:
+        """Process a key press. Returns True to close the modal."""
+        if self._state == 'confirm':
+            if key is None:
+                return False
+            if key in ('ENTER', 'y', 'Y'):
+                self._execute_selected()
+            else:
+                self._state = 'browse'
+            return False
+        if self._state == 'msg':
+            if key is not None:
+                self._state = 'browse'
+            return False
+        # browse state
+        if key in ('ESC', 'q', 'Q', 'QUIT'):
+            return True
+        if key == 'ENTER':
+            self._try_confirm()
+            return False
+        with self._lock:
+            n = len(self._rows)
+        if key in ('UP', 'k'):
+            self._cursor = max(0, self._cursor - 1)
+        elif key in ('DOWN', 'j'):
+            self._cursor = min(max(0, n - 1), self._cursor + 1)
+        elif key == 'PGUP':
+            self._cursor = max(0, self._cursor - 10)
+        elif key == 'PGDN':
+            self._cursor = min(max(0, n - 1), self._cursor + 10)
+        elif key in ('HOME', 'g'):
+            self._cursor = 0
+        elif key in ('END', 'G'):
+            self._cursor = max(0, n - 1)
+        return False
+
+    def _try_confirm(self):
+        with self._lock:
+            if self._cursor >= len(self._rows):
+                return
+        if self.on_action is None:
+            self._state = 'msg'
+            self._msg = '  此行无操作'
+            return
+        self._state = 'confirm'
+
+    def _execute_selected(self):
+        if self.on_action is None:
+            return
+        with self._lock:
+            if self._cursor >= len(self._rows):
+                return
+            idx = self._cursor
+            label, value, note = self._rows[idx]
+        self._state = 'msg'
+        self._msg = '  执行中...'
+
+        def _run():
+            try:
+                result = self.on_action(label, value, note)
+                new_value, msg = result if result else (None, '')
+                with self._lock:
+                    if new_value is not None:
+                        old = self._rows[idx]
+                        self._rows[idx] = (old[0], new_value, old[2])
+                self._state = 'msg'
+                self._msg = msg or ''
+            except Exception as e:
+                self._state = 'msg'
+                self._msg = f'  执行失败: {e}'
+
+        _threading.Thread(target=_run, daemon=True).start()
+
+    def _read_key(self, timeout: float = 0.2):
+        t = _get_tty()
+        r, _, _ = select.select([t], [], [], timeout)
+        if not r:
+            return None
+        ch = t.read(1)
+        if ch == b'\x1b':
+            r2, _, _ = select.select([t], [], [], 0.05)
+            if not r2:
+                return 'ESC'
+            if t.read(1) == b'[':
+                r3, _, _ = select.select([t], [], [], 0.05)
+                if r3:
+                    c3 = t.read(1)
+                    if c3 == b'A': return 'UP'
+                    if c3 == b'B': return 'DOWN'
+                    if c3 == b'H': return 'HOME'
+                    if c3 == b'F': return 'END'
+                    if c3 in (b'5', b'6'):
+                        select.select([t], [], [], 0.02)
+                        try: t.read(1)
+                        except Exception: pass
+                        return 'PGUP' if c3 == b'5' else 'PGDN'
+                if c3 == b'<':
+                        # SGR mouse event — drain and discard
+                        while True:
+                            r4, _, _ = select.select([t], [], [], 0.1)
+                            if not r4: break
+                            if t.read(1) in (b'M', b'm'): break
+                        return None
+            return 'ESC'
+        if ch in (b'\x03', b'\x04'): return 'QUIT'
+        if ch in (b'\r', b'\n'):     return 'ENTER'
+        try:
+            return ch.decode('utf-8')
+        except Exception:
+            return None
+
+    # ── rendering ─────────────────────────────────────────────────────────────
+
+    def _render(self, rows: int, cols: int):
+        with self._lock:
+            data = list(self._rows)
+            done = self._done
+        cursor = self._cursor
+        state  = self._state
+        smsg   = self._msg
+
+        spin = self._SPIN[int(_time.time() * 6) % len(self._SPIN)]
+        w    = max(40, int(cols * 0.70) if self.box_w is None else min(self.box_w, cols - 4))
+        inn  = w - 2
+        lw   = max(16, (inn - 12) // 2)   # label col; hint gets the other half
+
+        # box layout: top + col-hdr + sep + list_h rows + sep + status + bottom = list_h + 6
+        list_h = max(3, rows - 10)
+        box_h  = list_h + 6
+        r0 = max(1, (rows - box_h) // 2)
+        c0 = max(1, (cols - w) // 2)
+
+        # auto-follow cursor, then clamp
+        if cursor < self._scroll:
+            self._scroll = cursor
+        elif cursor >= self._scroll + list_h:
+            self._scroll = cursor - list_h + 1
+        self._scroll = max(0, min(self._scroll, max(0, len(data) - list_h)))
+        sc = self._scroll
+
+        buf = []
+
+        # top border
+        t_s = f' {self.title} '
+        t_w = str_width(t_s)
+        buf.append(_at(r0, c0) + CYAN + BOLD +
+                   '╔' + t_s + '═' * max(0, inn - t_w) + '╗' + RESET)
+
+        # column header
+        h0, h1, h2 = self.col_headers
+        hdr = str_pad(str_clip(f'  {h0:<{lw}}{h1:>8}  {h2}', inn), inn)
+        buf.append(_at(r0 + 1, c0) + CYAN + '║' + RESET +
+                   DIM + hdr + RESET + CYAN + '║' + RESET)
+
+        # separator
+        buf.append(_at(r0 + 2, c0) + CYAN + '╠' + '═' * inn + '╣' + RESET)
+
+        # data rows — each cell must be exactly inn visual columns wide
+        for i in range(list_h):
+            ri = i + sc
+            if ri < len(data):
+                label, value, note = data[ri]
+                is_cur = (ri == cursor)
+                prefix = '> ' if is_cur else '  '
+                label_s   = str_pad(str_clip(f'{prefix}{label}', lw + 2), lw + 2)
+                note_part = str_clip(note, max(0, inn - lw - 12))
+                trail = ' ' * max(0, inn - (lw + 2) - 8 - 2 - str_width(note_part))
+                if is_cur:
+                    sz_plain = f'{value:>8}' if value else f'{"...":>8}'
+                    cell = '\033[7m' + BOLD + label_s + sz_plain + '  ' + note_part + trail + RESET
+                else:
+                    if value:
+                        sz_c = self.value_style_fn(value) if self.value_style_fn else ''
+                        sz_s = sz_c + BOLD + f'{value:>8}' + RESET
+                    else:
+                        sz_s = DIM + f'{"...":>8}' + RESET
+                    cell = label_s + sz_s + '  ' + DIM + note_part + trail + RESET
+            elif not done:
+                cell = DIM + str_pad(f'  {spin} {self.loading_text}', inn) + RESET
+            else:
+                cell = ' ' * inn
+            buf.append(_at(r0 + 3 + i, c0) + CYAN + '║' + RESET +
+                       cell + CYAN + '║' + RESET)
+
+        # footer separator
+        buf.append(_at(r0 + 3 + list_h, c0) + CYAN + '╠' + '═' * inn + '╣' + RESET)
+
+        # state-aware status line
+        if state == 'confirm':
+            clabel = data[cursor][0] if cursor < len(data) else '?'
+            status = f'  确认操作【{clabel}】? [Enter/y] 确认  [任意键] 取消'
+        elif state == 'msg':
+            status = smsg
+        elif done:
+            if self.status_fn is not None:
+                status = self.status_fn(data, True)
+            else:
+                status = (f'  共 {len(data)} 项'
+                          f'  [↑↓/jk] 选择  [Enter] 操作  [ESC/q] 关闭')
+        else:
+            custom = self.status_fn(data, False) if self.status_fn is not None else ''
+            status = custom if custom else f'  {spin} {self.loading_text}  [ESC/q] 随时关闭'
+        buf.append(_at(r0 + 4 + list_h, c0) + CYAN + '║' + RESET +
+                   str_pad(str_clip(status, inn), inn) + CYAN + '║' + RESET)
+
+        # bottom border
+        buf.append(_at(r0 + 5 + list_h, c0) + CYAN + BOLD +
+                   '╚' + '═' * inn + '╝' + RESET)
+
+        _w(''.join(buf))

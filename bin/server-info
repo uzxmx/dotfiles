@@ -13,6 +13,14 @@ from __future__ import annotations
 import os, re, sys, shutil, socket, subprocess, datetime, threading, signal, select, argparse
 from pathlib import Path
 
+_DOTFILES_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_DOTFILES_ROOT / 'scripts' / 'python'))
+try:
+    from tui import Modal as _Modal
+    _HAS_MODAL = True
+except ImportError:
+    _HAS_MODAL = False
+
 try:
     import termios, tty
     _HAS_TERMIOS = True
@@ -26,6 +34,8 @@ IS_MACOS = sys.platform == 'darwin'
 
 COLS = shutil.get_terminal_size((100, 24)).columns
 NO_COLOR = not sys.stdout.isatty() or bool(os.environ.get('NO_COLOR'))
+
+_STORAGE_BTN_PLAIN = '[ 清理空间 ]'
 
 class C:
     RST  = '' if NO_COLOR else '\033[0m'
@@ -376,7 +386,20 @@ def _meminfo_kb() -> dict:
 
 
 def section_storage() -> list[str]:
-    lines = [header(T('STORAGE'))]
+    title   = T('STORAGE')
+    pre_len = _vw(f'─── {title} ')
+    if _HAS_MODAL:
+        btn_w    = _vw(_STORAGE_BTN_PLAIN)
+        n_dashes = max(0, COLS - pre_len - btn_w - 1)
+        hdr_line = (
+            f'─── {C.BOLD}{C.CYN}{title}{C.RST} '
+            + '─' * n_dashes
+            + f'{C.REV}{C.BOLD}{_STORAGE_BTN_PLAIN}{C.RST}'
+            + '─'
+        )
+    else:
+        hdr_line = header(title)
+    lines = [hdr_line]
     skip_fs = {
         'tmpfs', 'devtmpfs', 'udev', 'overlay', 'squashfs', 'fuse.lxcfs',
         'cgmfs', 'cgroup', 'cgroup2', 'nsfs', 'proc', 'sysfs', 'devpts',
@@ -807,6 +830,156 @@ def _top_procs(n: int = 8) -> list[dict]:
         return []
 
 
+# ── cleanup helpers ───────────────────────────────────────────────────────────
+
+def _parse_size_mb(s: str) -> float:
+    """Parse '4.0G', '512M', '100K', '1.5GB' → megabytes (float)."""
+    if not s:
+        return 0.0
+    m = re.match(r'([\d.]+)\s*([KMGTP]?)B?', s.strip().upper())
+    if not m:
+        return 0.0
+    num, u = float(m.group(1)), m.group(2)
+    return {'': num / 1048576, 'K': num / 1024, 'M': num,
+            'G': num * 1024, 'T': num * 1048576}.get(u, num)
+
+
+def _fmt_mb(mb: float) -> str:
+    if mb >= 1048576: return f'{mb / 1048576:.1f}T'
+    if mb >= 1024:    return f'{mb / 1024:.1f}G'
+    if mb >= 1:       return f'{mb:.0f}M'
+    return f'{mb * 1024:.0f}K'
+
+
+# ── cleanup scan ─────────────────────────────────────────────────────────────
+
+def _cleanup_scan(modal) -> None:
+    """Run disk-cleanup checks; stream results into modal via add_row()."""
+    import re as _re2
+
+    def _sh(*cmd):
+        try:
+            r = subprocess.run(list(cmd), capture_output=True, text=True)
+            return r.stdout.strip()
+        except Exception:
+            return ''
+
+    def _du(*paths):
+        p = [str(x) for x in paths if Path(str(x)).exists()]
+        if not p:
+            return ''
+        try:
+            r = subprocess.run(['du', '-ch'] + p, capture_output=True, text=True)
+            last = r.stdout.strip().splitlines()[-1]
+            return last.split()[0]
+        except Exception:
+            return ''
+
+    def _du1(path):
+        try:
+            r = subprocess.run(['du', '-sh', str(path)], capture_output=True, text=True)
+            out = r.stdout.strip()
+            return out.split()[0] if out else ''
+        except Exception:
+            return ''
+
+    home = Path.home()
+
+    # systemd journal
+    out = _sh('journalctl', '--disk-usage')
+    m = _re2.search(r'([\d.]+\s*[KMGTP])', out, _re2.I)
+    modal.add_row('systemd 日志 (/var/log/journal)',
+                  m.group(1).strip() if m else '',
+                  'journalctl --vacuum-time=7d')
+
+    # /var/log/btmp  (failed login records)
+    btmps = list(Path('/var/log').glob('btmp*'))
+    if btmps:
+        size = _du(*btmps)
+        if size:
+            modal.add_row('/var/log/btmp 失败登录记录', size,
+                          '> /var/log/btmp && rm -f /var/log/btmp.1')
+
+    # /tmp
+    size = _du1('/tmp')
+    if size:
+        modal.add_row('/tmp 临时文件', size, 'rm -rf /tmp/<目录>  (逐项确认)')
+
+    # pip cache
+    pip_cache = home / '.cache' / 'pip'
+    if pip_cache.exists():
+        size = _du1(pip_cache)
+        if size:
+            modal.add_row('pip 缓存 (~/.cache/pip)', size, 'pip cache purge')
+
+    # apt cache
+    apt_cache = Path('/var/cache/apt')
+    if apt_cache.exists():
+        size = _du1(apt_cache)
+        if size:
+            modal.add_row('apt 包缓存 (/var/cache/apt)', size, 'apt-get clean')
+
+    # rotated logs (*.log.N, *.gz, date-stamped)
+    try:
+        rotated = [p for p in Path('/var/log').rglob('*')
+                   if _re2.search(r'\.\d+$|\.gz$|\.bz2$|\.xz$|\.\d{8}$', p.name)
+                   and p.is_file()]
+        if rotated:
+            size = _du(*rotated[:500])
+            if size:
+                modal.add_row('/var/log 轮转日志 (*.log.* / *.gz)', size,
+                              'find /var/log -name "*.log.*" -mtime +30 -delete')
+    except Exception:
+        pass
+
+    # user cache (excluding pip)
+    user_cache = home / '.cache'
+    if user_cache.exists():
+        try:
+            subdirs = [p for p in user_cache.iterdir()
+                       if p.is_dir() and p.name != 'pip']
+            if subdirs:
+                size = _du(*subdirs)
+                if size:
+                    modal.add_row('用户缓存 (~/.cache, 除 pip 外)', size,
+                                  'rm -rf ~/.cache/<目录>')
+        except Exception:
+            pass
+
+    # Docker
+    if cmd_exists('docker'):
+        out = _sh('docker', 'system', 'df')
+        total_mb = 0.0
+        for line in out.splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 4 and _HAS_MODAL:
+                total_mb += _parse_size_mb(parts[3])
+        size = _fmt_mb(total_mb) if total_mb > 0 else ''
+        modal.add_row('Docker 镜像/容器/卷', size, 'docker system prune -a')
+
+    # npm cache
+    npm_cache = home / '.npm'
+    if npm_cache.exists():
+        size = _du1(npm_cache)
+        if size:
+            modal.add_row('npm 缓存 (~/.npm)', size, 'npm cache clean --force')
+
+    # Trash
+    for trash in (home / '.local/share/Trash/files',
+                  Path('/root/.local/share/Trash/files')):
+        try:
+            if trash.exists():
+                size = _du1(trash)
+                if size:
+                    modal.add_row(f'回收站 ({trash.parent})', size,
+                                  f'rm -rf {trash.parent}/*')
+                break
+        except PermissionError:
+            continue
+
+    modal.mark_done()
+
+
 # ── section registry ──────────────────────────────────────────────────────────
 
 def _vis_len(s: str) -> int:
@@ -897,6 +1070,21 @@ def _read_key(fd: int, timeout: float = 0.15) -> str | None:
                     try: os.read(fd, 1)
                     except OSError: pass
                     return 'PGUP' if ch3 == b'5' else 'PGDN'
+                if ch3 == b'<':
+                    seq = b''
+                    while True:
+                        r4, _, _ = select.select([fd], [], [], 0.1)
+                        if not r4: break
+                        b4 = os.read(fd, 1)
+                        seq += b4
+                        if b4 in (b'M', b'm'): break
+                    try:
+                        parts = seq[:-1].split(b';')
+                        if seq[-1:] == b'M' and int(parts[0]) == 0:
+                            return ('CLICK', int(parts[2]), int(parts[1]))
+                    except Exception:
+                        pass
+                    return None
         return 'ESC'
     if ch in (b'\x03', b'\x04'): return 'CTRL_C'
     if ch == b'\t': return 'TAB'
@@ -924,6 +1112,53 @@ class _TUI:
         self._wake        = threading.Event()
         self._stop        = threading.Event()
         self._full_redraw = True   # full clear on first render and resize
+        self._cleanup_btn: tuple | None = None  # (row, col_start, col_end) 1-indexed
+
+    # ── cleanup modal ────────────────────────────────────
+
+    def _open_cleanup_modal(self) -> None:
+        if not _HAS_MODAL:
+            return
+
+        def _value_style(size: str) -> str:
+            mb = _parse_size_mb(size)
+            if mb >= 1024: return '\033[91m'
+            if mb >= 100:  return '\033[93m'
+            return '\033[92m'
+
+        def _status(rows, done: bool) -> str:
+            if done:
+                total = _fmt_mb(sum(_parse_size_mb(r[1]) for r in rows if r[1]))
+                return (f'  共 {len(rows)} 项  合计 ≈{total}'
+                        f'  [↑↓/jk] 选择  [Enter] 执行  [ESC/q] 关闭')
+            return ''
+
+        def _on_action(label: str, size: str, hint: str):
+            if not hint:
+                return None, '  此行无可执行命令'
+            try:
+                subprocess.run(['sh', '-c', hint], check=True, timeout=120,
+                               capture_output=True)
+                return '已清理', f'  ✓ {label} 清理完成'
+            except Exception as e:
+                return None, f'  ✗ 执行失败: {e}'
+
+        modal = _Modal(
+            '可清理空间扫描',
+            col_headers=('类别', '大小', '清理命令'),
+            on_action=_on_action,
+            value_style_fn=_value_style,
+            status_fn=_status,
+            loading_text='扫描中...',
+        )
+        def _run():
+            try:
+                _cleanup_scan(modal)
+            except Exception:
+                modal.mark_done()
+        threading.Thread(target=_run, daemon=True).start()
+        modal.run()
+        self._full_redraw = True
 
     # ── data collection ──────────────────────────────────
 
@@ -1006,10 +1241,21 @@ class _TUI:
         out.append(f'{C.DIM}{"─"*cols}{C.RST}\033[K\n')
 
         # ── content ──
+        self._cleanup_btn = None
         visible = lines[scroll:scroll + vh]
-        for line in visible:
+        for idx, line in enumerate(visible):
             if line == GEO_LOADING_MARKER:
                 line = f'  {C.DIM}{spin}  {T("fetching geo locations...")}{C.RST}'
+            if _HAS_MODAL and self._cleanup_btn is None:
+                plain = _ANSI_RE.sub('', line)
+                bpos  = plain.find(_STORAGE_BTN_PLAIN)
+                if bpos >= 0:
+                    btn_col = _vw(plain[:bpos]) + 1
+                    self._cleanup_btn = (
+                        self._HEADER + 1 + idx,
+                        btn_col,
+                        btn_col + _vw(_STORAGE_BTN_PLAIN) - 1,
+                    )
             out.append(_ansi_truncate(line, cols) + '\033[K\n')
         for _blank in range(vh - len(visible)):
             out.append('\033[K\n')
@@ -1043,7 +1289,7 @@ class _TUI:
         ct = threading.Thread(target=self._collector_loop, daemon=True)
         ct.start()
 
-        sys.stdout.write('\033[?1049h\033[?25l')  # alt screen + hide cursor
+        sys.stdout.write('\033[?1049h\033[?25l\033[?1000h\033[?1006h')  # alt screen + hide cursor + SGR mouse
         sys.stdout.flush()
         tty.setraw(sys.stdin.fileno())
         # setraw disables OPOST which means \n no longer implies \r — restore it
@@ -1085,15 +1331,21 @@ class _TUI:
                     with self._lock:
                         ln = len(self.data.get(self.sections[self.active], []))
                     self.scrolls[self.active] = ln
-                elif key and key.isdigit() and key != '0':
+                elif isinstance(key, str) and key.isdigit() and key != '0':
                     idx = int(key) - 1
                     if idx < n:
                         self.active = idx
+                elif isinstance(key, tuple) and key[0] == 'CLICK':
+                    _, click_row, click_col = key
+                    if (self._cleanup_btn
+                            and self._cleanup_btn[0] == click_row
+                            and self._cleanup_btn[1] <= click_col <= self._cleanup_btn[2]):
+                        self._open_cleanup_modal()
         finally:
             self._stop.set()
             self._wake.set()
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, old_term)
-            sys.stdout.write('\033[?25h\033[?1049l')  # restore screen + cursor
+            sys.stdout.write('\033[?1000l\033[?1006l\033[?25h\033[?1049l')  # disable mouse + restore screen + cursor
             sys.stdout.flush()
 
 
