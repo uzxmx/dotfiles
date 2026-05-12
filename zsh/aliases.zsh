@@ -85,6 +85,8 @@ alias wb="curl www.baidu.com"
 alias wg="curl www.google.com"
 alias zl="vi \"$DOTFILES_TARGET_DIR\"/.zshrc.local"
 
+alias grep="grep --color=auto"
+
 case $OSTYPE in
   darwin*)
     alias ctags="ctags --languages=objectivec --langmap=objectivec:.h.m"
