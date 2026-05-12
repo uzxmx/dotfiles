@@ -12,16 +12,22 @@ usage() {
 Install google-chrome.
 
 Options:
-  -u Update google-chrome
+  -u        Update google-chrome
+  -d <dir>  Extract to <dir> without overwriting the existing installation
 EOF
   exit 1
 }
 
 update=""
+install_dir=""
 
 parse_args="
   -u)
     update=1
+    ;;
+  -d)
+    install_dir=\"\$1\"
+    shift
     ;;
   *)
     usage
@@ -30,14 +36,23 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-if check_command google-chrome &> /dev/null; then
-  [ -z "$update" ] && exit
-else
-  update=""
+if [ -z "$install_dir" ]; then
+  if check_command google-chrome &> /dev/null; then
+    [ -z "$update" ] && exit
+  else
+    update=""
+  fi
 fi
 
 if has_apt; then
-  if [ "$update" = "1" ]; then
+  if [ -n "$install_dir" ]; then
+    path_to_save="/tmp/google-chrome-stable_current_amd64.deb"
+    "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb "$path_to_save"
+    mkdir -p "$install_dir"
+    dpkg -x "$path_to_save" "$install_dir"
+    echo "Chrome extracted to $install_dir"
+    echo "Binary: $install_dir/opt/google/chrome/chrome"
+  elif [ "$update" = "1" ]; then
     sudo apt-get -y --only-upgrade install google-chrome-stable
   else
     path_to_save="/tmp/google-chrome-stable_current_amd64.deb"
