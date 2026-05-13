@@ -1,18 +1,44 @@
 #!/usr/bin/env bash
-
+#
 # To configure python with a custom OpenSSL version, execute below commands:
 #
-# export CFLAGS=-I/usr/openssl1.1.1k/include
-# export LDFLAGS=-L/usr/openssl1.1.1k/lib
+# export CFLAGS="-I/usr/openssl1.1.1k/include"
+# export LDFLAGS="-L/usr/openssl1.1.1k/lib -Wl,-rpath,/usr/openssl1.1.1k/lib"
 
 set -eo pipefail
 
 usage() {
   cat <<-EOF
-Usage: $0 [version]
+Usage: $0 [-s openssl_dir] [version]
+
+Options:
+  -s openssl_dir  Path to custom OpenSSL installation directory
 EOF
   exit 1
 }
+
+openssl_dir=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -s)
+      shift
+      openssl_dir="$1"
+      ;;
+    -*)
+      usage
+      ;;
+    *)
+      version="$1"
+      ;;
+  esac
+  shift
+done
+
+if [ -n "$openssl_dir" ]; then
+  export CFLAGS="-I${openssl_dir}/include"
+  export LDFLAGS="-L${openssl_dir}/lib -Wl,-rpath,${openssl_dir}/lib"
+  # export PYTHON_CONFIGURE_OPTS="--with-openssl=${openssl_dir}"
+fi
 
 . $(dirname "$BASH_SOURCE")/../lib/install.sh
 . $(dirname "$BASH_SOURCE")/../lib/asdf.sh
@@ -20,6 +46,8 @@ EOF
 echo 'Check and install python dependencies...'
 if is_mac; then
   brew_install xz
+  # For gui app
+  brew_install python-tk
 elif has_yum; then
   sudo yum install -y libffi-devel zlib-devel openssl-devel readline-devel bzip2-devel xz-devel >/dev/null
   sudo yum libsqlite3x-devel >/dev/null || sudo yum install -y sqlite-devel
@@ -28,8 +56,8 @@ elif has_apt; then
 fi
 
 echo 'Install python...'
-# The mirror cannot be found.
-# export PYTHON_BUILD_MIRROR_URL=npm.taobao.org/mirrors/python
-export PYTHON_BUILD_MIRROR_URL=mirrors.huaweicloud.com/python
+# https://mirrors.huaweicloud.com/python/3.11.5/
+# export PYTHON_BUILD_MIRROR_URL=https://mirrors.huaweicloud.com/python
+export PYTHON_BUILD_MIRROR_URL=https://registry.npmmirror.com/-/binary/python
 export PYTHON_BUILD_MIRROR_URL_SKIP_CHECKSUM=1
-install_plugin_package python "$1"
+install_plugin_package python "$version"
