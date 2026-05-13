@@ -13,10 +13,31 @@ Subcommands:
   setup [profile]  - save login credentials to macOS Keychain (one-time per profile)
   open  [profile]  - launch browser and auto-login (default)
   show  [profile]  - display stored credentials for a profile
+  mfa   [profile]  - show live MFA/TOTP code with countdown
 
 If no profile is given, an interactive selector (fzf) is shown.
 EOF
   exit 1
+}
+
+_totp_code() {
+  local seed="$1"
+  if command -v oathtool &>/dev/null; then
+    oathtool --totp --base32 "$seed" 2>/dev/null
+  else
+    python3 - "$seed" <<'PYEOF'
+import sys, hmac, hashlib, struct, time, base64
+seed = sys.argv[1]
+pad = (8 - len(seed) % 8) % 8
+key = base64.b32decode(seed.upper() + '=' * pad)
+t = int(time.time()) // 30
+msg = struct.pack('>Q', t)
+h = hmac.new(key, msg, hashlib.sha1).digest()
+o = h[19] & 0xf
+code = (struct.unpack('>I', h[o:o+4])[0] & 0x7fffffff) % 1000000
+print(f'{code:06d}')
+PYEOF
+  fi
 }
 
 _kset() {
@@ -71,26 +92,6 @@ cmd_console_setup() {
   echo
 
   if [ -n "$totp_seed" ]; then
-    _totp_code() {
-      local seed="$1"
-      if command -v oathtool &>/dev/null; then
-        oathtool --totp --base32 "$seed" 2>/dev/null
-      else
-        python3 - "$seed" <<'PYEOF'
-import sys, hmac, hashlib, struct, time, base64
-seed = sys.argv[1]
-pad = (8 - len(seed) % 8) % 8
-key = base64.b32decode(seed.upper() + '=' * pad)
-t = int(time.time()) // 30
-msg = struct.pack('>Q', t)
-h = hmac.new(key, msg, hashlib.sha1).digest()
-o = h[19] & 0xf
-code = (struct.unpack('>I', h[o:o+4])[0] & 0x7fffffff) % 1000000
-print(f'{code:06d}')
-PYEOF
-      fi
-    }
-
     echo "Verifying TOTP seed — press Enter to refresh, type y to confirm:"
     while true; do
       local code remaining
@@ -163,12 +164,36 @@ cmd_console_show() {
   fi
 }
 
+cmd_console_mfa() {
+  local profile_name="$1"
+  if [ -z "$profile_name" ]; then
+    profile_name="$(_select_console_profile)"
+  fi
+  [ -z "$profile_name" ] && exit 1
+
+  local totp_seed
+  totp_seed="$(_kget "$profile_name" totp_seed)" || true
+  if [ -z "$totp_seed" ]; then
+    echo "No TOTP seed found for '$profile_name'. Run: aliyun console setup $profile_name" >&2
+    exit 1
+  fi
+
+  echo "Profile: $profile_name  (Ctrl-C to quit)"
+  while true; do
+    local code remaining
+    code=$(_totp_code "$totp_seed")
+    remaining=$((30 - $(date +%s) % 30))
+    printf '\r  \033[1;32m%s\033[0m  expires in %2ds ' "$code" "$remaining"
+    sleep 1
+  done
+}
+
 cmd_console() {
   local subcmd="$1"
   [ -z "$subcmd" ] && usage_console
   case "$subcmd" in
     --complete)
-      echo "setup open show"
+      echo "setup open show mfa"
       ;;
     setup)
       shift
@@ -181,6 +206,10 @@ cmd_console() {
     show)
       shift
       cmd_console_show "$@"
+      ;;
+    mfa)
+      shift
+      cmd_console_mfa "$@"
       ;;
     -h)
       usage_console
