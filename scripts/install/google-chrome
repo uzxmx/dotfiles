@@ -26,8 +26,8 @@ parse_args="
     update=1
     ;;
   -d)
-    install_dir=\"\$1\"
     shift
+    install_dir=\"\$1\"
     ;;
   *)
     usage
