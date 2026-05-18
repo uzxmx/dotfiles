@@ -93,6 +93,14 @@ def _load_hosts():
     return json.loads(_strip_trailing_commas(_strip_json_comments(text)))
 
 
+def _get_user_host(h):
+    label = h['label']
+    parts = label.split('@', 1)
+    user = h.get('user') or (parts[0] if len(parts) == 2 else None)
+    host = h.get('host') or (parts[1] if len(parts) == 2 else parts[0])
+    return f"{user}@{host}" if user else host
+
+
 def check_ssh_hosts_file():
     if not os.path.exists(SSH_HOSTS_FILE):
         wrapper.run_original()
@@ -107,11 +115,13 @@ def select_host(host_label=None, caller_name=None, extra_expect=None, extra_head
 
     key = ''
     if host_label is None:
-        labels = '\n'.join(h['label'] for h in hosts)
+        max_len = max(len(h['label']) for h in hosts)
+        entries = [f"{h['label'].ljust(max_len)}\t{_get_user_host(h)}" for h in hosts]
+        labels = '\n'.join(entries)
         expect_keys = ['ctrl-e']
         if extra_expect:
             expect_keys.extend(extra_expect)
-        fzf_cmd = ['fzf', f'--expect={",".join(expect_keys)}']
+        fzf_cmd = ['fzf', f'--expect={",".join(expect_keys)}', '--delimiter=\t', '--nth=1']
         if extra_header:
             fzf_cmd.append(f'--header={extra_header}')
         proc = subprocess.Popen(
@@ -124,7 +134,7 @@ def select_host(host_label=None, caller_name=None, extra_expect=None, extra_head
         if len(lines) < 2 or not lines[1].strip():
             sys.exit(0)
         key = lines[0].strip()
-        host_label = lines[1].strip()
+        host_label = lines[1].split('\t')[0].strip()
 
     host = next((h for h in hosts if h['label'] == host_label), None)
     if host is None:
