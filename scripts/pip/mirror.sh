@@ -2,7 +2,7 @@ usage_mirror() {
   cat <<-EOF
 Usage: pip mirror [-e | -d]
 
-Manage(show/enable/disable) pip mirror. By default it shows whether mirror is
+Manage pip mirror. By default it shows whether mirror is
 enabled.
 
 Options:
@@ -34,5 +34,14 @@ cmd_mirror() {
   elif [ "$action" = "disable" ]; then
     pip config unset global.index-url
   fi
-  pip config list | grep global.index-url=
+
+  local url
+  url=$(pip config list 2>/dev/null | grep '^global.index-url=' | cut -d= -f2-)
+  if [ -n "$url" ]; then
+    echo "mirror: $url"
+  else
+    echo "mirror: not set (using default PyPI)"
+  fi
 }
+
+alias_cmd m mirror

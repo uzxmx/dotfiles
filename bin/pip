@@ -12,22 +12,35 @@ usage() {
 Wrapper for pip utility.
 
 Subcommands:
-  mirror - manage(show/enable/disable) mirror
+  i            - install (shorthand for pip install)
+  m, mirror    - manage mirror
+  u, uninstall - select and uninstall packages via fzf
 EOF
   exit 1
 }
 
 case "$1" in
-  mirror)
-    source "$pip_dir/$1.sh"
+  i)
+    shift
+    pip install "$@"
+    ;;
+  m | mirror | u | uninstall)
+    case "$1" in
+      m)
+        name="mirror"
+        ;;
+      u)
+        name="uninstall"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$pip_dir/$name.sh"
     run "$@"
     ;;
   -h)
     usage
-    ;;
-  -)
-    shift
-    pip "$@"
     ;;
   *)
     pip "$@"
