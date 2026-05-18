@@ -75,7 +75,22 @@ cmd_ssh() {
   fi
 
   if [ -z "$host_label" ]; then
-    host_label=$("$DOTFILES_DIR/scripts/bin/select-ssh-host")
+    local _tmp_sel
+    _tmp_sel=$(mktemp)
+    # 不重定向 stdout，将输出路径作为参数传入，使 curses TUI 可正常渲染到终端
+    "$DOTFILES_DIR/scripts/bin/select-ssh-host" "$_tmp_sel" || { rm -f "$_tmp_sel"; exit; }
+    local -a _sel=()
+    while IFS= read -r _line; do
+      [[ -n "$_line" ]] && _sel+=("$_line")
+    done < "$_tmp_sel"
+    rm -f "$_tmp_sel"
+    [ ${#_sel[@]} -eq 0 ] && exit
+    host_label="${_sel[0]}"
+    local _i=1
+    while [ $_i -lt ${#_sel[@]} ]; do
+      opts+=("${_sel[$_i]}")
+      _i=$((_i + 1))
+    done
   fi
   [ -z "$host_label" ] && exit
 

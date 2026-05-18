@@ -98,7 +98,7 @@ def check_ssh_hosts_file():
         wrapper.run_original()
 
 
-def select_host(host_label=None, caller_name=None):
+def select_host(host_label=None, caller_name=None, extra_expect=None, extra_header=None):
     if not os.path.exists(SSH_HOSTS_FILE):
         wrapper.print_and_exit([os.path.basename(sys.argv[0])], 100)
         return None
@@ -108,8 +108,14 @@ def select_host(host_label=None, caller_name=None):
     key = ''
     if host_label is None:
         labels = '\n'.join(h['label'] for h in hosts)
+        expect_keys = ['ctrl-e']
+        if extra_expect:
+            expect_keys.extend(extra_expect)
+        fzf_cmd = ['fzf', f'--expect={",".join(expect_keys)}']
+        if extra_header:
+            fzf_cmd.append(f'--header={extra_header}')
         proc = subprocess.Popen(
-            ['fzf', '--expect=ctrl-e'],
+            fzf_cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )
@@ -135,6 +141,9 @@ class HostSelection:
         self._key = key
         self._host = host
         self.set_interactive(caller_name == 'ssh')
+
+    def get_key(self):
+        return self._key
 
     def set_interactive(self, interactive):
         host = self._host

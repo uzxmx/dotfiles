@@ -1,12 +1,57 @@
 #!/usr/bin/env python3
+#
+# Usage: select-ssh-host <output-file>
+#
+# Writes results to <output-file> instead of stdout, so that curses (used by
+# the TUI) can render to the terminal normally even when the caller has no
+# stdout redirect pointing at a terminal.
+#
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python'))
+_python_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'python')
+sys.path.insert(0, _python_dir)
 
 import ssh as ssh_module
+import ssh_options_tui
+import ssh_vnc_tui
 
-s = ssh_module.select_host()
+output_path = sys.argv[1] if len(sys.argv) > 1 else None
+
+s = ssh_module.select_host(
+    extra_expect=['ctrl-o', 'ctrl-v'],
+    extra_header='ctrl-o: 选项构建  ctrl-v: VNC远程桌面',
+)
 if s is None:
     sys.exit(1)
-print(s.get_label())
+
+host_label = s.get_label()
+lines = [host_label]
+
+if s.get_key() == 'ctrl-o':
+    ssh_info = {
+        'host': s.get_host(),
+        'user': s.get_user(),
+        'port': s.get_port(),
+        'identity': s.get_identity(),
+    }
+    opts = ssh_options_tui.run_tui(host_label, ssh_info=ssh_info)
+    for args in opts:
+        for a in args:
+            lines.append(a)
+elif s.get_key() == 'ctrl-v':
+    ssh_info = {
+        'host': s.get_host(),
+        'user': s.get_user(),
+        'port': s.get_port(),
+        'identity': s.get_identity(),
+    }
+    ssh_vnc_tui.run_vnc_tui(host_label, ssh_info=ssh_info)
+
+if output_path:
+    with open(output_path, 'w') as f:
+        for line in lines:
+            f.write(line + '\n')
+else:
+    for line in lines:
+        print(line)
