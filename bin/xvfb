@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+xvfb_dir="$DOTFILES_DIR/scripts/xvfb"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to manage Xvfb virtual display.
+
+Subcommands:
+  start  - start Xvfb in the foreground
+  vnc    - attach x11vnc to an existing virtual display
+  record - record the virtual display to a video file
+EOF
+  exit 1
+}
+
+case "$1" in
+  start | vnc | record)
+    name="$1"
+    source "$xvfb_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
