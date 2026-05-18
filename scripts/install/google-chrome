@@ -62,7 +62,14 @@ if has_apt; then
     sudo apt install -y --fix-broken
   fi
 elif has_yum; then
-  if [ "$update" = "1" ]; then
+  if [ -n "$install_dir" ]; then
+    path_to_save="/tmp/google-chrome-stable_current_x86_64.rpm"
+    "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm "$path_to_save"
+    mkdir -p "$install_dir"
+    rpm2cpio "$path_to_save" | (cd "$install_dir" && cpio -idm --quiet)
+    echo "Chrome extracted to $install_dir"
+    echo "Binary: $install_dir/opt/google/chrome/chrome"
+  elif [ "$update" = "1" ]; then
     sudo yum update -y google-chrome --nogpgcheck
   else
     path_to_save="/tmp/google-chrome-stable_current_x86_64.rpm"
