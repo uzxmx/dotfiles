@@ -12,7 +12,8 @@ usage() {
 Wrapper for pip utility.
 
 Subcommands:
-  i            - install (shorthand for pip install)
+  i, install   - install packages
+  l, list      - list packages
   m, mirror    - manage mirror
   u, uninstall - select and uninstall packages via fzf
 EOF
@@ -23,6 +24,10 @@ case "$1" in
   i)
     shift
     pip install "$@"
+    ;;
+  l)
+    shift
+    pip list "$@"
     ;;
   m | mirror | u | uninstall)
     case "$1" in
@@ -41,6 +46,10 @@ case "$1" in
     ;;
   -h)
     usage
+    ;;
+  -)
+    shift
+    pip "$@"
     ;;
   *)
     pip "$@"
