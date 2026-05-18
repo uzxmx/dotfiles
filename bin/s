@@ -106,10 +106,10 @@ while true; do
   fi
 
   if [ "$cmd_name" = "rg" ]; then
-    prompt="(C-V:vsplit C-Y:yank C-T:edit C-I:toggle-ignore C-X:exec C-D:cd C-R:refresh)> "
+    header="Menu: C-V:vsplit C-Y:yank C-T:edit C-I:toggle-ignore C-X:exec C-D:cd C-R:refresh"
     expect="ctrl-t,ctrl-i,ctrl-x,ctrl-d,ctrl-r,f1"
   else
-    prompt="(C-V:vsplit C-Y:yank C-T:edit C-X:exec C-D:cd C-R:refresh)> "
+    header="Menu: C-V:vsplit C-Y:yank C-T:edit C-X:exec C-D:cd C-R:refresh"
     expect="ctrl-t,ctrl-x,ctrl-d,ctrl-r,f1"
   fi
 
@@ -120,7 +120,7 @@ while true; do
   call_fzf result --delimiter=: --nth=3.. --preview "$DOTFILES_DIR/scripts/misc/preview {}" \
     --preview-window="$preview_window" \
     --query="$query" --print-query \
-    --prompt "$prompt" \
+    --header "$header" \
     --expect "$expect" \
     --bind "ctrl-v:execute($DOTFILES_DIR/scripts/misc/edit_file_for_search {})" \
     < <("${cmd[@]}"; [ "$search_filename" = "1" ] && fd --type f . "${files[@]}" | awk '{printf "::%s\n", $1}')
