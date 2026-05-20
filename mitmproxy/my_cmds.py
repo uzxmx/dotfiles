@@ -90,5 +90,36 @@ class MyCmds:
             parts.append(_fmt_response(f.response))
         _write(path or _auto_path("full_req"), "\n\n---\n\n".join(parts))
 
+    @command.command("my.clear_before_focus")
+    def clear_before_focus(self) -> None:
+        """Clear all flows before the focused flow"""
+        view = ctx.master.view
+        idx = view.focus.index
+        if idx is None:
+            ctx.log.warn("No focused flow")
+            return
+        if idx == 0:
+            ctx.log.info("Focused flow is already the first")
+            return
+        to_remove = [view[i] for i in range(idx)]
+        view.remove(to_remove)
+        ctx.log.info(f"Cleared {len(to_remove)} flows before focused flow")
+
+    @command.command("my.clear_after_focus")
+    def clear_after_focus(self) -> None:
+        """Clear all flows after the focused flow"""
+        view = ctx.master.view
+        idx = view.focus.index
+        if idx is None:
+            ctx.log.warn("No focused flow")
+            return
+        total = len(view)
+        if idx == total - 1:
+            ctx.log.info("Focused flow is already the last")
+            return
+        to_remove = [view[i] for i in range(idx + 1, total)]
+        view.remove(to_remove)
+        ctx.log.info(f"Cleared {len(to_remove)} flows after focused flow")
+
 
 addons = [MyCmds()]
