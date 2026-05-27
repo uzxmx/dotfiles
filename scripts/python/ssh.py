@@ -116,12 +116,13 @@ def select_host(host_label=None, caller_name=None, extra_expect=None, extra_head
     key = ''
     if host_label is None:
         max_len = max(len(h['label']) for h in hosts)
-        entries = [f"{h['label'].ljust(max_len)}\t{_get_user_host(h)}" for h in hosts]
+        entries = [f"{h['label']}\t{_get_user_host(h)}" for h in hosts]
         labels = '\n'.join(entries)
         expect_keys = ['ctrl-e']
         if extra_expect:
             expect_keys.extend(extra_expect)
-        fzf_cmd = ['fzf', f'--expect={",".join(expect_keys)}', '--delimiter=\t', '--nth=1']
+        fzf_cmd = ['fzf', f'--expect={",".join(expect_keys)}', '--delimiter=\t', '--nth=1',
+                   f'--tabstop={max_len + 2}']
         if extra_header:
             fzf_cmd.append(f'--header={extra_header}')
         proc = subprocess.Popen(
