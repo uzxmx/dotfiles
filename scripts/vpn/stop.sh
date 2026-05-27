@@ -17,7 +17,7 @@ cmd_stop() {
   sudo sed -i -E '/^nameserver 8.8.8.8$/d' /etc/resolv.conf
   sudo sed -i -E 's/^#(nameserver .+)$/\1/' /etc/resolv.conf
 
-  source "$dotfiles_dir/scripts/lib/systemd.sh"
+  source "$DOTFILES_DIR/scripts/lib/systemd.sh"
 
   systemctl_stop xl2tpd
   systemctl_stop ipsec

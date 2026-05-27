@@ -10,7 +10,7 @@ EOF
 }
 
 cmd_start() {
-  source "$dotfiles_dir/scripts/lib/systemd.sh"
+  source "$DOTFILES_DIR/scripts/lib/systemd.sh"
   systemctl_start ipsec
   systemctl_start xl2tpd
 

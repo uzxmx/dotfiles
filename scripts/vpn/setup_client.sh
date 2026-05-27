@@ -16,7 +16,7 @@ EOF
 }
 
 cmd_setup_client() {
-  source "$dotfiles_dir/scripts/lib/install.sh"
+  source "$DOTFILES_DIR/scripts/lib/install.sh"
 
   echo "Check and install dependencies..."
   if has_apt; then
@@ -25,8 +25,8 @@ cmd_setup_client() {
     abort "Unsupported system"
   fi
 
-  source "$dotfiles_dir/scripts/lib/prompt.sh"
-  source "$dotfiles_dir/scripts/lib/template.sh"
+  source "$DOTFILES_DIR/scripts/lib/prompt.sh"
+  source "$DOTFILES_DIR/scripts/lib/template.sh"
 
   render_template "$vpn_dir/ipsec-main.conf.tpl.sh" "/etc/ipsec.d/main.conf" VPN_SERVER_IP
   render_template "$vpn_dir/ipsec-main.secrets.tpl.sh" "/etc/ipsec.d/main.secrets" VPN_IPSEC_PSK

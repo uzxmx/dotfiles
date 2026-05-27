@@ -2,10 +2,10 @@
 
 set -eo pipefail
 
-dotfiles_dir="$(realpath "$(dirname "$BASH_SOURCE")/..")"
-vpn_dir="$dotfiles_dir/scripts/vpn"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+vpn_dir="$DOTFILES_DIR/scripts/vpn"
 
-source "$dotfiles_dir/scripts/lib/cli.sh"
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
@@ -25,7 +25,7 @@ EOF
 
 check_route_command() {
   if ! type -p route &>/dev/null; then
-    "$dotfiles_dir/scripts/install/net-tools"
+    "$DOTFILES_DIR/scripts/install/net-tools"
   fi
 }
 
