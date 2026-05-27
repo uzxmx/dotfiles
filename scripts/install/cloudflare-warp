@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Install cloudflare warp (https://developers.cloudflare.com/warp-client/get-started/linux/).
+
+set -eo pipefail
+
+type -p warp-cli &> /dev/null && exit
+
+. $(dirname "$BASH_SOURCE")/../lib/install.sh
+
+if has_apt; then
+  sudo apt-get install -y cloudflare-warp
+else
+  abort "Unsupported system"
+fi

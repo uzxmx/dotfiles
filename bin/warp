@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+warp_dir="$DOTFILES_DIR/scripts/warp"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utility to manage Cloudflare WARP from CLI.
+
+Subcommands:
+  setup [-p <port>] - initialize WARP after first installation
+  c, connect        - connect to WARP
+  d, disconnect     - disconnect from WARP
+  s, status         - show connection status
+  l, log            - show WARP service logs
+EOF
+  exit 1
+}
+
+case "$1" in
+  setup | connect | c | disconnect | d | status | s | log | l)
+    case "$1" in
+      c) name="connect" ;;
+      d) name="disconnect" ;;
+      s) name="status" ;;
+      l) name="log" ;;
+      *) name="$1" ;;
+    esac
+    source "$warp_dir/$name.sh"
+    run "$@"
+    ;;
+  -)
+    shift
+    warp-cli "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
