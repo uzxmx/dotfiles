@@ -148,7 +148,7 @@ class _XvfbTUI(TUI):
         # handlers are registered in the main thread before TUI can exit.
         tunnel_proc = subprocess.Popen(
             _build_ssh_cmd(ssh_info, extra_opts=['-L', f'{port}:localhost:{port}', '-N']),
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         atexit.register(tunnel_proc.terminate)
 
@@ -162,7 +162,7 @@ class _XvfbTUI(TUI):
                     f' x11vnc -display {display} -nopw -rfbport {port} 2>/dev/null\''
                 ),
             ),
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         atexit.register(vnc_proc.terminate)
 
@@ -171,9 +171,11 @@ class _XvfbTUI(TUI):
             time.sleep(3)
             vnc_bin = '/Applications/VNC Viewer.app/Contents/MacOS/vncviewer'
             if os.path.exists(vnc_bin):
-                subprocess.Popen([vnc_bin, f'localhost::{port}'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.Popen([vnc_bin, f'localhost::{port}'],
+                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             else:
-                subprocess.Popen(['open', f'vnc://localhost:{port}'])
+                subprocess.Popen(['open', f'vnc://localhost:{port}'],
+                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         threading.Thread(target=_open_vnc, daemon=True).start()
 
