@@ -38,7 +38,7 @@ elif has_apt; then
   sudo apt-get install -y make gcc libncurses5-dev autoconf >/dev/null
 fi
 
-version="5.8"
+version="5.9.1"
 
 install_fn() {
   local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
@@ -69,4 +69,4 @@ install_fn() {
   "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
 }
 
-download_and_install "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" install_fn
+download_and_install "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" install_fn /tmp/zsh
