@@ -5,6 +5,7 @@ set -eo pipefail
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
 
 source "$DOTFILES_DIR/scripts/lib/utils/shell.sh"
+source "$DOTFILES_DIR/scripts/lib/prompt.sh"
 
 usage() {
   cat <<-EOF
@@ -49,6 +50,7 @@ while [ "$#" -gt 0 ]; do
     --proxy)
       shift
       proxy="$1"
+      proxy_explicit=1
       ;;
     --no-proxy)
       no_proxy=1
@@ -64,6 +66,12 @@ while [ "$#" -gt 0 ]; do
 done
 
 [ -z "$use_fzf" -a -z "$use_vagrant" -a -z "$ssh_opts" ] && echo "You need to specify one of [-f], [--vagrant], [-o] options." && exit
+
+# Ask whether to enable proxy unless it was explicitly specified. Useful for
+# overseas servers where the proxy is undesirable.
+if [ -z "$no_proxy" -a -z "$proxy_explicit" ]; then
+  [ "$(yesno "Enable proxy '$proxy' for the remote? (Y/n, specify --no-proxy to disable) " "yes")" = "no" ] && no_proxy=1
+fi
 
 opts=()
 if [ "$intrusive_setup" = 1 ]; then
