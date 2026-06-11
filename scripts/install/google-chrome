@@ -36,9 +36,27 @@ parse_args="
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
+# Chrome relies on system fonts (via fontconfig) to render pages. Without CJK
+# fonts installed, printing pages that contain Korean/Chinese/Japanese text to
+# PDF produces tofu boxes / garbled output. Install Noto CJK to cover them.
+install_cjk_fonts() {
+  if has_apt; then
+    sudo apt-get install -y fonts-noto-cjk fonts-noto-cjk-extra
+  elif has_yum; then
+    sudo yum install -y google-noto-sans-cjk-ttc-fonts || \
+      sudo yum install -y google-noto-cjk-fonts
+  fi
+  sudo fc-cache -f
+}
+
 if [ -z "$install_dir" ]; then
   if check_command google-chrome &> /dev/null; then
-    [ -z "$update" ] && exit
+    # Already installed: still make sure CJK fonts are present, then stop
+    # unless an update was requested.
+    if [ -z "$update" ]; then
+      install_cjk_fonts
+      exit
+    fi
   else
     update=""
   fi
@@ -79,5 +97,7 @@ elif has_yum; then
 else
   abort "Unsupported system"
 fi
+
+install_cjk_fonts
 
 [ -f "$path_to_save" ] && rm "$path_to_save"
