@@ -17,6 +17,13 @@ fi
 PYTHON3_HOME="$(find_package_path python "^3\.")"
 if [ -n "$PYTHON3_HOME" ]; then
   PYTHON3_PATH="$PYTHON3_HOME/bin/python"
+
+  if ! "$PYTHON3_PATH" -c 'import pynvim' &>/dev/null; then
+    echo "pynvim is not installed for $PYTHON3_PATH, trying to install it..."
+    if ! "$PYTHON3_PATH" -m pip install --upgrade pynvim; then
+      echo "Failed to install pynvim automatically."
+    fi
+  fi
 fi
 
 NODE_HOME="$(find_package_path nodejs)"
