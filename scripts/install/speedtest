@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# Install the official Ookla speedtest CLI (https://www.speedtest.net/apps/cli)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command speedtest &> /dev/null && exit
+
+version="1.2.0"
+
+if is_mac; then
+  platform="macosx-universal"
+elif is_linux; then
+  if is_arm64; then
+    platform="linux-aarch64"
+  else
+    platform="linux-x86_64"
+  fi
+else
+  abort "Unsupported system. See https://www.speedtest.net/apps/cli"
+fi
+
+install_fn() {
+  local archive="$1"
+  local dir="$(dirname "$archive")"
+  tar zxf "$archive" -C "$dir"
+  mv "$dir/speedtest" "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install \
+  "https://install.speedtest.net/app/cli/ookla-speedtest-$version-$platform.tgz" \
+  install_fn

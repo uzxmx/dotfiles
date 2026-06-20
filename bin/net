@@ -12,16 +12,20 @@ usage() {
 Network utilities.
 
 Subcommands:
-  d, dns - setup DNS servers
+  d, dns       - setup DNS servers
+  b, bandwidth - measure public-internet bandwidth
 EOF
   exit 1
 }
 
 case "$1" in
-  d | dns)
+  d | dns | b | bandwidth)
     case "$1" in
       d)
         name="dns"
+        ;;
+      b)
+        name="bandwidth"
         ;;
       *)
         name="$1"
