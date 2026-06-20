@@ -22,7 +22,6 @@ EOF
 }
 
 cmd_bandwidth() {
-  # Accept the license/GDPR terms up front so the test runs non-interactively.
   local -a opts=(--accept-license --accept-gdpr)
 
   while [ "$#" -gt 0 ]; do
@@ -55,4 +54,3 @@ cmd_bandwidth() {
   speedtest "${opts[@]}"
 }
 alias_cmd b bandwidth
-alias_cmd bw bandwidth
