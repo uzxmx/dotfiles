@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+singbox_dir="$DOTFILES_DIR/scripts/sing-box"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for sing-box utility.
+
+Client (run in foreground TUN mode):
+  run            - run the sing-box client
+
+Server (systemd, run on the Linux server):
+  server-setup   - install sing-box and (re)generate server config
+  server-start   - start the service (auto-setup if not configured yet)
+  server-stop    - stop the service
+  server-restart - restart the service
+  server-status  - show service status
+  server-log     - follow service logs
+EOF
+  exit 1
+}
+
+case "$1" in
+  run)
+    source "$singbox_dir/run.sh"
+    run "$@"
+    ;;
+  server-setup | server-start | server-stop | server-restart | server-status | server-log)
+    source "$singbox_dir/server.sh"
+    underscore_and_run "$@"
+    ;;
+  -)
+    shift
+    sing-box "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac

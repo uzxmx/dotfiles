@@ -1,0 +1,88 @@
+{
+  "log": { "level": "info", "timestamp": true },
+
+  "dns": {
+    "servers": [
+      { "type": "https", "tag": "proxy-dns", "server": "1.1.1.1", "detour": "proxy" },
+      { "type": "udp",   "tag": "local-dns", "server": "223.5.5.5" }
+    ],
+    "rules": [
+      { "clash_mode": "Direct", "server": "local-dns" },
+      { "clash_mode": "Global", "server": "proxy-dns" },
+      { "rule_set": "geosite-cn", "server": "local-dns" }
+    ],
+    "final": "proxy-dns",
+    "strategy": "ipv4_only"
+  },
+
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [ "172.18.0.1/30" ],
+      "mtu": 1400,
+      "auto_route": true,
+      "stack": "mixed"
+    }
+  ],
+
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "proxy",
+      "server": "SERVER_IP",
+      "server_port": SERVER_PORT,
+      "uuid": "UUID_PLACEHOLDER",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "SNI_PLACEHOLDER",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": {
+          "enabled": true,
+          "public_key": "REALITY_PUBLIC_KEY",
+          "short_id": "SHORT_ID"
+        }
+      }
+    },
+    { "type": "direct", "tag": "direct" }
+  ],
+
+  "route": {
+    "rules": [
+      { "action": "sniff" },
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "ip_is_private": true, "action": "route", "outbound": "direct" },
+      { "clash_mode": "Direct", "action": "route", "outbound": "direct" },
+      { "clash_mode": "Global", "action": "route", "outbound": "proxy" },
+      { "rule_set": "geosite-cn", "action": "route", "outbound": "direct" },
+      { "rule_set": "geoip-cn", "action": "route", "outbound": "direct" }
+    ],
+    "rule_set": [
+      {
+        "type": "remote",
+        "tag": "geosite-cn",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      },
+      {
+        "type": "remote",
+        "tag": "geoip-cn",
+        "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
+        "download_detour": "proxy",
+        "update_interval": "1d"
+      }
+    ],
+    "default_domain_resolver": "proxy-dns",
+    "final": "proxy",
+    "auto_detect_interface": true
+  },
+
+  "experimental": {
+    "cache_file": { "enabled": true },
+    "clash_api": { "external_controller": "127.0.0.1:9090", "default_mode": "rule" }
+  }
+}
