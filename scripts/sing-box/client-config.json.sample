@@ -9,6 +9,7 @@
     "rules": [
       { "clash_mode": "Direct", "server": "local-dns" },
       { "clash_mode": "Global", "server": "proxy-dns" },
+      { "domain_suffix": ["example.com"], "server": "proxy-dns" },
       { "rule_set": "geosite-cn", "server": "local-dns" }
     ],
     "final": "proxy-dns",
@@ -55,6 +56,7 @@
       { "ip_is_private": true, "action": "route", "outbound": "direct" },
       { "clash_mode": "Direct", "action": "route", "outbound": "direct" },
       { "clash_mode": "Global", "action": "route", "outbound": "proxy" },
+      { "domain_suffix": ["example.com"], "action": "route", "outbound": "proxy" },
       { "rule_set": "geosite-cn", "action": "route", "outbound": "direct" },
       { "rule_set": "geoip-cn", "action": "route", "outbound": "direct" }
     ],
