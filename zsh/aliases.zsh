@@ -86,6 +86,7 @@ alias wg="curl www.google.com"
 alias zl="vi \"$DOTFILES_TARGET_DIR\"/.zshrc.local"
 
 alias grep="grep --color=auto"
+alias zgrep="zgrep --color=always"
 
 case $OSTYPE in
   darwin*)
