@@ -5,31 +5,43 @@
 set -eo pipefail
 
 export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
-test -x /usr/bin/mihomo && exit
+source "$DOTFILES_DIR/scripts/lib/install.sh"
 
-. $(dirname "$BASH_SOURCE")/../lib/install.sh
+check_command mihomo &> /dev/null && exit
 
-version="v1.18.9"
+version="v1.19.30"
 path_to_save="/tmp/mihomo-$version.gz"
 if is_linux; then
   platform="linux-amd64"
+elif is_mac; then
+  if is_arm64; then
+    platform="darwin-arm64"
+  else
+    platform="darwin-amd64"
+  fi
 else
   abort "Unsupported system"
 fi
 
-"$DOTFILES_DIR/bin/get" "https://github.com/MetaCubeX/mihomo/releases/download/v1.18.9/mihomo-$platform-$version.gz" "$path_to_save"
+"$DOTFILES_DIR/bin/get" "https://github.com/MetaCubeX/mihomo/releases/download/$version/mihomo-$platform-$version.gz" "$path_to_save"
 
 gunzip "$path_to_save"
-(cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/bin/mihomo)
+if is_mac; then
+  (cd /tmp && chmod a+x "mihomo-$version" && mv "mihomo-$version" "$DOTFILES_TARGET_DIR/bin/mihomo")
+else
+  (cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/bin/mihomo)
+fi
+
+sudo mkdir -p /usr/local/etc/mihomo
+sudo chown "$(whoami)" /usr/local/etc/mihomo
 
 if is_linux; then
-  sudo mkdir -p /usr/local/etc/mihomo
-  sudo chown "$(whoami)" /usr/local/etc/mihomo
   sudo cp "$DOTFILES_DIR/mihomo/mihomo.service" /etc/systemd/system
+fi
 
-  cat <<EOF
+cat <<EOF
 To run mihomo, you need to copy $DOTFILES_DIR/mihomo/config.yaml to /usr/local/etc/mihomo.
 To use geoip rule, you need to copy $DOTFILES_DIR/.local/geoip.metadb to /usr/local/etc/mihomo.
 EOF
-fi

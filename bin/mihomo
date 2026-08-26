@@ -39,9 +39,9 @@ mihomo_is_running() {
 
 cmd_run() {
   if [ $# -eq 0 ]; then
-    /usr/bin/mihomo -d /usr/local/etc/mihomo
+    mihomo -d /usr/local/etc/mihomo
   else
-    /usr/bin/mihomo "$@"
+    mihomo "$@"
   fi
 }
 
@@ -104,8 +104,8 @@ alias_cmd c config
 
 case "$1" in
   run | start | stop | restart | s | status | l | log | c | config)
-    if ! is_linux; then
-      abort "Unsupported system"
+    if is_mac && [ "$1" != run ]; then
+      abort "Only support 'run' command on macOS"
     fi
     run "$@"
     ;;
