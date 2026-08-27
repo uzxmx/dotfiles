@@ -36,6 +36,8 @@ This requires a remote http proxy is listening at 8123 on the remote server.
 Port 8123 is used as the v2ray http proxy port, where all trafic will
 go to a same outbound (no whitelist).
 
+Port 7890 is used as the mihomo http proxy port (see the -m option).
+
 We can also specify socks5 protocol in HTTP proxy env variables. For example:
 
   export http_proxy=socks5://127.0.0.1:1080 https_proxy=socks5://127.0.0.1:1080
@@ -45,6 +47,7 @@ Options:
   -s <socks5_proxy> can be specified to use a socks5 proxy
 
   -a Try port 8123 first
+  -m Use the mihomo http proxy at localhost:7890
   -d Dry run, currently output commands for enabling HTTP proxy in a shell
   --no-check Don't check if the proxy server is running or not
 
@@ -52,6 +55,7 @@ Examples:
   $> pe          # Enable proxy of default types.
   $> pe docker   # Enable docker proxy.
   $> pe all      # Enable all proxy types.
+  $> pe -m       # Enable proxy using mihomo at localhost:7890.
   $> pd          # Disable proxy of default types.
   $> pi          # Show status of all proxy types.
 EOF
@@ -93,6 +97,9 @@ while [ "$#" -gt 0 ]; do
     -a)
       first_port_to_try="8123"
       last_port_to_try="8125"
+      ;;
+    -m)
+      user_http_proxy="localhost:7890"
       ;;
     -p)
       shift
