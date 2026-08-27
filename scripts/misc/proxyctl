@@ -484,12 +484,12 @@ dump_docker_proxy() {
       mode="$(jq -r '.ProxyHTTPMode // "system"' "$store")"
       http="$(jq -r '.OverrideProxyHTTP // ""' "$store")"
       if [ "$mode" = "manual" ] && [ -n "$http" ]; then
-        echo "echo Current Docker daemon proxy: $http" >&3
+        echo "echo 'Current Docker daemon proxy: $http'" >&3
       else
-        echo "echo Current Docker daemon proxy: N/A (mode=$mode)" >&3
+        echo "echo 'Current Docker daemon proxy: N/A (mode=$mode)'" >&3
       fi
     else
-      echo "echo Current Docker daemon proxy: N/A" >&3
+      echo "echo 'Current Docker daemon proxy: N/A'" >&3
     fi
     return
   fi
