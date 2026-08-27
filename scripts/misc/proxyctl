@@ -295,19 +295,75 @@ dump_curl_proxy() {
   fi
 }
 
-restart_docker() {
-  if is_mac; then
-    curl -H "Content-Type: application/json" -d '{ "openContainerView": false }' -ks --unix-socket ~/Library/Containers/com.docker.docker/Data/backend.sock http://localhost/engine/restart
-  else
-    sudo systemctl restart docker
+# Resolve Docker Desktop's settings file (proxy for image pulls lives here on
+# Mac, NOT in ~/.docker/daemon.json which Desktop ignores for proxying).
+docker_desktop_settings_file() {
+  local base="$HOME/Library/Group Containers/group.com.docker"
+  if [ -f "$base/settings-store.json" ]; then
+    echo "$base/settings-store.json"
+  elif [ -f "$base/settings.json" ]; then
+    echo "$base/settings.json"
   fi
+}
+
+# Fully quit Docker Desktop so it flushes its in-memory settings and won't
+# overwrite our edit on exit. Waits (best-effort) until the engine is down.
+stop_docker() {
+  if command -v docker &>/dev/null && docker desktop version &>/dev/null; then
+    docker desktop stop &>/dev/null || true
+  else
+    osascript -e 'quit app "Docker"' &>/dev/null || true
+  fi
+  local i
+  for i in $(seq 1 15); do
+    docker info &>/dev/null || break
+    sleep 1
+  done
+}
+
+start_docker() {
+  if command -v docker &>/dev/null && docker desktop version &>/dev/null; then
+    docker desktop start &>/dev/null || true
+  else
+    open -a Docker
+  fi
+}
+
+restart_docker() {
+  sudo systemctl restart docker
 }
 
 enable_docker_proxy() {
   local file sudo
   if is_mac; then
-    file="$HOME/.docker/daemon.json"
-  elif has_systemd; then
+    local store proxy tmp
+    store="$(docker_desktop_settings_file)"
+    if [ -z "$store" ]; then
+      echo "Error: Docker Desktop settings file not found." >&2
+      return
+    fi
+    if ! check_command jq &>/dev/null; then
+      echo "Error: to enable docker proxy, jq is required."
+      return
+    fi
+    # Docker Desktop's transparent proxy forwards localhost to the host, so
+    # there is no need to rewrite localhost to the host IP here.
+    proxy="http://$user_http_proxy"
+    if [ "$(jq -r '.ProxyHTTPMode // ""' "$store")" != "manual" ] ||
+      [ "$(jq -r '.OverrideProxyHTTP // ""' "$store")" != "$proxy" ]; then
+      # Stop first so Desktop flushes settings and won't clobber our edit.
+      stop_docker
+      tmp="$(mktemp)"
+      jq --arg p "$proxy" \
+        '.ProxyHTTPMode = "manual" | .OverrideProxyHTTP = $p | .OverrideProxyHTTPS = $p' \
+        "$store" >"$tmp" && mv "$tmp" "$store"
+      start_docker
+    fi
+    dump_docker_proxy
+    return
+  fi
+
+  if has_systemd; then
     file="/etc/docker/daemon.json"
     sudo="sudo"
   fi
@@ -316,11 +372,6 @@ enable_docker_proxy() {
     if ! check_command jq &>/dev/null; then
       echo "Error: to enable docker proxy, jq is required."
       return
-    fi
-    if is_mac && [[ "$user_http_proxy" =~ ^localhost ]]; then
-      local host_ip
-      host_ip=$("$DOTFILES_DIR/scripts/misc/tmux_status_ip")
-      user_http_proxy="$(echo "$user_http_proxy" | sed "s/localhost/$host_ip/")"
     fi
     local content
     if [ -f "$file" ]; then
@@ -358,8 +409,30 @@ enable_docker_proxy() {
 disable_docker_proxy() {
   local file sudo
   if is_mac; then
-    file="$HOME/.docker/daemon.json"
-  elif [ -f /etc/docker/daemon.json ]; then
+    local store tmp
+    store="$(docker_desktop_settings_file)"
+    if [ -z "$store" ]; then
+      dump_docker_proxy
+      return
+    fi
+    if ! check_command jq &>/dev/null; then
+      echo "Error: to disable docker proxy, jq is required."
+      return
+    fi
+    if [ "$(jq -r '.ProxyHTTPMode // ""' "$store")" = "manual" ]; then
+      stop_docker
+      # Back to "system" mode (Desktop's default): respects the OS system
+      # proxy, i.e. no proxy unless the system has one configured.
+      tmp="$(mktemp)"
+      jq '.ProxyHTTPMode = "system" | .OverrideProxyHTTP = "" | .OverrideProxyHTTPS = ""' \
+        "$store" >"$tmp" && mv "$tmp" "$store"
+      start_docker
+    fi
+    dump_docker_proxy
+    return
+  fi
+
+  if [ -f /etc/docker/daemon.json ]; then
     file="/etc/docker/daemon.json"
     sudo="sudo"
   fi
@@ -374,11 +447,7 @@ disable_docker_proxy() {
     local content
     content="$(cat "$file")"
     if [ -n "$(echo "$content" | jq '.proxies."http-proxy"' -r)" ]; then
-      if is_mac; then
-        echo "$content" | jq "del(.proxies)" >"$file"
-      else
-        echo "$content" | jq "del(.proxies)" | $sudo tee "$file" >/dev/null
-      fi
+      echo "$content" | jq "del(.proxies)" | $sudo tee "$file" >/dev/null
       should_restart="1"
     fi
 
@@ -402,8 +471,23 @@ disable_docker_proxy() {
 dump_docker_proxy() {
   local file
   if is_mac; then
-    file="$HOME/.docker/daemon.json"
-  elif [ -f /etc/docker/daemon.json ]; then
+    local store mode http
+    store="$(docker_desktop_settings_file)"
+    if [ -n "$store" ] && check_command jq &>/dev/null; then
+      mode="$(jq -r '.ProxyHTTPMode // "system"' "$store")"
+      http="$(jq -r '.OverrideProxyHTTP // ""' "$store")"
+      if [ "$mode" = "manual" ] && [ -n "$http" ]; then
+        echo "echo Current Docker daemon proxy: $http" >&3
+      else
+        echo "echo Current Docker daemon proxy: N/A (mode=$mode)" >&3
+      fi
+    else
+      echo "echo Current Docker daemon proxy: N/A" >&3
+    fi
+    return
+  fi
+
+  if [ -f /etc/docker/daemon.json ]; then
     file="/etc/docker/daemon.json"
   fi
 
@@ -415,12 +499,12 @@ dump_docker_proxy() {
 
     local result
     if result="$(cat "$file" | jq .proxies -cM 2>/dev/null)"; then
-      echo "echo Current Docker proxy: $result" >&3
+      echo "echo Current Docker daemon proxy: $result" >&3
     fi
   elif has_systemd; then
-    echo "echo Current Docker proxy: $(systemctl show --property=Environment docker)" >&3
+    echo "echo Current Docker daemon proxy: $(systemctl show --property=Environment docker)" >&3
   else
-    echo "echo Current Docker proxy: N/A" >&3
+    echo "echo Current Docker daemon proxy: N/A" >&3
   fi
 }
 
