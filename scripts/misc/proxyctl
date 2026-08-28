@@ -356,13 +356,15 @@ enable_docker_proxy() {
     # Docker Desktop's transparent proxy forwards localhost to the host, so
     # there is no need to rewrite localhost to the host IP here.
     proxy="http://$user_http_proxy"
+    local exclude="aliyun.com,aliyuncs.com,npmmirror.com,pypi.tuna.tsinghua.edu.cn"
     if [ "$(jq -r '.ProxyHTTPMode // ""' "$store")" != "manual" ] ||
-      [ "$(jq -r '.OverrideProxyHTTP // ""' "$store")" != "$proxy" ]; then
+      [ "$(jq -r '.OverrideProxyHTTP // ""' "$store")" != "$proxy" ] ||
+      [ "$(jq -r '.OverrideProxyExclude // ""' "$store")" != "$exclude" ]; then
       # Stop first so Desktop flushes settings and won't clobber our edit.
       stop_docker
       tmp="$(mktemp)"
-      jq --arg p "$proxy" \
-        '.ProxyHTTPMode = "manual" | .OverrideProxyHTTP = $p | .OverrideProxyHTTPS = $p' \
+      jq --arg p "$proxy" --arg e "$exclude" \
+        '.ProxyHTTPMode = "manual" | .OverrideProxyHTTP = $p | .OverrideProxyHTTPS = $p | .OverrideProxyExclude = $e' \
         "$store" >"$tmp" && mv "$tmp" "$store"
       start_docker
     fi
@@ -478,13 +480,15 @@ disable_docker_proxy() {
 dump_docker_proxy() {
   local file
   if is_mac; then
-    local store mode http
+    local store mode http exclude
     store="$(docker_desktop_settings_file)"
     if [ -n "$store" ] && check_command jq &>/dev/null; then
       mode="$(jq -r '.ProxyHTTPMode // "system"' "$store")"
       http="$(jq -r '.OverrideProxyHTTP // ""' "$store")"
+      exclude="$(jq -r '.OverrideProxyExclude // ""' "$store")"
       if [ "$mode" = "manual" ] && [ -n "$http" ]; then
         echo "echo 'Current Docker daemon proxy: $http'" >&3
+        [ -n "$exclude" ] && echo "echo 'Current Docker daemon proxy exclude: $exclude'" >&3
       else
         echo "echo 'Current Docker daemon proxy: N/A (mode=$mode)'" >&3
       fi
