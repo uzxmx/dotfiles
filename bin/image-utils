@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+image_utils_dir="$DOTFILES_DIR/scripts/image-utils"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Utilities to process images.
+
+Subcommands:
+  tv, to_video - combine a directory of images into a video
+EOF
+  exit 1
+}
+
+case "$1" in
+  tv | to_video)
+    case "$1" in
+      tv)
+        name="to_video"
+        ;;
+      *)
+        name="$1"
+        ;;
+    esac
+    source "$image_utils_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
