@@ -29,7 +29,8 @@ fi
 
 gunzip "$path_to_save"
 if is_mac; then
-  (cd /tmp && chmod a+x "mihomo-$version" && mv "mihomo-$version" "$DOTFILES_TARGET_DIR/bin/mihomo")
+  sudo mkdir -p /usr/local/bin
+  (cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/local/bin/mihomo)
 else
   (cd /tmp && chmod a+x "mihomo-$version" && sudo mv "mihomo-$version" /usr/bin/mihomo)
 fi

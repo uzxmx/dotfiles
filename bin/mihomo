@@ -104,9 +104,6 @@ alias_cmd c config
 
 case "$1" in
   run | start | stop | restart | s | status | l | log | c | config)
-    if is_mac && [ "$1" != run ]; then
-      abort "Only support 'run' command on macOS"
-    fi
     run "$@"
     ;;
   -h)
