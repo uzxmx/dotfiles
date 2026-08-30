@@ -13,15 +13,25 @@ Utilities to process images.
 
 Subcommands:
   tv, to_video - combine a directory of images into a video
+  e,  editor   - open an image editor (GIMP)
+  fotokilof    - GUI for ImageMagick and Wand or Pillow
 EOF
   exit 1
 }
 
 case "$1" in
-  tv | to_video)
+  fotokilof)
+    # https://github.com/TeaM-TL/FotoKilof
+    # pip install fotokilof
+    fotokilof
+    ;;
+  tv | to_video | e | editor)
     case "$1" in
       tv)
         name="to_video"
+        ;;
+      e)
+        name="editor"
         ;;
       *)
         name="$1"
