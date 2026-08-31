@@ -114,6 +114,6 @@ case "$1" in
     mihomo "$@"
     ;;
   *)
-    mihomo "$@"
+    usage
     ;;
 esac

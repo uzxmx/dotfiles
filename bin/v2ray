@@ -111,6 +111,6 @@ case "$1" in
     v2ray "$@"
     ;;
   *)
-    v2ray "$@"
+    usage
     ;;
 esac
