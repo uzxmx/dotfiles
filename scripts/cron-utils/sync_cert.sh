@@ -47,4 +47,7 @@ cmd_sync_cert() {
 "$DOTFILES_DIR/bin/acme" upload_cert -n "$name" --host "$server_host" "${hosts[@]}" &>"/tmp/sync_cert-$server_host.log"
 EOF
 )"
+
+  echo "Cron job created. For the first time, run the following command manually to upload the certificate:"
+  echo "  $DOTFILES_DIR/bin/acme upload_cert -n \"$name\" ${hosts[*]}"
 }

@@ -57,6 +57,7 @@ cmd_upload_cert() {
   sudo chown "$(whoami)" "/tmp/$name-cert.pem" "/tmp/$name-key.pem"
 
   for host in "${hosts[@]}"; do
+    ssh $host "[ -d /etc/certs ] || { sudo mkdir /etc/certs && sudo chown \$(whoami) /etc/certs; }; mkdir -p /etc/certs/$name"
     scp "/tmp/$name-cert.pem" $host:/etc/certs/$name/cert.pem
     scp "/tmp/$name-key.pem" $host:/etc/certs/$name/key.pem
     ssh $host sudo systemctl restart nginx
