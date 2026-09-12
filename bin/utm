@@ -9,7 +9,8 @@ source "$DOTFILES_DIR/scripts/lib/cli.sh"
 
 usage() {
   cat <<-EOF
-Wrapper for UTM(Universal Turing Machine) utility.
+Wrapper for UTM(Universal Turing Machine) utility, which manages virtual machines on Apple Silicon
+and is better than VirtualBox.
 
 Subcommands:
   start - start a vm
