@@ -62,6 +62,35 @@ if [ -n "$setup_system_repo_mirror" ]; then
 #__SETUP_SYSTEM_REPO_MIRROR_SCRIPT_STUB__
 fi
 
+# Many setup steps below invoke sudo. If the current user can't sudo without a
+# password, offer to enable passwordless sudo (via a drop-in under
+# /etc/sudoers.d) so the rest of the setup runs without repeated prompts.
+if ! sudo -n true 2>/dev/null; then
+  current_user="$(whoami)"
+  printf 'Passwordless sudo is not enabled for %s. Enable it? (y/N) ' "$current_user" >/dev/tty
+  read reply </dev/tty
+  case "$(echo "${reply:-n}" | tr 'A-Z' 'a-z')" in
+    y | yes)
+      sudoers_file="/etc/sudoers.d/90-$current_user-nopasswd"
+      if echo "$current_user ALL=(ALL) NOPASSWD: ALL" | sudo tee "$sudoers_file" >/dev/null \
+        && sudo chmod 0440 "$sudoers_file"; then
+        echo "Passwordless sudo enabled ($sudoers_file)."
+      else
+        echo "Failed to enable passwordless sudo, continuing." >&2
+      fi
+      ;;
+  esac
+fi
+
+# Run `apt-get update` only on the first setup, tracked by a marker file, so
+# re-running the setup doesn't pay the cost again.
+if is_available apt-get; then
+  apt_update_marker="$DOTFILES_PARENT_DIR/.apt_updated"
+  if [ ! -e "$apt_update_marker" ]; then
+    sudo apt-get update && touch "$apt_update_marker"
+  fi
+fi
+
 if ! is_available git; then
   if is_available apt-get; then
     if ! sudo apt-get install -y git; then
@@ -102,23 +131,22 @@ fi
   # it manually.
   source $DOTFILES_TARGET_DIR/.zshrc
 
-  echo "---- Setup fzf ----"
-  $DOTFILES_DIR/scripts/install/fzf
-  echo "---- Setup fzf done ----"
+  # Run one install step. On failure, print a clear marker and abort the rest of
+  # the setup. We avoid 'set -e' here so sourcing '.zshrc' above can't trip it.
+  setup_step() {
+    local name="$1"; shift
+    echo "---- Setup $name ----"
+    if "$@"; then
+      echo "---- Setup $name done ----"
+    else
+      echo "---- Setup $name FAILED ----" >&2
+      exit 1
+    fi
+  }
 
-  echo "---- Setup fd ----"
-  $DOTFILES_DIR/scripts/install/fd
-  echo "---- Setup fd done ----"
-
-  echo "---- Setup rg ----"
-  $DOTFILES_DIR/scripts/install/rg
-  echo "---- Setup rg done ----"
-
-  echo "---- Setup nvim ----"
-  $DOTFILES_DIR/scripts/install/nvim --do-all-steps
-  echo "---- Setup nvim done ----"
-
-  echo "---- Setup tmux ----"
-  $DOTFILES_DIR/scripts/install/tmux --install-plugins
-  echo "---- Setup tmux done ----"
+  setup_step fzf $DOTFILES_DIR/scripts/install/fzf
+  setup_step fd $DOTFILES_DIR/scripts/install/fd
+  setup_step rg $DOTFILES_DIR/scripts/install/rg
+  setup_step tmux $DOTFILES_DIR/scripts/install/tmux
+  setup_step nvim $DOTFILES_DIR/scripts/install/nvim --do-all-steps
 EOF
