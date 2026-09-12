@@ -106,14 +106,21 @@ if [ -n "$dry_run" ]; then
   exit
 fi
 
+# Deliver the setup script via base64 embedded in the remote command instead of
+# piping it through stdin. This keeps stdin connected to the terminal so an
+# interactive `sudo`/`su` password prompt can read from it, and `-tt` forces a
+# TTY so the prompt shows up in the first place.
+encoded="$(base64 < "$file" | tr -d '\n')"
+remote_cmd="echo $encoded | base64 -d > /tmp/setup_dotfiles.sh; bash /tmp/setup_dotfiles.sh ${opts[@]}; ret=\$?; rm -f /tmp/setup_dotfiles.sh; exit \$ret"
+
 if [ "$use_vagrant" = "1" ]; then
     parse_shell_opts ssh_opts_arr "$ssh_opts"
-    vagrant ssh -- "${ssh_opts_arr[@]}" -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
+    vagrant ssh -- -tt "${ssh_opts_arr[@]}" -R "8123:$proxy" "$remote_cmd"
 else
   if [ -z "$ssh_opts" ]; then
-    "$DOTFILES_DIR/bin/ssh-utils" ssh --http-proxy "$proxy" - "bash -s -- ${opts[@]}" < "$file"
+    "$DOTFILES_DIR/bin/ssh-utils" ssh --http-proxy "$proxy" - -tt "$remote_cmd"
   else
     parse_shell_opts ssh_opts_arr "$ssh_opts"
-    ssh "${ssh_opts_arr[@]}" -R "8123:$proxy" "bash -s -- ${opts[@]}" < "$file"
+    ssh -tt "${ssh_opts_arr[@]}" -R "8123:$proxy" "$remote_cmd"
   fi
 fi
