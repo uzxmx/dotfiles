@@ -76,11 +76,11 @@ fi
 
 if ! is_termux; then
   if has_apt; then
-    sudo apt-get install -y libevent-dev >/dev/null
+    sudo apt-get install -y libevent-dev libncurses-dev bison >/dev/null
     # Required for copying to system clipboard.
-    sudo apt-get install -y clip >/dev/null || true
+    sudo apt-get install -y xclip >/dev/null || true
   elif has_yum; then
-    sudo yum install -y libevent-devel >/dev/null
+    sudo yum install -y libevent-devel ncurses-devel bison >/dev/null
   elif is_mac; then
     brew_install libevent utf8proc
   fi
