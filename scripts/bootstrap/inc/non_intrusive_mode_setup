@@ -108,6 +108,22 @@ if ! is_available git; then
   fi
 fi
 
+if ! is_available curl; then
+  if is_available apt-get; then
+    if ! sudo apt-get install -y curl; then
+      sudo apt-get update
+      sudo apt-get install -y curl
+    fi
+  elif is_available yum; then
+    sudo yum install -y curl
+  elif is_available brew; then
+    brew install curl
+  else
+    echo "You must have curl installed."
+    exit 1
+  fi
+fi
+
 if [ -d "$DOTFILES_DIR" ]; then
   cd "$DOTFILES_DIR"
   git pull
