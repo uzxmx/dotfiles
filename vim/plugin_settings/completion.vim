@@ -1,6 +1,7 @@
 lua <<EOF
-  -- Set up nvim-cmp.
-  local cmp = require'cmp'
+  -- Set up nvim-cmp. Guard against the first bootstrap run.
+  local ok, cmp = pcall(require, 'cmp')
+  if not ok then return end
 
   cmp.setup({
     snippet = {
