@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+bench_dir="$DOTFILES_DIR/scripts/bench"
+
+usage() {
+  cat <<-EOF
+Benchmark utilities.
+
+Subcommands:
+  v, vps - benchmark VPS CPU (single/multi-core, jitter, CPU steal)
+EOF
+  exit 1
+}
+
+case "$1" in
+  v | vps)
+    shift
+    exec bash "$bench_dir/vps.sh" "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac
