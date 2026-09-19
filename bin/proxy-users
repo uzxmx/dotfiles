@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+#
+# Manage multi-user access that fronts your local mihomo instance.
+#
+# Friends connect to a VLESS+Reality inbound (one UUID per user-per-node);
+# Xray counts traffic per user and forwards to mihomo's socks port, which
+# splits per node (hk/jp/us) via IN-USER rules. Upstream proxies stay hidden.
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+pu_dir="$DOTFILES_DIR/scripts/proxy-users"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+source "$pu_dir/lib.sh"
+
+usage() {
+  cat <<-EOF
+Manage multi-user access that fronts your local mihomo instance.
+
+Subcommands:
+  init      - one-time setup: Reality keys + Xray config + systemd service
+  add       - add a user:      proxy-users add alice [--nodes hk,jp,us]
+  del       - remove a user:   proxy-users del alice
+  list      - list users and their nodes
+  sub       - print share links for a user
+  traffic   - show per-user up/down traffic
+  mihomo    - print the mihomo snippet to merge (authentication + rules)
+  log       - control Xray connection logging: on/off/status/tail
+
+Run 'proxy-users <subcommand> -h' for details.
+
+Example:
+  proxy-users init --host 1.2.3.4
+  proxy-users add alice
+  proxy-users sub alice
+  proxy-users traffic
+EOF
+  exit 1
+}
+
+case "$1" in
+  init | add | del | list | sub | traffic | mihomo | log)
+    name="$1"
+    source "$pu_dir/$name.sh"
+    run "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# Install Xray-core (https://github.com/XTLS/Xray-core)
+#
+# Server-side proxy core used by the `proxy-users` command. Installs the
+# binary to /usr/local/bin and geo assets to /usr/local/share/xray. The
+# systemd service and config are created later by `proxy-users init`.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command xray &>/dev/null && exit
+
+is_mac && abort "This installer targets Linux servers; on macOS use 'brew install xray'"
+check_command jq &>/dev/null || abort "'jq' is required; install it first"
+
+version="${XRAY_VERSION:-$(curl -fsSL https://api.github.com/repos/XTLS/Xray-core/releases/latest | jq -r .tag_name)}"
+[ -n "$version" ] && [ "$version" != "null" ] || abort "Could not resolve latest Xray version"
+
+if is_arm64; then
+  asset="Xray-linux-arm64-v8a.zip"
+else
+  asset="Xray-linux-64.zip"
+fi
+
+install_fn() {
+  local dir="$1"
+  sudo install -m 0755 "$dir/xray" /usr/local/bin/xray
+  sudo mkdir -p /usr/local/share/xray
+  sudo install -m 0644 "$dir/geoip.dat" "$dir/geosite.dat" /usr/local/share/xray/
+  echo "Installed xray $version to /usr/local/bin/xray"
+}
+
+download_and_install "https://github.com/XTLS/Xray-core/releases/download/$version/$asset" install_fn

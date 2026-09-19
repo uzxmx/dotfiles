@@ -1,0 +1,253 @@
+#!/usr/bin/env bash
+#
+# Shared helpers for the `proxy-users` command.
+#
+# Design: friends connect to a VLESS+Reality inbound (one UUID per
+# user-per-node). Xray authenticates + counts traffic per user (email), then
+# forwards everything to the local mihomo socks port. mihomo splits the
+# traffic per node (hk/jp/us) via IN-USER rules, so the real upstream proxies
+# are never exposed to friends.
+#
+#   friend[hk] -> Xray(email=alice-hk) -> socks(user=hk) -> mihomo(IN-USER,hk) -> HK group
+#
+# email convention: "<name>-<node>" (node is always the last dash segment).
+
+# Nodes exposed to friends. Keep in sync with the outbound tags in
+# config.tpl.json (n-<node>) and the mihomo authentication users.
+NODES=(hk jp us)
+
+FLOW="xtls-rprx-vision"
+
+: "${PROXY_USERS_DIR:=/usr/local/etc/xray}"
+: "${PROXY_USERS_CONFIG:=$PROXY_USERS_DIR/config.json}"
+: "${PROXY_USERS_META:=$PROXY_USERS_DIR/proxy-users.meta.json}"
+: "${XRAY_API_ADDR:=127.0.0.1:10085}"
+
+PU_SRC="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)"
+PU_TEMPLATE="$PU_SRC/config.tpl.json"
+
+die() { echo "Error: $*" >&2; exit 1; }
+
+need() { command -v "$1" &>/dev/null || die "'$1' is required but not installed"; }
+
+# Run a command as root when we are not already root.
+priv() {
+  if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi
+}
+
+read_config() { priv cat "$PROXY_USERS_CONFIG"; }
+read_meta() { priv cat "$PROXY_USERS_META"; }
+
+require_config() {
+  priv test -f "$PROXY_USERS_CONFIG" ||
+    die "Xray config not found at $PROXY_USERS_CONFIG. Run 'proxy-users init' first."
+}
+
+require_meta() {
+  priv test -f "$PROXY_USERS_META" ||
+    die "Metadata not found at $PROXY_USERS_META. Run 'proxy-users init' first."
+}
+
+# Write JSON (from stdin) to a root-owned file, validating it first, mode 600.
+_write_priv_json() {
+  local dest="$1" tmp
+  tmp="$(mktemp)"
+  cat >"$tmp"
+  jq empty "$tmp" 2>/dev/null || { rm -f "$tmp"; die "Refusing to write invalid JSON to $dest"; }
+  priv install -m 600 "$tmp" "$dest"
+  rm -f "$tmp"
+}
+
+write_config() { _write_priv_json "$PROXY_USERS_CONFIG"; }
+write_meta() { _write_priv_json "$PROXY_USERS_META"; }
+
+is_node() {
+  local n
+  for n in "${NODES[@]}"; do [ "$n" = "$1" ] && return 0; done
+  return 1
+}
+
+# Validate a comma-separated node list; print space-separated. Empty = all.
+parse_nodes() {
+  local input="$1" n
+  if [ -z "$input" ]; then echo "${NODES[@]}"; return; fi
+  local -a out=()
+  IFS=',' read -ra out <<<"$input"
+  for n in "${out[@]}"; do
+    is_node "$n" || die "Unknown node '$n' (valid: ${NODES[*]})"
+  done
+  echo "${out[@]}"
+}
+
+valid_name() {
+  [[ "$1" =~ ^[a-zA-Z0-9_]+$ ]] ||
+    die "Invalid user name '$1' (allowed: letters, digits, underscore)"
+}
+
+user_exists() {
+  read_config | jq -e --arg name "$1" '
+    [.inbounds[] | select(.tag=="vless-in") | .settings.clients[].email
+     | sub("-[^-]+$";"")] | index($name) != null
+  ' >/dev/null 2>&1
+}
+
+reload_xray() {
+  if command -v systemctl &>/dev/null; then
+    priv systemctl restart xray && echo "Xray restarted."
+  else
+    echo "Warning: systemctl not found; restart Xray manually to apply changes." >&2
+  fi
+}
+
+# Load metadata into META_* globals (one privileged read).
+load_meta() {
+  require_meta
+  local m; m="$(read_meta)"
+  META_HOST="$(jq -r .host <<<"$m")"
+  META_SNI="$(jq -r .sni <<<"$m")"
+  META_PORT="$(jq -r .port <<<"$m")"
+  META_PBK="$(jq -r .public_key <<<"$m")"
+  META_SID="$(jq -r .short_id <<<"$m")"
+  META_PASS_HK="$(jq -r .socks_pass.hk <<<"$m")"
+  META_PASS_JP="$(jq -r .socks_pass.jp <<<"$m")"
+  META_PASS_US="$(jq -r .socks_pass.us <<<"$m")"
+  META_PASS_LOCAL="$(jq -r '.socks_pass.local // "CHANGE_ME"' <<<"$m")"
+}
+
+# Print one vless://... link. Requires load_meta first.
+#   $1 uuid  $2 node  $3 label
+vless_link() {
+  printf 'vless://%s@%s:%s?type=tcp&security=reality&encryption=none&flow=%s&sni=%s&fp=chrome&pbk=%s&sid=%s#%s\n' \
+    "$1" "$META_HOST" "$META_PORT" "$FLOW" "$META_SNI" "$META_PBK" "$META_SID" "$3"
+}
+
+# Print all share links for a user. Requires load_meta first.
+print_sub() {
+  local name="$1" node uuid
+  read_config | jq -r --arg name "$name" '
+    .inbounds[] | select(.tag=="vless-in") | .settings.clients[]
+    | select((.email|sub("-[^-]+$";""))==$name)
+    | "\(.email|sub("^.*-";"")) \(.id)"
+  ' | while read -r node uuid; do
+    vless_link "$uuid" "$node" "$name-$(echo "$node" | tr '[:lower:]' '[:upper:]')"
+  done
+}
+
+# Print a full clash/mihomo YAML subscription for a user: their nodes as
+# vless proxies, a select+url-test group, and GEOIP rules (China direct,
+# everything else via the proxy). Requires load_meta first.
+print_sub_clash() {
+  local name="$1" rows node uuid up members
+  rows="$(read_config | jq -r --arg name "$name" '
+    .inbounds[] | select(.tag=="vless-in") | .settings.clients[]
+    | select((.email|sub("-[^-]+$";""))==$name)
+    | "\(.email|sub("^.*-";"")) \(.id)"')"
+  [ -z "$rows" ] && die "User '$name' has no nodes"
+
+  cat <<EOF
+# Clash subscription for '$name' — generated by proxy-users.
+# Clash Verge Rev: Profiles -> import from local file (save this as $name.yaml),
+# then select Rule mode. China traffic goes direct; the rest via your nodes.
+mode: rule
+log-level: info
+allow-lan: false
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  nameserver:
+    - https://223.5.5.5/dns-query
+    - https://1.1.1.1/dns-query
+
+proxies:
+EOF
+
+  while read -r node uuid; do
+    up="$(echo "$node" | tr '[:lower:]' '[:upper:]')"
+    cat <<EOF
+  - name: "$up"
+    type: vless
+    server: $META_HOST
+    port: $META_PORT
+    uuid: $uuid
+    network: tcp
+    udp: true
+    tls: true
+    flow: $FLOW
+    servername: $META_SNI
+    client-fingerprint: chrome
+    reality-opts:
+      public-key: $META_PBK
+      short-id: "$META_SID"
+EOF
+  done <<<"$rows"
+
+  members="$(awk '{print toupper($1)}' <<<"$rows")"
+
+  cat <<EOF
+
+proxy-groups:
+  - name: "PROXY"
+    type: select
+    proxies:
+      - AUTO
+EOF
+  while read -r up; do echo "      - $up"; done <<<"$members"
+  echo "      - DIRECT"
+  cat <<EOF
+  - name: "AUTO"
+    type: url-test
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+    proxies:
+EOF
+  while read -r up; do echo "      - $up"; done <<<"$members"
+
+  cat <<'EOF'
+
+rules:
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - GEOIP,CN,DIRECT
+  - MATCH,PROXY
+EOF
+}
+
+# Print the snippet to merge into mihomo's config. Requires load_meta first.
+print_mihomo_snippet() {
+  cat <<EOF
+# --- proxy-users: merge into your mihomo config, then restart mihomo ---
+# 1) authentication users = node names; passwords must match Xray's socks outbounds.
+authentication:
+  - "hk:$META_PASS_HK"
+  - "jp:$META_PASS_JP"
+  - "us:$META_PASS_US"
+  - "local:$META_PASS_LOCAL"   # for THIS server's own apps; not in IN-USER,
+                               # so it follows your normal rules (not pinned to a node)
+
+# 2) IMPORTANT: mihomo skips auth for 127.0.0.1/8 BY DEFAULT. Since Xray
+#    connects from loopback, without this its socks user (hk/jp/us) is
+#    dropped and the IN-USER rules below never match. Exempt no address so
+#    loopback must authenticate too.
+skip-auth-prefixes:
+  - 255.255.255.255/32
+
+# 3) route each node's traffic to one of YOUR proxy-groups.
+#    Replace HK / JP / US below with the real proxy-group (or node) names
+#    in your mihomo config. Put these ABOVE your other rules.
+#    (The 'local' account is intentionally absent here, so this server's own
+#     apps fall through to your normal rules below.)
+rules:
+  - IN-USER,hk,HK
+  - IN-USER,jp,JP
+  - IN-USER,us,US
+
+# 4) local apps on THIS server: use the 'local' account so they authenticate
+#    but keep normal routing, e.g.:
+#      export ALL_PROXY="socks5h://local:$META_PASS_LOCAL@127.0.0.1:7890"
+# -----------------------------------------------------------------------
+EOF
+}

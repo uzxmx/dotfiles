@@ -1,0 +1,62 @@
+{
+  "log": { "loglevel": "warning" },
+  "api": { "tag": "api", "services": ["StatsService"] },
+  "stats": {},
+  "policy": {
+    "levels": { "0": { "statsUserUplink": true, "statsUserDownlink": true } },
+    "system": { "statsInboundUplink": true, "statsInboundDownlink": true }
+  },
+  "inbounds": [
+    {
+      "tag": "vless-in",
+      "listen": "0.0.0.0",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": { "clients": [], "decryption": "none" },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "show": false,
+          "dest": "www.cloudflare.com:443",
+          "xver": 0,
+          "serverNames": ["www.cloudflare.com"],
+          "privateKey": "",
+          "shortIds": [""]
+        }
+      }
+    },
+    {
+      "tag": "api",
+      "listen": "127.0.0.1",
+      "port": 10085,
+      "protocol": "dokodemo-door",
+      "settings": { "address": "127.0.0.1" }
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "n-hk",
+      "protocol": "socks",
+      "settings": { "servers": [ { "address": "127.0.0.1", "port": 7890, "users": [ { "user": "hk", "pass": "" } ] } ] }
+    },
+    {
+      "tag": "n-jp",
+      "protocol": "socks",
+      "settings": { "servers": [ { "address": "127.0.0.1", "port": 7890, "users": [ { "user": "jp", "pass": "" } ] } ] }
+    },
+    {
+      "tag": "n-us",
+      "protocol": "socks",
+      "settings": { "servers": [ { "address": "127.0.0.1", "port": 7890, "users": [ { "user": "us", "pass": "" } ] } ] }
+    },
+    { "tag": "direct", "protocol": "freedom" },
+    { "tag": "block", "protocol": "blackhole" }
+  ],
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": [
+      { "type": "field", "inboundTag": ["api"], "outboundTag": "api" }
+    ]
+  }
+}
