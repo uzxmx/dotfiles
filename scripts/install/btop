@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# Install btop (https://github.com/aristocratos/btop)
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command btop &> /dev/null && exit
+
+if is_termux; then
+  pkg install btop
+  exit
+fi
+
+if is_mac; then
+  brew_install btop
+  exit
+fi
+
+version="1.4.7"
+if is_arm64; then
+  platform="aarch64-unknown-linux-musl"
+else
+  platform="x86_64-unknown-linux-musl"
+fi
+
+install_fn() {
+  local dir="$(find "$1" -maxdepth 1 -type d | grep -v '^\.$' | tail -1)"
+  cd "$dir" && mv bin/btop "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install "https://github.com/aristocratos/btop/releases/download/v$version/btop-$platform.tar.gz" install_fn
