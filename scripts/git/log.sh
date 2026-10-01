@@ -44,7 +44,7 @@ select_commit() {
   if [ -n "${remainder[0]}" ] && [[  "${remainder[0]}" =~ .+\.\..+ ]]; then
     default_prompt="$default_prompt CTRL-S:squash-diff"
     local another_commit="$(echo "${remainder[0]}" | awk -F. '{print $1}')"
-    fzf_opts+=(--bind "ctrl-s:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" Squashed diff($another_commit..\$(echo {2})) \" -w 90% -h 90% -E \"$DOTFILES_DIR/bin/g show_commit {2} -d \"$another_commit\"\")")
+    fzf_opts+=(--bind "ctrl-s:execute-silent(tmux split-window -v -f -l 80% -c '#{pane_current_path}' \"$DOTFILES_DIR/bin/g show_commit {2} -d $another_commit\")")
   fi
 
   local preview_window
@@ -68,8 +68,7 @@ select_commit() {
       --bind "ctrl-t:top" \
       --bind "ctrl-g:execute(echo -n pos:{1})+abort" \
       --bind "ctrl-y:execute-silent(echo -n {2} | $DOTFILES_DIR/bin/trim | $DOTFILES_DIR/bin/cb && tmux display-message yanked)+abort" \
-      --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" \$(git log {2} -1 --oneline) \" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g show_commit {2}'\")" \
-
+      --bind "ctrl-v:execute-silent(tmux split-window -v -f -l 80% -c '#{pane_current_path}' \"$DOTFILES_DIR/bin/g show_commit {2}\")" \
       "${fzf_opts[@]}"
     )"
     if [[ "$selection" == pos:* ]]; then
@@ -102,7 +101,7 @@ show_history_for_file() {
     --preview-window="$preview_window:50%:wrap" \
     --bind "ctrl-t:top" \
     --bind "ctrl-y:execute-silent(echo -n {1} | $DOTFILES_DIR/bin/trim | $DOTFILES_DIR/bin/cb && tmux display-message yanked)+abort" \
-    --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T \" \$(git log {1} -1 --oneline) \" -w 90% -h 90% -E \"tmux new-session 'tmux set status off && $DOTFILES_DIR/bin/g show_commit {1}'\")"
+    --bind "ctrl-v:execute-silent(tmux split-window -v -f -l 80% -c '#{pane_current_path}' \"$DOTFILES_DIR/bin/g show_commit {1}\")"
   )"
 }
 

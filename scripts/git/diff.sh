@@ -105,7 +105,7 @@ cmd_d() {
         --prompt="C-V:diff-file C-O:open-file C-S:stage-file Enter:edit> " \
         --preview="$preview_cmd" \
         --preview-window="$preview_window:50%:wrap" \
-        --bind "ctrl-v:execute-silent(tmux display-popup -d '#{pane_current_path}' -T ' Diff -- {2} ' -w 90% -h 90% -E \"$preview_cmd\")" \
+        --bind "ctrl-v:execute-silent(tmux split-window -v -f -l 80% -c '#{pane_current_path}' \"$preview_cmd\")" \
         --bind "ctrl-o:execute(tmux split-window \"$edit_cmd\")" \
         --expect "ctrl-s" \
         <<<"$output"
