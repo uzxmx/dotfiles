@@ -20,20 +20,12 @@ EOF
   exit 1
 }
 
-get_pid() {
-  if is_mac; then
-    launchctl list | grep mihomo | awk '{print $1}'
-  else
-    cat /var/run/mihomo.pid 2>/dev/null || true
-  fi
-}
-
 mihomo_is_running() {
-  local pid=$(get_pid)
-  if [ -n "$pid" ]; then
-    ps "$pid" &>/dev/null
+  if is_mac; then
+    local pid=$(launchctl list | grep mihomo | awk '{print $1}')
+    [ -n "$pid" ] && ps "$pid" &>/dev/null
   else
-    false
+    systemctl is-active --quiet mihomo
   fi
 }
 
@@ -91,8 +83,10 @@ cmd_log() {
 
   if is_mac; then
     tail -F /tmp/mihomo.log
-  else
+  elif [ -f /var/log/mihomo.log ]; then
     tail -F /var/log/mihomo.log
+  else
+    journalctl -u mihomo -f
   fi
 }
 alias_cmd l log
