@@ -92,7 +92,18 @@ cmd_log() {
 alias_cmd l log
 
 cmd_config() {
-  sudo vi /usr/local/etc/mihomo/config.yaml
+  local dir=/usr/local/etc/mihomo
+  local file="$dir/config.yaml"
+  local before=$(cksum "$file" 2>/dev/null)
+  vi "$file"
+  [ "$(cksum "$file" 2>/dev/null)" = "$before" ] && return
+
+  mihomo -t -d "$dir" -f "$file" || exit 1
+
+  if mihomo_is_running; then
+    echo 'config changed, restarting mihomo...'
+    cmd_restart
+  fi
 }
 alias_cmd c config
 
