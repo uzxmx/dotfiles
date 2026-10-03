@@ -1,5 +1,5 @@
-port: 7890
-socks-port: 10800
+# `mixed-port` supports both http and socks protocol.
+mixed-port: 7890
 allow-lan: true
 mode: Rule
 log-level: info
