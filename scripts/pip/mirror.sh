@@ -6,7 +6,7 @@ Manage pip mirror. By default it shows whether mirror is
 enabled.
 
 Options:
-  -e [name] Enable mirror (default: aliyun)
+  -e [name] Enable mirror (default: tuna)
               aliyun - Aliyun mirror
               tuna   - Tsinghua TUNA mirror
   -d        Disable mirror
@@ -16,7 +16,7 @@ EOF
 
 cmd_mirror() {
   local action="show"
-  local mirror="aliyun"
+  local mirror="tuna"
   while [ "$#" -gt 0 ]; do
     case "$1" in
       -e)
