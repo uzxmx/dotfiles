@@ -12,18 +12,18 @@ usage() {
 Install google-chrome.
 
 Options:
-  -u        Update google-chrome
+  -f        Force install google-chrome
   -d <dir>  Extract to <dir> without overwriting the existing installation
 EOF
   exit 1
 }
 
-update=""
+force_install=""
 install_dir=""
 
 parse_args="
-  -u)
-    update=1
+  -f)
+    force_install=1
     ;;
   -d)
     shift
@@ -51,14 +51,10 @@ install_cjk_fonts() {
 
 if [ -z "$install_dir" ]; then
   if check_command google-chrome &> /dev/null; then
-    # Already installed: still make sure CJK fonts are present, then stop
-    # unless an update was requested.
-    if [ -z "$update" ]; then
+    if [ -z "$force_install" ]; then
       install_cjk_fonts
       exit
     fi
-  else
-    update=""
   fi
 fi
 
@@ -70,8 +66,6 @@ if has_apt; then
     dpkg -x "$path_to_save" "$install_dir"
     echo "Chrome extracted to $install_dir"
     echo "Binary: $install_dir/opt/google/chrome/chrome"
-  elif [ "$update" = "1" ]; then
-    sudo apt-get -y --only-upgrade install google-chrome-stable
   else
     path_to_save="/tmp/google-chrome-stable_current_amd64.deb"
     "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb "$path_to_save"
@@ -87,8 +81,6 @@ elif has_yum; then
     rpm2cpio "$path_to_save" | (cd "$install_dir" && cpio -idm --quiet)
     echo "Chrome extracted to $install_dir"
     echo "Binary: $install_dir/opt/google/chrome/chrome"
-  elif [ "$update" = "1" ]; then
-    sudo yum update -y google-chrome --nogpgcheck
   else
     path_to_save="/tmp/google-chrome-stable_current_x86_64.rpm"
     "$DOTFILES_DIR/bin/get" https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm "$path_to_save"
