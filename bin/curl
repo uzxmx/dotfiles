@@ -19,6 +19,7 @@ Subcommands:
   https_ip - request an HTTPS server by IP address
   gzip     - check if a remote resource is gzipped
   mail     - send a mail by smtp
+  proxy    - benchmark the latency and stability of a proxy
 
 Examples:
   # Url encode in query string.
@@ -28,7 +29,7 @@ EOF
 }
 
 case "$1" in
-  time | cors | https_ip | gzip | mail)
+  time | cors | https_ip | gzip | mail | proxy)
     case "$1" in
       *)
         name="$1"
