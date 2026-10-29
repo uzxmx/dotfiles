@@ -11,9 +11,10 @@ default_excludes=(.git .local logs tmp node_modules __pycache__ .DS_Store)
 
 usage() {
   cat <<-EOF
-Usage: rput <file>
+Usage: rput <file>...
 
-Copy local file to remote.
+Copy local file(s) to remote. With multiple files, the clipboard path is
+treated as the remote directory to put them in.
 
 Options:
   [-S] Use sudo on remote server
@@ -34,20 +35,23 @@ while [ $# -gt 0 ]; do
       usage
       ;;
     *)
-      [ -n "$file" ] && abort "Only one file is supported"
-      file="$1"
+      files+=("$1")
       ;;
   esac
   shift
 done
 
-if [ -z "$file" ]; then
+if [ ${#files[@]} -eq 0 ]; then
   echo "A file must be specified."
   exit 1
-elif [ ! -e "$file" ]; then
-  echo "File $file doesn't exist."
-  exit 1
 fi
+
+for f in "${files[@]}"; do
+  if [ ! -e "$f" ]; then
+    echo "File $f doesn't exist."
+    exit 1
+  fi
+done
 
 source "$DOTFILES_DIR/scripts/lib/clipboard.sh"
 get_clipboard content
@@ -62,7 +66,32 @@ if [[ "$content" =~ ^\-r[[:space:]] ]]; then
   content="$(echo "$content" | sed "s/\-r //")"
 fi
 
-file="$(realpath "$file")"
+add_excludes() {
+  if [ -z "$no_exclude" ]; then
+    for pattern in "${default_excludes[@]}"; do
+      cmd+=(--exclude="$pattern")
+    done
+  fi
+}
+
+if [ ${#files[@]} -gt 1 ]; then
+  # Multiple files: clipboard path is the remote directory, each item is put
+  # inside it (directories as subdirectories, no name-match merging)
+  cmd=(rsync -az)
+  [ "$use_sudo" = 1 ] && cmd+=(--rsync-path="sudo rsync")
+  add_excludes
+  for f in "${files[@]}"; do
+    cmd+=("$(realpath "$f")")
+  done
+  cmd+=("${content%/}/")
+
+  echo "${cmd[@]}"
+
+  "${cmd[@]}"
+  exit
+fi
+
+file="$(realpath "${files[0]}")"
 
 if [ "$use_sudo" = 1 ]; then
   cmd=(rsync -az --rsync-path="sudo rsync")
@@ -81,11 +110,7 @@ if [ -d "$file" ]; then
   if [ "$local_name" = "$remote_name" ]; then
     file="${file%/}/"
   fi
-  if [ -z "$no_exclude" ]; then
-    for pattern in "${default_excludes[@]}"; do
-      cmd+=(--exclude="$pattern")
-    done
-  fi
+  add_excludes
 fi
 
 echo "${cmd[@]}" "$file" "$content"
