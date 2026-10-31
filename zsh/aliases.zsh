@@ -6,6 +6,8 @@ alias ...="cd ../.."
 alias a='capture_source_and_signal "$DOTFILES_DIR"/bin/asdf "$@"'
 alias bi="bundle install"
 alias c='capture_source_and_signal "$DOTFILES_DIR"/bin/c "$@"'
+# Takes precedence over `~/.local/bin/claude` installed by the native installer
+alias claude='"$DOTFILES_DIR"/bin/claude'
 alias e='$EDITOR'
 
 alias f="fe"

@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Wrapper for claude. Keeps each project's conversation history (transcripts and
+# memory) under `<project>/.local/claude` instead of `~/.claude/projects/<name>`,
+# by symlinking the latter to the former before starting a session.
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+warn() {
+  echo "claude wrapper: $*" >&2
+}
+
+# Moves `~/.claude/projects/<name>` into `$PWD/.local/claude` and leaves a symlink behind.
+link_history() {
+  local project_dir store projects_dir link name prefix exclude entry
+  project_dir="$(pwd -P)"
+  store="$project_dir/.local/claude"
+  projects_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
+
+  [[ "$project_dir" == / ]] && return
+
+  # Same encoding claude uses for project dir names, e.g. /Users/xmx/.dotfiles => -Users-xmx--dotfiles
+  name="${project_dir//[^a-zA-Z0-9]/-}"
+  if [[ ${#name} -gt 200 ]]; then
+    warn "project path too long, skip linking history"
+    return
+  fi
+  link="$projects_dir/$name"
+
+  # Already linked (to here, or somewhere else on purpose)
+  [[ -L "$link" ]] && return
+
+  mkdir -p "$store" "$projects_dir" || return
+
+  # Keep the history out of git without touching the project's .gitignore
+  if prefix="$(git -C "$project_dir" rev-parse --show-prefix 2>/dev/null)" &&
+    ! git -C "$project_dir" check-ignore -q .local/claude/; then
+    exclude="$(git -C "$project_dir" rev-parse --path-format=absolute --git-path info/exclude)"
+    mkdir -p "$(dirname "$exclude")" && echo "/${prefix}.local/claude/" >>"$exclude"
+  fi
+
+  if [[ -d "$link" ]]; then
+    for entry in "$link"/* "$link"/.[!.]*; do
+      [[ -e "$entry" ]] || continue
+      if [[ -e "$store/$(basename "$entry")" ]]; then
+        warn "$store/$(basename "$entry") already exists, keep $entry"
+      else
+        mv "$entry" "$store/"
+      fi
+    done
+    if ! rmdir "$link" 2>/dev/null; then
+      warn "failed to move all files from $link, skip linking history"
+      return
+    fi
+  fi
+
+  ln -s "$store" "$link"
+}
+
+if ! command -v claude &>/dev/null; then
+  warn "claude not found in PATH"
+  exit 127
+fi
+
+case "$1" in
+  # Subcommands that don't start a session, no need to create .local/claude for them
+  mcp | config | update | upgrade | doctor | install | migrate-installer | setup-token | plugin | -v | --version | -h | --help) ;;
+  *)
+    link_history
+    ;;
+esac
+
+exec claude "$@"
