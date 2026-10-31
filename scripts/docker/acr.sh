@@ -119,9 +119,13 @@ WORKFLOW
   local encoded
   encoded=$(echo "$workflow_content" | base64 | tr -d '\n')
 
+  # Resolve owner explicitly: gh's {owner} placeholder needs cwd to be a git repo.
+  local full_repo
+  full_repo="$(gh repo view "$repo" --json nameWithOwner --jq '.nameWithOwner')"
+
   # Get existing file SHA if it exists (needed for update)
   local sha
-  sha=$(gh api "repos/{owner}/$repo/contents/$workflow_path" --jq '.sha' 2>/dev/null || true)
+  sha=$(gh api "repos/$full_repo/contents/$workflow_path" --jq '.sha' 2>/dev/null || true)
 
   local payload
   if [ -n "$sha" ]; then
@@ -132,7 +136,7 @@ WORKFLOW
       '{message: $msg, content: $content}')
   fi
 
-  echo "$payload" | gh api "repos/{owner}/$repo/contents/$workflow_path" \
+  echo "$payload" | gh api "repos/$full_repo/contents/$workflow_path" \
     --method PUT --input - >/dev/null
   echo "Workflow file uploaded."
 }
@@ -166,6 +170,68 @@ _acr_normalize_tag() {
   echo "${image//\//-}"
 }
 
+# Print the ID of the latest acr_push.yml run, or 0 if there is none.
+# Transient network errors are retried.
+_acr_latest_run_id() {
+  local full_repo="$1" id attempt
+  for attempt in $(seq 1 5); do
+    if id="$(gh run list --repo "$full_repo" --workflow acr_push.yml \
+      --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null)"; then
+      echo "$id"
+      return 0
+    fi
+    sleep 3
+  done
+  echo "Error: failed to list workflow runs." >&2
+  exit 1
+}
+
+# Find the run newer than <last_run_id> and watch it until it completes.
+# Run IDs increase monotonically, so this doesn't depend on the local clock.
+# Transient network errors (e.g. TLS handshake timeout) are retried.
+_acr_wait_run() {
+  local full_repo="$1" last_run_id="$2"
+  local run_id attempt status conclusion
+
+  for attempt in $(seq 1 30); do
+    run_id="$(gh run list --repo "$full_repo" --workflow acr_push.yml \
+      --limit 5 --json databaseId \
+      --jq "[.[] | select(.databaseId > $last_run_id)] | last | .databaseId // empty" \
+      2>/dev/null || true)"
+    [ -n "$run_id" ] && break
+    sleep 3
+  done
+
+  if [ -z "$run_id" ]; then
+    echo "Error: failed to find the triggered workflow run."
+    echo "Check manually: gh run list --repo $full_repo --workflow acr_push.yml"
+    exit 1
+  fi
+
+  echo "Run: https://github.com/$full_repo/actions/runs/$run_id"
+
+  for attempt in $(seq 1 20); do
+    gh run watch "$run_id" --repo "$full_repo" --exit-status && return 0
+
+    # Watch failed: either the run failed, or the network did.
+    status="$(gh run view "$run_id" --repo "$full_repo" --json status,conclusion \
+      --jq '.status + " " + .conclusion' 2>/dev/null || true)"
+    if [ "${status%% *}" = "completed" ]; then
+      conclusion="${status#* }"
+      [ "$conclusion" = "success" ] && return 0
+      echo "Error: workflow run $conclusion."
+      exit 1
+    fi
+
+    echo "Lost connection while watching, retrying ($attempt/20)..."
+    sleep 5
+  done
+
+  echo "Error: gave up watching run $run_id."
+  echo "Check manually: gh run watch $run_id --repo $full_repo"
+  exit 1
+}
+
 cmd_acr_push() {
   [ "$1" = "-h" ] && usage_acr
 
@@ -195,6 +261,10 @@ cmd_acr_push() {
   local full_repo
   full_repo="$(gh repo view "$ACR_GH_REPO" --json nameWithOwner --jq '.nameWithOwner')"
 
+  # Remember the latest run before triggering, so we can identify the new one.
+  local last_run_id
+  last_run_id="$(_acr_latest_run_id "$full_repo")"
+
   echo "Triggering GitHub Actions workflow..."
   gh workflow run acr_push.yml \
     --repo "$full_repo" \
@@ -202,8 +272,7 @@ cmd_acr_push() {
     --field "target_image=$target_tag"
 
   echo "Waiting for workflow to complete..."
-  sleep 3
-  gh run watch --repo "$full_repo" --exit-status
+  _acr_wait_run "$full_repo" "$last_run_id"
 
   echo ""
   echo "Pull with:"
