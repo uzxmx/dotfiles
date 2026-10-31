@@ -1,0 +1,100 @@
+{
+  "version": 4,
+  "lines": [
+    [
+      {
+        "id": "1",
+        "type": "model",
+        "color": "cyan"
+      },
+      {
+        "id": "2",
+        "type": "separator"
+      },
+      {
+        "id": "3",
+        "type": "context-length",
+        "color": "brightBlack"
+      },
+      {
+        "id": "7f490a01-daa0-4d42-8303-25a5a592cf7b",
+        "type": "separator"
+      },
+      {
+        "id": "5",
+        "type": "git-branch",
+        "color": "magenta"
+      },
+      {
+        "id": "6",
+        "type": "separator"
+      },
+      {
+        "id": "7",
+        "type": "git-changes",
+        "color": "yellow"
+      }
+    ],
+    [
+      {
+        "id": "4c1f914f-6a6c-478f-9c29-253ae0302aea",
+        "type": "context-percentage-usable"
+      },
+      {
+        "id": "59851a98-3396-480e-827b-20276b37c0a6",
+        "type": "separator"
+      },
+      {
+        "id": "73b49797-b02f-4d93-a11c-d5ce367e13f6",
+        "type": "session-usage",
+        "metadata": {
+          "label": "Session: "
+        }
+      },
+      {
+        "id": "728a6d3e-1091-4c5a-a493-718317c441f8",
+        "type": "separator"
+      },
+      {
+        "id": "5d11b634-7f8f-4f9d-a450-5ce2a79a309d",
+        "type": "weekly-usage"
+      },
+      {
+        "id": "903eca43-be17-4ce6-b017-086e0a797d5e",
+        "type": "separator"
+      },
+      {
+        "id": "dbf84fe5-0b78-4390-9d9c-2693fd4edab8",
+        "type": "cache-timer"
+      }
+    ],
+    []
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "defaultPaddingSide": "both",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "gitCacheTtlSeconds": 5,
+  "terminalWidthCacheTtlSeconds": 5,
+  "customCommandCacheTtlSeconds": 0,
+  "minimalistMode": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "continueThemeAcrossLines": false
+  },
+  "installation": {
+    "method": "pinned",
+    "installedVersion": "2.2.33"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "theme": "dark",
+  "statusLine": {
+    "type": "command",
+    "command": "ccstatusline",
+    "padding": 0,
+    "refreshInterval": 10
+  },
+  "cleanupPeriodDays": 365,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "language": "chinese"
+}
