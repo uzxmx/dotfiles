@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/path.sh"
+PATH="$(new_path_exclude "$DOTFILES_DIR/bin")"
+
+# Prefer the real tree command if installed.
+real_tree="$(command -v tree || true)"
+if [ -n "$real_tree" ] && [ "$(realpath "$real_tree")" != "$(realpath "$0")" ]; then
+  exec "$real_tree" "$@"
+fi
+
+usage() {
+  cat <<-EOF
+Fallback for tree utility when it's not installed.
+
+Usage: tree [-L level] [dir]
+
+Options:
+  -L level  max display depth of the directory tree
+
+Examples:
+  $ tree # List current working directory
+  $ tree -L 2 foo # List foo directory, at most 2 levels deep
+EOF
+  exit 1
+}
+
+depth=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -L)
+      [ -n "$2" ] || usage
+      depth=(-maxdepth "$2")
+      shift
+      ;;
+    --)
+      dir="$2"
+      break
+      ;;
+    -*)
+      # Allow directory names starting with a dash, e.g. `tree -foo`.
+      [ -d "$1" ] || usage
+      dir="$1"
+      ;;
+    *)
+      dir="$1"
+      ;;
+  esac
+  shift
+done
+
+dir="${dir:-.}"
+dir="${dir%/}"
+
+echo "$dir"
+# Prefix with ./ so find doesn't treat a leading dash as an option.
+[[ "$dir" == -* ]] && dir="./$dir"
+find "$dir" "${depth[@]}" -name .git -prune -o -print |
+  sed -e '1d' -e "s;^$dir;.;" -e 's;[^/]*/;|  ;g;s;|  \([^|]\);|-- \1;'
