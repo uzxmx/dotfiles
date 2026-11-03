@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+
+set -e
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/cli.sh"
+
+usage() {
+  cat <<-EOF
+Wrapper for opencode. Adds pipe/file support to 'run'.
+
+Subcommands:
+  run <message> [file...]   run opencode with a message and optional files/pipe input
+
+All other subcommands are passed through to opencode directly.
+
+Examples:
+  cat main.py | opencode run "fix all type errors"
+  opencode run "add docstrings" src/utils.py
+EOF
+  exit 1
+}
+
+cmd_run() {
+  local model_args=()
+  local files=()
+  local message=""
+  local tmpfile=""
+
+  shift # consume 'run'
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h | --help)
+        cat <<-EOF
+Run opencode non-interactively with a message and optional file/pipe input.
+
+Usage:
+  opencode run <message> [file...]
+  <pipe> | opencode run <message> [file...]
+
+Options:
+  -m, --model <model>   Model to use (e.g. anthropic/claude-sonnet-4-5)
+  -h, --help            Show this help
+EOF
+        exit 0
+        ;;
+      -m | --model)
+        model_args=("-m" "$2")
+        shift 2
+        ;;
+      -*)
+        echo "Unknown option: $1" >&2
+        exit 1
+        ;;
+      *)
+        if [[ -z "$message" ]]; then
+          message="$1"
+        else
+          files+=("-f" "$1")
+        fi
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z "$message" ]]; then
+    echo "Usage: opencode run <message> [file...]" >&2
+    exit 1
+  fi
+
+  if [[ ! -t 0 ]]; then
+    tmpfile=$(mktemp /tmp/opencode_input.XXXXXX)
+    cat >"$tmpfile"
+    files+=("-f" "$tmpfile")
+  fi
+
+  trap '[[ -n "$tmpfile" ]] && rm -f "$tmpfile"' EXIT
+
+  opencode run "$message" "${model_args[@]}" "${files[@]}"
+}
+
+case "$1" in
+  run)
+    cmd_run "$@"
+    ;;
+  "")
+    opencode
+    ;;
+  -h | --help)
+    usage
+    ;;
+  -)
+    shift
+    opencode "$@"
+    ;;
+  *)
+    opencode "$@"
+    ;;
+esac
