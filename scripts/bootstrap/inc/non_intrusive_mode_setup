@@ -3,6 +3,7 @@
 export no_proxy
 export ssh_pub_key
 export setup_system_repo_mirror
+export no_swap
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -15,6 +16,9 @@ while [ "$#" -gt 0 ]; do
       ;;
     --setup-system-repo-mirror)
       setup_system_repo_mirror=1
+      ;;
+    --no-swap)
+      no_swap=1
       ;;
   esac
   shift
@@ -29,6 +33,7 @@ if [ "$(whoami)" = "root" ]; then
 no_proxy="$no_proxy"
 ssh_pub_key="$ssh_pub_key"
 setup_system_repo_mirror="$setup_system_repo_mirror"
+no_swap="$no_swap"
 EOF
 
   su -l "$default_user_name"
@@ -80,6 +85,15 @@ if ! sudo -n true 2>/dev/null; then
       fi
       ;;
   esac
+fi
+
+# Set up swap on Linux servers following best practices. Runs in a subshell so
+# the embedded script's `exit` won't abort the whole setup, and a failure here
+# is only a warning.
+if [ -z "$no_swap" ] && [ "$(uname -s)" = "Linux" ]; then
+  (
+#__SETUP_SWAP_SCRIPT_STUB__
+  ) || echo "Failed to set up swap, continuing." >&2
 fi
 
 # Run `apt-get update` only on the first setup, tracked by a marker file, so

@@ -22,6 +22,7 @@ Options:
   -v, --verbose show verbose output
   --update-repo fetch new updates from remote before setting up
   -t, --type setup type, e.g. minimal, full
+  -x, --exclude <pod> exclude a pod, can be specified multiple times
 
   --root <root-dir> root directory to clone to
   --git-ssh use git ssh protocol to clone, by default https is used
@@ -33,6 +34,7 @@ EOF
 export DOTFILES_DIR=${DOTFILES_DIR:-~/.dotfiles}
 
 pods=()
+excluded_pods=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -p | --proxy)
@@ -48,6 +50,10 @@ while [ "$#" -gt 0 ]; do
     -t | --type)
       shift
       setup_type="$1"
+      ;;
+    -x | --exclude)
+      shift
+      excluded_pods+=("$1")
       ;;
     --root)
       shift
@@ -188,6 +194,10 @@ for pod in "${pods[@]}"; do
   enable_pod "$pod"
 done
 
+for pod in "${excluded_pods[@]}"; do
+  unset "pod_$pod"
+done
+
 source ./scripts/lib/utils.sh
 
 is_pod_enabled sudo_nopasswd && run ./scripts/misc/set_sudo_nopasswd
@@ -213,6 +223,12 @@ if [ "$USER" = "vagrant" ]; then
 fi
 
 is_pod_enabled system_repo_mirror && run ./scripts/misc/setup_system_repo_mirror
+
+# Set up swap following best practices (no-op on non-Linux systems). A failure
+# here is only a warning.
+if is_pod_enabled swap; then
+  run ./scripts/misc/setup_swap || echo "Failed to set up swap, continuing." >&2
+fi
 
 pods=(
   prerequisites

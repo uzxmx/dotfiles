@@ -1,5 +1,6 @@
 sudo_nopasswd
 system_repo_mirror
+swap
 prerequisites
 zsh
 antibody

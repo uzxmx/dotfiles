@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# Thin wrapper of 'scripts/misc/setup_swap', which holds all the logic (it must
+# stay self-contained because it's embedded into the remote setup script).
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
+setup_swap="$DOTFILES_DIR/scripts/misc/setup_swap"
+
+usage() {
+  cat <<-EOF
+Swap utilities (Linux only).
+
+Subcommands:
+  s, status          - show swap config, usage, in/out rate, memory pressure
+                       and top processes by swap usage
+  w, watch [n]       - print swap usage and in/out rate every n seconds
+                       (default 2), Ctrl-C to stop
+  setup [options]    - create a swap file if no swap is active, and set
+                       vm.swappiness. Options:
+                         -s, --size <MiB>   swap file size (default by RAM)
+                         --swappiness <n>   default 10
+  disable            - permanently disable all swap (swap files, partitions
+                       and zram)
+EOF
+  exit 1
+}
+
+# Show this usage for '-h' of any subcommand, instead of the underlying
+# script's usage which is phrased in its own options.
+for arg in "${@:2}"; do
+  case "$arg" in
+    -h | --help)
+      usage
+      ;;
+  esac
+done
+
+case "$1" in
+  s | status)
+    shift
+    exec "$setup_swap" --status "$@"
+    ;;
+  w | watch)
+    shift
+    exec "$setup_swap" --watch "$@"
+    ;;
+  setup)
+    shift
+    exec "$setup_swap" "$@"
+    ;;
+  disable)
+    shift
+    exec "$setup_swap" --disable "$@"
+    ;;
+  *)
+    usage
+    ;;
+esac

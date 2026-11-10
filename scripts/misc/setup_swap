@@ -1,0 +1,373 @@
+#!/usr/bin/env bash
+#
+# Set up swap on a Linux server following common best practices:
+#
+#   * Only creates a swap file when no swap (including zram) is active.
+#   * Size: RAM <= 2G -> 2x RAM; RAM <= 8G -> same as RAM; otherwise 4G.
+#     Capped at 25% of free disk space on '/', skipped if that's below 512M.
+#   * Persists via '/etc/fstab' and sets 'vm.swappiness' (default 10) via
+#     '/etc/sysctl.d/99-swap.conf', so swap acts as a buffer for cold pages
+#     instead of being used aggressively.
+#   * Skips non-Linux systems and containers (swap can't be enabled there).
+#
+# With '--disable', it permanently disables all swap instead: turns off active
+# swap, removes '/swapfile', comments out other swap entries in '/etc/fstab'
+# (backed up first), masks systemd swap units, disables zram and removes the
+# swappiness setting.
+#
+# This script is also embedded into 'scripts/bootstrap/inc/non_intrusive_mode_setup'
+# and runs in a subshell there, so it must not rely on files in this repository.
+
+set -eo pipefail
+
+swap_file="/swapfile"
+sysctl_file="/etc/sysctl.d/99-swap.conf"
+swappiness=10
+size_mb=
+disable=
+status=
+watch=
+watch_interval=
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --disable)
+      disable=1
+      ;;
+    --status)
+      status=1
+      ;;
+    --watch)
+      watch=1
+      if [[ "$2" =~ ^[0-9]+$ ]]; then
+        shift
+        watch_interval="$1"
+      fi
+      ;;
+    -s | --size)
+      shift
+      size_mb="$1"
+      ;;
+    --swappiness)
+      shift
+      swappiness="$1"
+      ;;
+    -h | --help)
+      cat <<EOF
+Usage: $0 [-s <size-in-MiB>] [--swappiness <n>]
+       $0 --disable
+       $0 --status
+       $0 --watch [interval]
+
+Create a swap file at $swap_file (if no swap is active) and set vm.swappiness.
+
+Options:
+  -s, --size <MiB> swap file size, by default it's calculated from RAM
+  --swappiness <n> value of vm.swappiness, default is $swappiness
+  --disable permanently disable all swap (swap files, partitions and zram)
+  --status show swap config, usage, swap in/out rate, memory pressure and
+           top processes by swap usage
+  --watch [interval] print swap usage and in/out rate every interval
+           seconds (default 2), Ctrl-C to stop
+EOF
+      exit 0
+      ;;
+  esac
+  shift
+done
+
+log() {
+  echo "[setup_swap] $*"
+}
+
+if [ "$(uname -s)" != "Linux" ]; then
+  log "Not a Linux system, skip."
+  exit 0
+fi
+
+# Print "<swap-in> <swap-out>" page counters since boot.
+read_swap_counters() {
+  awk '/^pswpin / { i = $2 } /^pswpout / { o = $2 } END { print i + 0, o + 0 }' /proc/vmstat
+}
+
+# Print "<total-MiB> <used-MiB> <mem-available-MiB>".
+read_swap_usage() {
+  awk '
+    /^SwapTotal:/ { t = $2 }
+    /^SwapFree:/ { f = $2 }
+    /^MemAvailable:/ { a = $2 }
+    END { printf "%d %d %d\n", t / 1024, (t - f) / 1024, a / 1024 }
+  ' /proc/meminfo
+}
+
+page_kb=$(($(getconf PAGESIZE 2>/dev/null || echo 4096) / 1024))
+
+show_status() {
+  local in0 out0 in1 out1 total used avail
+
+  echo "== Swap devices =="
+  if [ "$(wc -l </proc/swaps)" -gt 1 ]; then
+    cat /proc/swaps
+  else
+    echo "(none)"
+  fi
+
+  echo
+  echo "== Config =="
+  echo "vm.swappiness = $(cat /proc/sys/vm/swappiness)"
+  if [ -f "$sysctl_file" ]; then
+    echo "$sysctl_file: $(grep -v '^#' "$sysctl_file" | xargs)"
+  fi
+  grep -E '^[^#]*[[:space:]]swap[[:space:]]' /etc/fstab | sed 's/^/fstab: /' || true
+
+  echo
+  echo "== Usage =="
+  read -r total used avail < <(read_swap_usage)
+  if [ "$total" -gt 0 ]; then
+    echo "Swap used: ${used}M / ${total}M ($((used * 100 / total))%), MemAvailable: ${avail}M"
+  else
+    echo "Swap used: 0M / 0M, MemAvailable: ${avail}M"
+  fi
+
+  read -r in0 out0 < <(read_swap_counters)
+  sleep 1
+  read -r in1 out1 < <(read_swap_counters)
+  echo "Swap in/out since boot: $((in0 * page_kb / 1024))M / $((out0 * page_kb / 1024))M"
+  echo "Swap in/out rate (1s sample): $(((in1 - in0) * page_kb))K/s / $(((out1 - out0) * page_kb))K/s"
+
+  # Pressure stall information (kernel >= 4.20): share of time tasks were
+  # stalled waiting for memory. Sustained 'some avg10' above ~10 means trouble.
+  if [ -r /proc/pressure/memory ]; then
+    echo
+    echo "== Memory pressure (PSI) =="
+    cat /proc/pressure/memory
+  fi
+
+  echo
+  echo "== Top processes by swap usage =="
+  # Reading other users' /proc/<pid>/status may need root, unreadable ones are
+  # skipped silently.
+  local found
+  found="$(
+    for f in /proc/[0-9]*/status; do
+      awk '
+        /^Name:/ { name = $2 }
+        /^Pid:/ { pid = $2 }
+        /^VmSwap:/ { if ($2 > 0) printf "%10d KB  %7d  %s\n", $2, pid, name }
+      ' "$f" 2>/dev/null
+    done | sort -rn | head -10
+  )"
+  if [ -n "$found" ]; then
+    printf "%13s  %7s  %s\n" "SWAP" "PID" "NAME"
+    echo "$found"
+  else
+    echo "(none)"
+  fi
+}
+
+watch_swap() {
+  local interval="${watch_interval:-2}" in0 out0 in1 out1 total used avail
+  printf "%-8s  %14s  %10s  %10s  %10s\n" "TIME" "SWAP USED" "IN/s" "OUT/s" "MEM AVAIL"
+  read -r in0 out0 < <(read_swap_counters)
+  while sleep "$interval"; do
+    read -r in1 out1 < <(read_swap_counters)
+    read -r total used avail < <(read_swap_usage)
+    printf "%-8s  %14s  %10s  %10s  %10s\n" \
+      "$(date +%H:%M:%S)" \
+      "${used}M/${total}M" \
+      "$(((in1 - in0) * page_kb / interval))K" \
+      "$(((out1 - out0) * page_kb / interval))K" \
+      "${avail}M"
+    in0="$in1"
+    out0="$out1"
+  done
+}
+
+# Monitoring is read-only, so it also works inside containers.
+if [ -n "$status" ]; then
+  show_status
+  exit 0
+fi
+if [ -n "$watch" ]; then
+  watch_swap
+  exit 0
+fi
+
+if [ "$(id -u)" = "0" ]; then
+  SUDO=
+else
+  SUDO=sudo
+fi
+
+if { type -p systemd-detect-virt &>/dev/null && systemd-detect-virt -c -q; } || [ -f /.dockerenv ]; then
+  log "Running inside a container, skip."
+  exit 0
+fi
+
+disable_swap() {
+  # 'swapoff' reads swapped pages back into RAM, make sure they fit (keeping
+  # 256M headroom) so it won't trigger OOM.
+  local used_kb avail_kb
+  used_kb="$(awk '/^SwapTotal:/ { t = $2 } /^SwapFree:/ { f = $2 } END { print t - f }' /proc/meminfo)"
+  avail_kb="$(awk '/^MemAvailable:/ { print $2 }' /proc/meminfo)"
+  if [ -n "$avail_kb" ] && [ "$used_kb" -gt $((avail_kb - 256 * 1024)) ]; then
+    log "Swap in use ($((used_kb / 1024))M) doesn't fit in available memory ($((avail_kb / 1024))M), abort." >&2
+    exit 1
+  fi
+
+  # Collect systemd swap units before turning swap off, since inactive ones
+  # may not be listed afterwards.
+  local units=()
+  if type -p systemctl &>/dev/null; then
+    while read -r unit _; do
+      [ -n "$unit" ] && units+=("$unit")
+    done < <(systemctl list-units --type swap --all --plain --no-legend 2>/dev/null)
+  fi
+
+  if [ "$(wc -l </proc/swaps)" -gt 1 ]; then
+    log "Turn off all swap."
+    $SUDO swapoff -a
+  fi
+
+  if grep -qE '^[^#]*[[:space:]]swap[[:space:]]' /etc/fstab; then
+    local backup="/etc/fstab.bak.$(date +%Y%m%d%H%M%S)"
+    log "Remove swap entries from /etc/fstab (backup: $backup)."
+    $SUDO cp /etc/fstab "$backup"
+    # Delete the entry this script added, comment out any others.
+    $SUDO sed -i -E \
+      -e "\\|^[[:space:]]*$swap_file[[:space:]]|d" \
+      -e 's/^([^#]*[[:space:]]swap[[:space:]])/#\1/' \
+      /etc/fstab
+  fi
+
+  if [ -e "$swap_file" ]; then
+    log "Remove $swap_file."
+    $SUDO rm -f "$swap_file"
+  fi
+
+  # Prevent systemd from activating swap partitions automatically (e.g. via
+  # GPT partition type auto-discovery).
+  local unit
+  for unit in "${units[@]}"; do
+    log "Mask systemd unit $unit."
+    $SUDO systemctl mask "$unit" >/dev/null 2>&1 || true
+  done
+
+  # zram-config (Ubuntu).
+  if type -p systemctl &>/dev/null && systemctl list-unit-files zram-config.service 2>/dev/null | grep -q zram-config; then
+    log "Disable zram-config.service."
+    $SUDO systemctl disable --now zram-config.service >/dev/null 2>&1 || true
+  fi
+  # zram-generator (Fedora, etc.): an empty config means no zram device.
+  if [ -e /usr/lib/systemd/system-generators/zram-generator ] && [ ! -s /etc/systemd/zram-generator.conf ]; then
+    log "Disable zram-generator with an empty /etc/systemd/zram-generator.conf."
+    $SUDO touch /etc/systemd/zram-generator.conf
+  fi
+
+  if [ -f "$sysctl_file" ]; then
+    log "Remove $sysctl_file."
+    $SUDO rm -f "$sysctl_file"
+  fi
+
+  log "Swap disabled."
+}
+
+if [ -n "$disable" ]; then
+  disable_swap
+  exit 0
+fi
+
+set_swappiness() {
+  local current
+  current="$(cat /proc/sys/vm/swappiness)"
+  if [ "$current" != "$swappiness" ] || [ ! -f "$sysctl_file" ]; then
+    log "Set vm.swappiness=$swappiness (was $current)."
+    echo "vm.swappiness = $swappiness" | $SUDO tee "$sysctl_file" >/dev/null
+    $SUDO sysctl -q -w "vm.swappiness=$swappiness"
+  fi
+}
+
+# '/proc/swaps' has a header line; any further line means swap is active.
+if [ "$(wc -l </proc/swaps)" -gt 1 ]; then
+  log "Swap is already active:"
+  tail -n +2 /proc/swaps
+  set_swappiness
+  exit 0
+fi
+
+ensure_fstab() {
+  if ! grep -qE "^[[:space:]]*$swap_file[[:space:]]" /etc/fstab; then
+    echo "$swap_file none swap sw 0 0" | $SUDO tee -a /etc/fstab >/dev/null
+  fi
+}
+
+# A swap file left by a previous run but not enabled.
+if [ -e "$swap_file" ]; then
+  log "$swap_file exists but isn't active, try to enable it."
+  if $SUDO swapon "$swap_file"; then
+    ensure_fstab
+    set_swappiness
+    exit 0
+  fi
+  log "Failed to enable existing $swap_file, please check it manually." >&2
+  exit 1
+fi
+
+mem_mb="$(awk '/^MemTotal:/ { printf "%d", $2 / 1024 }' /proc/meminfo)"
+if [ -z "$size_mb" ]; then
+  if [ "$mem_mb" -le 2048 ]; then
+    size_mb=$((mem_mb * 2))
+  elif [ "$mem_mb" -le 8192 ]; then
+    size_mb="$mem_mb"
+  else
+    size_mb=4096
+  fi
+
+  free_mb="$(df -Pm / | awk 'NR == 2 { print $4 }')"
+  max_mb=$((free_mb / 4))
+  if [ "$size_mb" -gt "$max_mb" ]; then
+    log "Limit swap size to ${max_mb}M (25% of free disk space ${free_mb}M)."
+    size_mb="$max_mb"
+  fi
+  if [ "$size_mb" -lt 512 ]; then
+    log "Not enough free disk space for swap (${free_mb}M free), skip."
+    exit 0
+  fi
+fi
+
+fs_type="$(stat -f -c %T / 2>/dev/null || true)"
+log "Create ${size_mb}M swap file at $swap_file (RAM ${mem_mb}M, fs ${fs_type:-unknown})."
+
+$SUDO touch "$swap_file"
+$SUDO chmod 600 "$swap_file"
+if [ "$fs_type" = "btrfs" ]; then
+  # Btrfs swap files must be NOCOW and can't be compressed.
+  $SUDO chattr +C "$swap_file"
+fi
+
+# 'fallocate' is fast, but some filesystems (e.g. older XFS) don't support swap
+# files with unwritten extents, in which case fall back to 'dd'.
+if ! { $SUDO fallocate -l "${size_mb}M" "$swap_file" &&
+  $SUDO mkswap "$swap_file" >/dev/null &&
+  $SUDO swapon "$swap_file"; }; then
+  if [ "$fs_type" = "btrfs" ]; then
+    $SUDO rm -f "$swap_file"
+    log "Failed to enable swap on btrfs, please set it up manually." >&2
+    exit 1
+  fi
+  log "fallocate-based swap file failed, retry with dd."
+  $SUDO dd if=/dev/zero of="$swap_file" bs=1M count="$size_mb" status=none
+  $SUDO chmod 600 "$swap_file"
+  $SUDO mkswap "$swap_file" >/dev/null
+  if ! $SUDO swapon "$swap_file"; then
+    $SUDO rm -f "$swap_file"
+    log "Failed to enable swap." >&2
+    exit 1
+  fi
+fi
+
+ensure_fstab
+set_swappiness
+
+log "Done."
+tail -n +2 /proc/swaps

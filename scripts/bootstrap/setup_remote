@@ -22,6 +22,7 @@ Options:
   --intrusive Intrusive setup
   --proxy <proxy> Default is 'localhost:8125'
   --no-proxy Do not use proxy
+  --no-swap Do not set up swap on the remote Linux server
   -D, --dry-run Print the SSH command and script without executing
 
 Examples:
@@ -55,6 +56,9 @@ while [ "$#" -gt 0 ]; do
     --no-proxy)
       no_proxy=1
       ;;
+    --no-swap)
+      no_swap=1
+      ;;
     -D | --dry-run)
       dry_run=1
       ;;
@@ -80,6 +84,9 @@ if [ "$intrusive_setup" = 1 ]; then
   if [ -z "$no_proxy" ]; then
     opts+=(-p localhost:8123)
   fi
+  if [ -n "$no_swap" ]; then
+    opts+=(-x swap)
+  fi
 else
   source "$DOTFILES_DIR/scripts/lib/tmpfile.sh"
   source "$DOTFILES_DIR/scripts/lib/awk/find_line.sh"
@@ -94,8 +101,14 @@ else
   lineno="$(awk_find_line "$file" "#__SETUP_SYSTEM_REPO_MIRROR_SCRIPT_STUB__")"
   awk_insert_file "$DOTFILES_DIR/scripts/misc/setup_system_repo_mirror" "$file" "$lineno"
 
+  lineno="$(awk_find_line "$file" "#__SETUP_SWAP_SCRIPT_STUB__")"
+  awk_insert_file "$DOTFILES_DIR/scripts/misc/setup_swap" "$file" "$lineno"
+
   if [ -n "$no_proxy" ]; then
     opts+=(--no-proxy)
+  fi
+  if [ -n "$no_swap" ]; then
+    opts+=(--no-swap)
   fi
   ssh_pub_key="$(cat ~/.ssh/id_rsa.pub)"
   opts+=(--ssh-pub-key "'$ssh_pub_key'")
