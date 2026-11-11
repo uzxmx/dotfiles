@@ -35,8 +35,13 @@ ssh_pub_key="$ssh_pub_key"
 setup_system_repo_mirror="$setup_system_repo_mirror"
 no_swap="$no_swap"
 EOF
+  chmod a+r "$args_file" "$0"
 
-  su -l "$default_user_name"
+  # Re-run this script as the default user and stop here, so the remaining
+  # steps (clone, ssh key, etc.) won't run as root. The script is executed from
+  # a file (not stdin), so a bare `su -l` would only open an interactive shell.
+  su -l "$default_user_name" -c "bash '$0'"
+  exit $?
 fi
 
 args_file="/tmp/setup_args.env"
