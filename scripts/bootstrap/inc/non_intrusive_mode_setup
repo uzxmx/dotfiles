@@ -179,9 +179,25 @@ fi
     fi
   }
 
+  # Like 'setup_step', but redirect output to a log file and show a live status
+  # line instead. Useful for long and noisy steps (e.g. compiling).
+  source $DOTFILES_DIR/scripts/lib/run_with_status.sh
+  setup_step_with_status() {
+    local name="$1"; shift
+    local log_file="$DOTFILES_TARGET_DIR/.install-$name.log"
+    echo "---- Setup $name (log: $log_file) ----"
+    if run_with_status "$log_file" "$@"; then
+      echo "---- Setup $name done ----"
+    else
+      echo "---- Setup $name FAILED ----" >&2
+      tail -50 "$log_file" >&2
+      exit 1
+    fi
+  }
+
   setup_step fzf $DOTFILES_DIR/scripts/install/fzf
   setup_step fd $DOTFILES_DIR/scripts/install/fd
   setup_step rg $DOTFILES_DIR/scripts/install/rg
-  setup_step tmux $DOTFILES_DIR/scripts/install/tmux
+  setup_step_with_status tmux $DOTFILES_DIR/scripts/install/tmux
   setup_step nvim $DOTFILES_DIR/scripts/install/nvim --do-all-steps
 EOF

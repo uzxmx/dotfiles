@@ -9,12 +9,13 @@ export DOTFILES_TARGET_DIR="$DOTFILES_DIR/.local"
 mkdir -p "$DOTFILES_TARGET_DIR"
 
 source "$DOTFILES_DIR/scripts/lib/path.sh"
+source "$DOTFILES_DIR/scripts/lib/run_with_status.sh"
 PATH="$DOTFILES_TARGET_DIR/bin:$PATH"
 if ! check_command zsh &>/dev/null; then
   echo "Zsh not found. Installing..."
   log_file="$DOTFILES_TARGET_DIR/.install.log"
   echo "Log can be found at $log_file"
-  if ! "$DOTFILES_DIR/scripts/install/zsh" &>"$log_file"; then
+  if ! run_with_status "$log_file" "$DOTFILES_DIR/scripts/install/zsh"; then
     echo -e "Failed to install zsh.\n"
     tail -50 "$log_file"
     exit 1

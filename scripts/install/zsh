@@ -32,6 +32,7 @@ if check_command zsh &> /dev/null; then
   check_current_shell; exit
 fi
 
+echo "==> Installing build dependencies"
 if has_yum; then
   sudo yum install -y make gcc ncurses-devel autoconf >/dev/null
 elif has_apt; then
@@ -56,9 +57,12 @@ install_fn() {
     # See https://github.com/Homebrew/homebrew-core/pull/64923
     configure_opts+=(--enable-cflags=-Wno-implicit-function-declaration)
   fi
+  echo "==> Configuring"
   [ ! -e ./configure ] && autoreconf
   ./configure "${configure_opts[@]}"
+  echo "==> Compiling"
   make
+  echo "==> Installing"
   # Skip the targets that may fail on some system.
   $sudo_opt make -o install.man -o install.runhelp install
 
@@ -69,4 +73,5 @@ install_fn() {
   "$DOTFILES_DIR/scripts/misc/link_zshrc_platform"
 }
 
+echo "==> Downloading zsh $version"
 download_and_install "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-$version.tar.gz" install_fn /tmp/zsh
