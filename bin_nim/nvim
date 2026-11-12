@@ -6,6 +6,19 @@ source "$DOTFILES_DIR/scripts/lib/path.sh"
 PATH="$(new_path_exclude "$DOTFILES_DIR/bin_nim")"
 
 if [ ! -e "$DOTFILES_TARGET_DIR/bin/nvim" ]; then
+  # Non-interactive callers (e.g. zsh's `_vi` completion runs `vi --version` to
+  # detect the variant) must not trigger a slow install. Fall back to the
+  # system vim/vi instead.
+  if [ ! -t 0 ] || [ ! -t 1 ]; then
+    for fallback in vim vi; do
+      if type -p "$fallback" &>/dev/null; then
+        exec "$fallback" "$@"
+      fi
+    done
+    echo "Neovim not installed." >&2
+    exit 1
+  fi
+
   echo "Neovim not found. Installing..."
 
   install_package() {
