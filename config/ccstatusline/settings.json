@@ -68,7 +68,20 @@
         "type": "cache-timer"
       }
     ],
-    []
+    [
+      {
+        "id": "64de217e-1e6d-4b75-a9f1-d467ca01064d",
+        "type": "reset-timer"
+      },
+      {
+        "id": "92952627-be34-41e1-93b4-5c4593fa43a4",
+        "type": "separator"
+      },
+      {
+        "id": "b98693d0-4c97-42ee-8652-3921a5285690",
+        "type": "weekly-reset-timer"
+      }
+    ]
   ],
   "flexMode": "full-minus-40",
   "compactThreshold": 60,
