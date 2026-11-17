@@ -28,7 +28,7 @@ emit_code() {
 
   code="\033]${code}\a"
 
-  # TODO this seems not working any more.
+  # Requires `allow-passthrough on` in tmux, see config/tmux/tmux.conf.
   if [ -n "$TMUX" ]; then
     code="\033Ptmux;\033${code}\033\\"
   fi
