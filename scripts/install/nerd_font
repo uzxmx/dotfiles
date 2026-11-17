@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Install Symbols Nerd Font (https://github.com/ryanoasis/nerd-fonts), a font
+# that only contains icons. It's used as the non-ASCII font in iTerm2 so that
+# tools like yazi can show icons while keeping the regular font for text.
+#
+# See scripts/misc/setup_iterm2.sh for the iTerm2 setting.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+if ! is_mac; then
+  echo 'Skipped'
+  exit
+fi
+
+if brew list --cask font-symbols-only-nerd-font &>/dev/null; then
+  exit
+fi
+
+brew_install --cask font-symbols-only-nerd-font

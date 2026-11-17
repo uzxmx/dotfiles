@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# Install yazi (https://github.com/sxyazi/yazi), a terminal file manager.
+#
+# Plugins listed in ~/.config/yazi/package.toml are installed afterwards, so
+# run `bin/rcup` before this script to link the config.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+install_plugins() {
+  if [ -f "$DOTFILES_TARGET_DIR/.config/yazi/package.toml" ]; then
+    ya pkg install
+  fi
+}
+
+if check_command yazi &> /dev/null; then
+  install_plugins
+  exit
+fi
+
+if is_mac; then
+  # ffmpeg: video thumbnails, poppler: PDF preview, imagemagick: HEIC/SVG etc.,
+  # sevenzip: archive preview.
+  brew_install yazi ffmpeg poppler imagemagick sevenzip
+  # Icons need a Nerd Font, see scripts/misc/setup_iterm2.sh for iTerm2.
+  "$DOTFILES_DIR/scripts/install/nerd_font"
+  install_plugins
+  exit
+fi
+
+version="26.8.15"
+if is_arm64; then
+  platform="aarch64-unknown-linux-musl"
+else
+  platform="x86_64-unknown-linux-musl"
+fi
+
+install_fn() {
+  local dir="$1/yazi-$platform"
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  mv "$dir/yazi" "$dir/ya" "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install "https://github.com/sxyazi/yazi/releases/download/v$version/yazi-$platform.zip" install_fn
+install_plugins

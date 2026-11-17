@@ -1,0 +1,13 @@
+# Ref: https://yazi-rs.github.io/docs/configuration/keymap
+#
+# Only additions/overrides are listed here; default keybindings still apply.
+
+[[mgr.prepend_keymap]]
+on = "s"
+run = "search --via=fd --args='--hidden'"
+desc = "Search files by name via fd (including hidden files)"
+
+[[mgr.prepend_keymap]]
+on = "l"
+run = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"

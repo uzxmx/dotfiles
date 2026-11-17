@@ -1,0 +1,22 @@
+# Ref: https://yazi-rs.github.io/docs/configuration/yazi
+#
+# Only overrides are listed here; everything else uses yazi's defaults.
+
+[mgr]
+show_hidden = true
+# Newest first, like `l` (ls -1tA).
+sort_by = "mtime"
+sort_reverse = true
+sort_dir_first = true
+
+# git.yazi: show git status of files and directories.
+# Ref: https://github.com/yazi-rs/plugins/tree/main/git.yazi
+[[plugin.prepend_fetchers]]
+url = "*"
+run = "git"
+group = "git"
+
+[[plugin.prepend_fetchers]]
+url = "*/"
+run = "git"
+group = "git"
