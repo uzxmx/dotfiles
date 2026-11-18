@@ -2,8 +2,16 @@
 #
 # Only additions/overrides are listed here; default keybindings still apply.
 
+# fr.yazi: search file contents via rg, filter with fzf, preview with bat.
+# In fzf: ctrl-s toggles rg/fzf matching, ctrl-r reloads.
 [[mgr.prepend_keymap]]
 on = "s"
+run = "plugin fr rg"
+desc = "Search file contents via rg + fzf"
+
+# Overrides the default `S` (search file contents via rg).
+[[mgr.prepend_keymap]]
+on = "S"
 run = "search --via=fd --args='--hidden'"
 desc = "Search files by name via fd (including hidden files)"
 
