@@ -11,5 +11,6 @@
     "commit": "",
     "pr": ""
   },
-  "language": "chinese"
+  "language": "chinese",
+  "idleCompaction": false
 }
