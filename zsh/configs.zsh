@@ -20,6 +20,17 @@ PURE_PROMPT_VICMD_SYMBOL="[VIM]❯"
 # Keep dirty color same with git:branch.
 zstyle :prompt:pure:git:dirty color 242
 
+# zsh-autosuggestions: suggest from history first, then from completion. Accept
+# with → or ^E. Fetch suggestions asynchronously, and skip long buffers (e.g.
+# pasted commands) to keep typing responsive.
+#
+# The default style 'fg=8' is invisible with Solarized Dark, where color 8 is the
+# background color, so use a fixed 256-color gray (same as pure's git dirty).
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_USE_ASYNC=1
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+
 # KEYTIMEOUT is only used when a bound key is also used as a prefix key. If timeout happens,
 # action of that prefix key will be taken. The unit is 10ms.
 export KEYTIMEOUT=100
