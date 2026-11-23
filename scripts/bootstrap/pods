@@ -15,6 +15,7 @@ socat
 fzf
 fd
 rg
+zoxide
 coc_python
 java
 coc_java

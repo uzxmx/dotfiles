@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# Install zoxide (https://github.com/ajeetdsouza/zoxide), a smarter cd that
+# remembers visited directories. It is used by `bin/c` as a candidate source and
+# by the yazi zoxide plugin.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command zoxide &> /dev/null && exit
+
+if is_termux; then
+  pkg install zoxide
+  exit
+fi
+
+if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  brew_install zoxide
+  exit
+fi
+
+version="0.10.0"
+if is_arm64; then
+  if is_mac; then
+    platform="aarch64-apple-darwin"
+  else
+    platform="aarch64-unknown-linux-musl"
+  fi
+else
+  if is_mac; then
+    platform="x86_64-apple-darwin"
+  else
+    platform="x86_64-unknown-linux-musl"
+  fi
+fi
+
+install_fn() {
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  mv "$1/zoxide" "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install "https://github.com/ajeetdsouza/zoxide/releases/download/v$version/zoxide-$version-$platform.tar.gz" install_fn

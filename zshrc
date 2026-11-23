@@ -74,3 +74,7 @@ fi
 # Add `$DOTFILES_TARGET_DIR/.local/bin` before `$DOTFILES_DIR/bin`, so we can override
 # utilities from the latter for current host.
 PATH="$DOTFILES_TARGET_DIR/.local/bin:$DOTFILES_DIR/bin:$PATH"
+
+# zoxide records visited directories (used by `bin/c` and yazi). Keep it at the
+# end so its chpwd hook is registered after PATH is fully set up.
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"

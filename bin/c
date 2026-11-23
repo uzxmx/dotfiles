@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/.." &>/dev/null && pwd -P)}"
 export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 source "$DOTFILES_DIR/scripts/lib/utils/common.sh"
@@ -12,7 +12,8 @@ usage() {
   cat <<-EOF
 Utility to change to a target directory quickly. You can provide more paths as
 candidates by creating a custom shell script at ~/.cd_paths.sh, and outputting
-each directory per line.
+each directory per line. Directories recorded by zoxide (if installed) are
+appended after the predefined ones.
 
 Options:
   c, -c change to a directory under current working directory
@@ -143,6 +144,17 @@ $(find ~/vagrant_boxes -maxdepth 1 -type d)\
 $(sh "$DOTFILES_TARGET_DIR/.cd_paths.sh")\
 "
   fi
+
+  # Append directories recorded by zoxide, ordered by frecency. `zoxide query`
+  # drops entries that no longer exist, so `check_directory` won't recreate them.
+  if command -v zoxide &>/dev/null; then
+    directories="$directories
+$(zoxide query -l 2>/dev/null || true)\
+"
+  fi
+
+  # Remove empty lines and duplicates while keeping the predefined order.
+  directories="$(awk 'NF && !seen[$0]++' <<<"$directories")"
 fi
 
 main_loop_with_fzf --prompt "(CTRL-D:go-further CTRL-Y:yank CTRL-T:edit)> " --expect="ctrl-d,ctrl-t"
