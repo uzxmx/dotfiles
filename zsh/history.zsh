@@ -32,6 +32,9 @@ zshaddhistory() {
   if [ "${#1}" -lt 5 ]; then
     return 1;
   fi
+  # Respect hist_ignore_space for the eternal log as well, so commands starting
+  # with a space (e.g. containing secrets) are not saved anywhere.
+  [[ -o hist_ignore_space && "$cmd" == ' '* ]] && return 1
   # Append to eternal log in extended_history format so it can be loaded by fc.
   print -r -- ": $(date +%s):0;${cmd}" >> "$HISTFILE_ETERNAL"
   return 0;
