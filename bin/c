@@ -37,6 +37,25 @@ check_directory() {
   true
 }
 
+# Show paths under $HOME as `~/...`, so fzf doesn't match keywords in the home
+# path itself.
+to_display_paths() {
+  awk -v home="$HOME" '{
+    if ($0 == home) print "~"
+    else if (index($0, home "/") == 1) print "~" substr($0, length(home) + 1)
+    else print
+  }'
+}
+
+# Reverse of `to_display_paths` for a single path.
+from_display_path() {
+  case "$1" in
+    "~") echo "$HOME" ;;
+    "~/"*) echo "$HOME/${1#\~/}" ;;
+    *) echo "$1" ;;
+  esac
+}
+
 main_loop_with_fzf() {
   while true; do
     if [ -z "$directories" ]; then
@@ -46,12 +65,12 @@ main_loop_with_fzf() {
 
     unset result
 
-    call_fzf result +m --exit-0 "$@" <<<"$directories"
+    call_fzf result +m --exit-0 "$@" < <(to_display_paths <<<"$directories")
 
     [ -z "${result[*]}" ] && break
 
     key="${result[0]}"
-    result=("${result[1]}")
+    result=("$(from_display_path "${result[1]}")")
     case "$key" in
       ctrl-d)
         check_directory "$result"
@@ -153,8 +172,11 @@ $(zoxide query -l 2>/dev/null || true)\
 "
   fi
 
-  # Remove empty lines and duplicates while keeping the predefined order.
-  directories="$(awk 'NF && !seen[$0]++' <<<"$directories")"
+  # Remove empty lines and duplicates while keeping the predefined order. $HOME
+  # itself is also removed (from both the predefined list and zoxide), because
+  # a plain `cd` already goes there. $DOTFILES_TARGET_DIR is still kept when it
+  # differs from $HOME.
+  directories="$(awk -v home="$HOME" 'NF && $0 != home && !seen[$0]++' <<<"$directories")"
 fi
 
 main_loop_with_fzf --prompt "(CTRL-D:go-further CTRL-Y:yank CTRL-T:edit)> " --expect="ctrl-d,ctrl-t"
