@@ -10,12 +10,20 @@ usage() {
   cat <<-EOF
 Wrapper for du utility that estimates file space usage.
 
+By default, entries are shown sorted by size (largest at the top) in a fixed
+window that is redrawn as each one finishes scanning. Pass in '-' to call the
+original du.
+
 Options:
   -S use sudo
+  -v visual mode: use dust (https://github.com/bootandy/dust) to show sorted
+     sizes with percentage bars. Output appears only after the whole scan
+     finishes.
 
 Examples:
   $ du # Get stats under current working directory
   $ du foo # Get stats under foo directory
+  $ du -v foo # Get sorted stats with percentage bars under foo directory
 EOF
   exit 1
 }
@@ -25,6 +33,9 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -S)
       sudo="sudo"
+      ;;
+    -v)
+      visual=1
       ;;
     -)
       shift
@@ -43,14 +54,146 @@ done
 
 set - "${remainder[@]}"
 
-args=()
+# Format "<kilobytes>\t<path>" lines sorted by size (largest first) with human
+# readable sizes.
+format_sorted() {
+  sort -rn | awk -F'\t' '{
+    split("K M G T P", u, " ")
+    x = $1; i = 1
+    while (x >= 1024 && i < 5) { x /= 1024; i++ }
+    s = (x < 10 && i > 1) ? sprintf("%.1f%s", x, u[i]) : sprintf("%d%s", x + 0.5, u[i])
+    printf "%5s\t%s\n", s, $2
+  }'
+}
+
+# Scan each entry under a directory with a separate du call (du itself buffers
+# its output when writing to a pipe) and keep redrawing a fixed size window in
+# place with a status line on top and the finished entries sorted by size below.
+du_sorted_live() {
+  local dir="${1:-.}" rows cols height entry kb line out total=0 i=0 i_line n
+  local entries=() lines=()
+  # Globals, used by cleanup_live on exit.
+  spinner_pid=""
+  err="$(mktemp)"
+  rows="$(tput lines)"
+  cols="$(tput cols)"
+
+  shopt -s dotglob nullglob
+  entries=("${dir%/}"/*)
+  n=${#entries[@]}
+
+  # Status line + one line per entry, but never taller than the screen so the
+  # window doesn't scroll.
+  height=$((n + 1))
+  ((height < rows)) || height=$((rows - 1))
+
+  # Draw the status line in place: a colored icon followed by dimmed text.
+  status() {
+    line="$2"
+    printf '\e7\e[%dA\r\e[K%s \e[2m%s\e[0m\e8' "$height" "$1" "${line:0:cols-3}"
+  }
+
+  # Keep animating the status line in the background while du is running, so
+  # the spinner and elapsed time keep moving on large entries.
+  spin() {
+    local frames=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏) f=0
+    while :; do
+      status $'\e[36m'"${frames[f]}"$'\e[0m' "Scanning [$i/$n, ${SECONDS}s] ${entry##*/} ..."
+      f=$(((f + 1) % ${#frames[@]}))
+      sleep 0.1
+    done
+  }
+
+  stop_spinner() {
+    if [ -n "$spinner_pid" ]; then
+      kill "$spinner_pid" 2>/dev/null || true
+      wait "$spinner_pid" 2>/dev/null || true
+      spinner_pid=""
+    fi
+  }
+
+  # Redraw the entries below the status line, which is drawn by the spinner.
+  draw() {
+    out=""
+    ((${#lines[@]} > 0)) && out="$(printf '%s\n' "${lines[@]}" | format_sorted | head -n $((height - 1)))"
+    printf '\e[%dA\e[K\n' "$height"
+    i_line=1
+    if [ -n "$out" ]; then
+      while IFS= read -r line; do
+        # Truncate to avoid wrapping, which would break the window. The tab
+        # after the size takes up to 8 columns.
+        printf '\e[K%s\n' "${line:0:cols-8}"
+        i_line=$((i_line + 1))
+      done <<<"$out"
+    fi
+    while ((i_line < height)); do
+      printf '\e[K\n'
+      i_line=$((i_line + 1))
+    done
+  }
+
+  # Ask for the sudo password up front, since du runs while the spinner is
+  # drawing.
+  [ -z "$sudo" ] || sudo -v
+
+  # Reserve the window, hide the cursor while redrawing and restore it on exit.
+  for ((i_line = 0; i_line < height; i_line++)); do printf '\n'; done
+  printf '\e[?25l'
+  trap cleanup_live EXIT
+  trap 'exit 130' INT
+
+  for entry in "${entries[@]}"; do
+    i=$((i + 1))
+    draw
+    spin &
+    spinner_pid=$!
+    kb="$($sudo du -sk "$entry" 2>>"$err" | cut -f1)"
+    stop_spinner
+    [ -n "$kb" ] || continue
+    lines+=("$kb	$entry")
+    total=$((total + kb))
+  done
+
+  # Keep the final window on screen until Ctrl-C or q.
+  draw
+  line="Done: $(printf '%s\t%s\n' "$total" "$dir" | format_sorted | cut -f1 | tr -d ' ') in $dir ($n items, ${SECONDS}s)"
+  n="$(wc -l <"$err" | tr -d ' ')"
+  ((n == 0)) || line="$line · $n errors shown on exit"
+  status $'\e[32m✔\e[0m' "$line · Ctrl-C or q to exit"
+  trap 'exit 0' INT
+  while :; do
+    IFS= read -rsn1 line </dev/tty || sleep 1
+    [ "$line" != q ] || break
+  done
+}
+
+cleanup_live() {
+  stop_spinner
+  printf '\e[?25h'
+  if [ -n "$err" ]; then
+    cat "$err" >&2
+    rm -f "$err"
+  fi
+}
+
 if [ -z "$1" -o -d "$1" ]; then
+  if [ -n "$visual" ] && dust="$(command -v dust)"; then
+    $sudo "$dust" -d 1 "$@"
+    exit
+  fi
+
   if [[ "$OSTYPE" =~ ^darwin.* ]]; then
-    args+=(-h -d 1)
+    args=(-h -d 1)
   else
     # Old du versions doesn't support `-d` option.
-    args+=(-h --max-depth=1)
+    args=(-h --max-depth=1)
   fi
+  if [ -t 1 ] && [ $# -le 1 ]; then
+    du_sorted_live "$@"
+  else
+    $sudo du "${args[@]}" "$@" | sort -hr
+  fi
+  exit
 fi
 
-$sudo du "${args[@]}" "$@"
+$sudo du "$@"

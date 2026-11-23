@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# Install dust (https://github.com/bootandy/dust), a more intuitive du that shows
+# sorted sizes with percentage bars. It is used by `bin/du -v` when available.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command dust &> /dev/null && exit
+
+if is_termux; then
+  pkg install dust
+  exit
+fi
+
+if is_mac && [ -z "$DOTFILES_NON_INTRUSIVE_MODE" ]; then
+  brew_install dust
+  exit
+fi
+
+version="1.2.7"
+if is_arm64; then
+  if is_mac; then
+    platform="aarch64-apple-darwin"
+  else
+    platform="aarch64-unknown-linux-musl"
+  fi
+else
+  if is_mac; then
+    platform="x86_64-apple-darwin"
+  else
+    platform="x86_64-unknown-linux-musl"
+  fi
+fi
+
+install_fn() {
+  mkdir -p "$DOTFILES_TARGET_DIR/bin"
+  mv "$(find "$1" -type f -name dust | head -1)" "$DOTFILES_TARGET_DIR/bin"
+}
+
+download_and_install "https://github.com/bootandy/dust/releases/download/v$version/dust-v$version-$platform.tar.gz" install_fn

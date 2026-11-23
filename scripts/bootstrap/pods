@@ -16,6 +16,7 @@ fzf
 fd
 rg
 zoxide
+dust
 coc_python
 java
 coc_java
