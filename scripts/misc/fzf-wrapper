@@ -39,6 +39,13 @@ import signal
 import sys
 import termios
 
+# Restore the caller's PATH. When python3 resolves to an asdf shim, the shim
+# rewrites PATH (dropping e.g. $DOTFILES_DIR/bin), and fzf would pass that PATH
+# on to commands run by --bind/--preview, such as `trim | cb` for ctrl-y.
+_caller_path = os.environ.pop('FZF_WRAPPER_PATH', None)
+if _caller_path:
+    os.environ['PATH'] = _caller_path
+
 REAL_FZF = shutil.which('fzf')
 
 log_enabled = False

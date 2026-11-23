@@ -24,7 +24,9 @@
 #
 # Note the bash example also works on zsh, except that the array index starts at 1.
 call_fzf() {
-  _call_program_with_array_output "$DOTFILES_DIR/scripts/misc/fzf-wrapper" "$@"
+  # Pass the current PATH through, since the wrapper's python3 may be an asdf
+  # shim which rewrites PATH (see scripts/misc/fzf-wrapper).
+  FZF_WRAPPER_PATH="$PATH" _call_program_with_array_output "$DOTFILES_DIR/scripts/misc/fzf-wrapper" "$@"
 }
 
 call_fzf_tmux() {
