@@ -1,0 +1,49 @@
+# Ref: https://ghostty.org/docs/config/reference
+#
+# Run `ghostty +show-config --default --docs` for all options and defaults.
+# Reload with cmd+shift+, after editing.
+
+# Font. Nerd Font symbols are built in, so no extra fallback font is needed.
+font-family = Monaco
+font-size = 14
+
+# Same colors as alacritty.
+theme = iTerm2 Solarized Dark
+
+# Left Option acts as Alt/Meta (like iTerm2 "Esc+"); right Option still types
+# special characters.
+macos-option-as-alt = left
+
+# Scrollback is in bytes; the default (10 MB) is far more than iTerm2's 1000
+# lines, so it is left as is.
+
+# Remote hosts usually lack the `xterm-ghostty` terminfo, which breaks
+# backspace, `clear`, etc. over ssh. With these, Ghostty's shell integration
+# wraps `ssh` to install the terminfo on the remote host on first connect
+# (ssh-terminfo, cached locally), falling back to TERM=xterm-256color when that
+# fails (ssh-env). Other default features (cursor, title, path) stay enabled.
+shell-integration-features = ssh-env,ssh-terminfo
+
+# Quick Terminal: a drop-down terminal toggled from any app with ctrl+`.
+# The global keybind needs Accessibility permission (System Settings > Privacy
+# & Security > Accessibility > Ghostty).
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-screen = mouse
+quick-terminal-autohide = true
+
+# Selecting text also copies it to the system clipboard (`true` only fills
+# Ghostty's own selection clipboard used for middle-click paste). Inside tmux
+# with mouse on, tmux handles selection instead (shift+drag to bypass it).
+copy-on-select = clipboard
+
+mouse-hide-while-typing = true
+
+# Restore windows, tabs and splits (with their working directories) after
+# quitting Ghostty, regardless of the macOS "Close windows when quitting an
+# application" setting.
+window-save-state = always
+
+# Put tabs in the titlebar instead of a separate tab bar row. Applies to new
+# windows only.
+macos-titlebar-style = tabs

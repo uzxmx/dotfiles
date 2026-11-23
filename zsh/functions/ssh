@@ -1,0 +1,17 @@
+# vim: ft=zsh
+
+# Inside tmux, TERM is tmux-256color, whose terminfo is missing on some remote
+# hosts (e.g. CentOS 7), breaking backspace, `clear`, etc. there. So ssh with
+# screen-256color instead, which is available almost everywhere.
+#
+# Only defined inside tmux: outside it, Ghostty's shell integration provides
+# its own `ssh` wrapper (shell-integration-features = ssh-env,ssh-terminfo).
+if [ -n "$TMUX" ]; then
+  function ssh() {
+    if [ "$TERM" = "tmux-256color" ]; then
+      TERM=screen-256color command ssh "$@"
+    else
+      command ssh "$@"
+    fi
+  }
+fi

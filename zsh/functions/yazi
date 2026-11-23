@@ -4,7 +4,7 @@
 # `q` (`Q` quits without changing directory).
 #
 # FZF_DEFAULT_OPTS adds directories to fzf's built-in walker (files only by
-# default), so yazi's `z` (fzf) can also jump to directories.
+# default), so yazi's `f` (fzf) can also jump to directories.
 #
 # Ref: https://yazi-rs.github.io/docs/quick-start#shell-wrapper
 function y() {
