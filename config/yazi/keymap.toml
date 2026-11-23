@@ -19,3 +19,20 @@ desc = "Search files by name via fd (including hidden files)"
 on = "l"
 run = "plugin smart-enter"
 desc = "Enter the child directory, or open the file"
+
+# Overrides the default `f` (filter), which moves to `F` (unbound by default).
+[[mgr.prepend_keymap]]
+on = "f"
+run = "plugin fzf"
+desc = "Jump to a file/directory via fzf"
+
+[[mgr.prepend_keymap]]
+on = "F"
+run = "filter --smart"
+desc = "Filter files"
+
+# Overrides the default `z` (fzf, now on `f`); same as `Z`.
+[[mgr.prepend_keymap]]
+on = "z"
+run = "plugin zoxide"
+desc = "Jump to a directory via zoxide"
