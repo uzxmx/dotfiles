@@ -36,3 +36,10 @@ desc = "Filter files"
 on = "z"
 run = "plugin zoxide"
 desc = "Jump to a directory via zoxide"
+
+# toggle-pane.yazi: maximize the preview pane (e.g. to view images), or
+# restore it.
+[[mgr.prepend_keymap]]
+on = "T"
+run = "plugin toggle-pane max-preview"
+desc = "Maximize or restore the preview pane"

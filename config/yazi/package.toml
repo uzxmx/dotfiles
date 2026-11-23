@@ -18,5 +18,10 @@ use = "lpnh/fr"
 rev = "aa88cd4"
 hash = "8b0e87c3176e0d44f79a8656f79f0fa"
 
+[[plugin.deps]]
+use = "yazi-rs/plugins:toggle-pane"
+rev = "1ef5fe0"
+hash = "5b2fbef7d1513ce38ff72623a071a5e"
+
 [flavor]
 deps = []

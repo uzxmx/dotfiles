@@ -2,8 +2,8 @@
 #
 # Install yazi (https://github.com/sxyazi/yazi), a terminal file manager.
 #
-# Plugins listed in ~/.config/yazi/package.toml are installed afterwards, so
-# run `bin/rcup` before this script to link the config.
+# The config is linked if `bin/rcup` hasn't done it yet, then plugins listed in
+# package.toml are installed.
 
 set -eo pipefail
 
@@ -12,10 +12,31 @@ export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
 
 source "$DOTFILES_DIR/scripts/lib/install.sh"
 
+# `ya` installs plugins into $XDG_CONFIG_HOME/yazi, so point it at the config
+# linked by rcup (which differs from ~/.config when DOTFILES_TARGET_DIR is set).
+export XDG_CONFIG_HOME="$DOTFILES_TARGET_DIR/.config"
+
+# Link any yazi config files that `bin/rcup` hasn't linked yet, so this script
+# works even when run before rcup. Hooks are skipped to only touch yazi files.
+link_config() {
+  local file name missing=()
+  for file in "$DOTFILES_DIR"/config/yazi/*; do
+    name="$(basename "$file")"
+    [ -L "$XDG_CONFIG_HOME/yazi/$name" ] || missing+=("config/yazi/$name")
+  done
+  [ ${#missing[@]} -eq 0 ] && return
+
+  info "Linking yazi config: ${missing[*]}"
+  (
+    cd "$DOTFILES_DIR"
+    PATH="$DOTFILES_DIR/scripts/rcm/bin:$PATH" \
+      rcup -K -T "$DOTFILES_TARGET_DIR" -d "$DOTFILES_DIR" "${missing[@]}"
+  )
+}
+
 install_plugins() {
-  if [ -f "$DOTFILES_TARGET_DIR/.config/yazi/package.toml" ]; then
-    ya pkg install
-  fi
+  link_config
+  ya pkg install
 }
 
 if check_command yazi &> /dev/null; then
