@@ -13,10 +13,11 @@ ratio = [1, 3, 4]
 
 [preview]
 # Defaults (600x900) are in physical pixels, so images look tiny on Retina
-# screens. Raise them so images fill the preview pane; the pane size still
-# caps the actual size. Run `ya cache clear` after changing these.
-max_width = 2000
-max_height = 2000
+# screens. Raise them (enough for a 4K screen) so images fill the preview pane,
+# even when maximized with `T`; the pane size still caps the actual size.
+# Images are never upscaled. Run `ya cache clear` after changing these.
+max_width = 4000
+max_height = 4000
 
 # git.yazi: show git status of files and directories.
 # Ref: https://github.com/yazi-rs/plugins/tree/main/git.yazi

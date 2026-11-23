@@ -43,3 +43,16 @@ desc = "Jump to a directory via zoxide"
 on = "T"
 run = "plugin toggle-pane max-preview"
 desc = "Maximize or restore the preview pane"
+
+# zoom.yazi: enlarge or shrink the image preview (needs ImageMagick >= 7.1.1).
+# Overrides the default `-` (symlink yanked files by absolute path); `_` still
+# symlinks them by relative path.
+[[mgr.prepend_keymap]]
+on = "+"
+run = "plugin zoom 1"
+desc = "Zoom in the image preview"
+
+[[mgr.prepend_keymap]]
+on = "-"
+run = "plugin zoom -1"
+desc = "Zoom out the image preview"
