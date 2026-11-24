@@ -68,4 +68,6 @@ install_fn() {
 }
 
 download_and_install "https://github.com/sxyazi/yazi/releases/download/v$version/yazi-$platform.zip" install_fn
+# magick: needed by zoom.yazi.
+"$DOTFILES_DIR/scripts/install/imagemagick"
 install_plugins

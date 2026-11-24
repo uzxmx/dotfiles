@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+#
+# Install ImageMagick 7 (https://imagemagick.org), which provides `magick`.
+# zoom.yazi needs `magick` >= 7.1.1, but apt only ships ImageMagick 6 (just
+# `convert`), so on Linux the official portable build is installed instead.
+#
+# The portable build reads its config (colors.xml etc.) from etc/ next to the
+# binary, so the whole directory goes to ~/opt/imagemagick, run through a
+# wrapper in ~/bin. Its musl variant needs the musl loader, so the glibc one
+# is used, which only needs libgomp1 (OpenMP runtime) beyond the base system.
+
+set -eo pipefail
+
+export DOTFILES_DIR="${DOTFILES_DIR:-$(cd -- "$(dirname "$0")/../.." &>/dev/null && pwd -P)}"
+export DOTFILES_TARGET_DIR="${DOTFILES_TARGET_DIR:-$HOME}"
+
+source "$DOTFILES_DIR/scripts/lib/install.sh"
+
+check_command magick &> /dev/null && exit
+
+if is_termux; then
+  pkg install imagemagick
+  exit
+fi
+
+if is_mac; then
+  brew_install imagemagick
+  exit
+fi
+
+if ! ldconfig -p | grep -q 'libgomp\.so\.1'; then
+  if has_apt; then
+    sudo apt-get install -y libgomp1
+  else
+    warn "libgomp.so.1 (OpenMP runtime) is missing, please install it for magick"
+  fi
+fi
+
+version="7.1.2-36"
+if is_arm64; then
+  platform="linux-arm64"
+else
+  platform="linux-x64"
+fi
+
+install_fn() {
+  local opt_dir="$DOTFILES_TARGET_DIR/opt/imagemagick"
+  rm -rf "$opt_dir"
+  mkdir -p "$DOTFILES_TARGET_DIR/opt" "$DOTFILES_TARGET_DIR/bin"
+  mv "$1"/ImageMagick-* "$opt_dir"
+  # A wrapper rather than a symlink: magick locates etc/ from argv[0], so
+  # running it as ~/bin/magick through a symlink misses its config.
+  printf '#!/bin/sh\nexec "%s" "$@"\n' "$opt_dir/bin/magick" >"$DOTFILES_TARGET_DIR/bin/magick"
+  chmod +x "$DOTFILES_TARGET_DIR/bin/magick"
+}
+
+download_and_install "https://github.com/ImageMagick/ImageMagick/releases/download/$version/ImageMagick-$version-portable-Q16-$platform.tar.xz" install_fn
