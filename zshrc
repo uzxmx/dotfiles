@@ -37,11 +37,7 @@ source "$DOTFILES_TARGET_DIR/.zsh/aliases.zsh"
 source "$DOTFILES_TARGET_DIR/.zsh/completions.zsh"
 source "$DOTFILES_TARGET_DIR/.zsh/library.zsh"
 source "$DOTFILES_TARGET_DIR/.zsh/misc.zsh"
-
-# Load custom functions
-for function in "$DOTFILES_TARGET_DIR"/.zsh/functions/*; do
-  source $function
-done
+source "$DOTFILES_TARGET_DIR/.zsh/functions.zsh"
 
 [ -f "$DOTFILES_TARGET_DIR/.config/fzf/fzf.zsh" ] && source "$DOTFILES_TARGET_DIR/.config/fzf/fzf.zsh"
 [ -f "$DOTFILES_TARGET_DIR/.zsh/history.zsh" ] && source "$DOTFILES_TARGET_DIR/.zsh/history.zsh"

@@ -1,4 +1,27 @@
-# vim: ft=zsh
+# ---- change-extension ------------------------------------------------------
+
+# Change file extensions recursively in current directory
+#
+#   change-extension erb haml
+function change-extension() {
+  foreach f (**/*.$1)
+    mv $f $f:r.$2
+  end
+}
+
+# ---- git -------------------------------------------------------------------
+
+# ftag - checkout git tag
+ftag() {
+  local tags tag
+  tags=$(git tag) &&
+  tag=$(echo "$tags" | fzf +m)
+  if [ -n "$tag" ]; then
+    git checkout -b $tag $tag
+  fi
+}
+
+# ---- utils -----------------------------------------------------------------
 
 enable_pry_rails() {
   unset DISABLE_PRY_RAILS
@@ -81,4 +104,22 @@ wrap_executable rsync "$DOTFILES_DIR/scripts/bin/rsync"
 # Copy with progress
 cp_p() {
   rsync -WavP --human-readable --progress $1 $2
+}
+
+# ---- yazi ------------------------------------------------------------------
+
+# Run yazi, and change to the directory where yazi was in when quitting with
+# `q` (`Q` quits without changing directory).
+#
+# FZF_DEFAULT_OPTS adds directories to fzf's built-in walker (files only by
+# default), so yazi's `f` (fzf) can also jump to directories.
+#
+# Ref: https://yazi-rs.github.io/docs/quick-start#shell-wrapper
+function y() {
+  local tmp="$(mktemp -t yazi-cwd.XXXXXX)" cwd
+  FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS --walker=file,dir,follow,hidden --walker-skip=.git,node_modules" \
+    yazi "$@" --cwd-file="$tmp"
+  IFS= read -r -d '' cwd < "$tmp"
+  [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+  rm -f -- "$tmp"
 }
